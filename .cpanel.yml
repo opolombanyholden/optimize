@@ -1,0 +1,35 @@
+---
+# ═════════════════════════════════════════════════════════════
+# OptimiZe ERP — Deploy automatique via cPanel Git Version Control
+# ═════════════════════════════════════════════════════════════
+# Exécuté à chaque clic "Deploy HEAD Commit" dans cPanel.
+# Le repo est cloné dans /home/rs2755624/optimize/, ce script
+# copie le code vers le dossier applicatif puis fait tourner
+# les commandes Laravel de post-déploiement.
+# ─────────────────────────────────────────────────────────────
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/rs2755624/optimize/
+    - export PHPBIN=/usr/local/bin/ea-php83
+
+    # 1) Composer prod (nécessite composer disponible côté cPanel)
+    - cd $DEPLOYPATH && /opt/cpanel/composer/bin/composer install --no-dev --optimize-autoloader --no-interaction 2>&1 || echo "Composer skipped (vendor pré-committé ?)"
+
+    # 2) Migrations DB (force pour non-interactif)
+    - cd $DEPLOYPATH && $PHPBIN artisan migrate --force
+
+    # 3) Storage link (idempotent)
+    - cd $DEPLOYPATH && $PHPBIN artisan storage:link 2>/dev/null || true
+
+    # 4) Cache Laravel : clear puis rebuild optimisé
+    - cd $DEPLOYPATH && $PHPBIN artisan optimize:clear
+    - cd $DEPLOYPATH && $PHPBIN artisan config:cache
+    - cd $DEPLOYPATH && $PHPBIN artisan route:cache
+    - cd $DEPLOYPATH && $PHPBIN artisan view:cache
+    - cd $DEPLOYPATH && $PHPBIN artisan event:cache
+
+    # 5) Permissions storage/cache (chmod uniquement — pas de sudo sur cPanel)
+    - /bin/chmod -R 775 ${DEPLOYPATH}storage ${DEPLOYPATH}bootstrap/cache
+
+    # 6) Sortie de maintenance (si l'app y était)
+    - cd $DEPLOYPATH && $PHPBIN artisan up 2>/dev/null || true
