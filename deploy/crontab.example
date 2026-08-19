@@ -1,0 +1,14 @@
+# ═════════════════════════════════════════════════════════════
+# OptimiZe ERP — Crontab utilisateur www-data
+# ═════════════════════════════════════════════════════════════
+# Éditer : sudo crontab -u www-data -e
+# puis coller les lignes ci-dessous
+
+# Laravel Scheduler — vérifie chaque minute les tâches planifiées
+* * * * * cd /var/www/optimiz && php artisan schedule:run >> /var/log/optimiz-schedule.log 2>&1
+
+# Purge des sessions expirées (quotidien à 3h)
+0 3 * * * cd /var/www/optimiz && php artisan session:prune-expired >> /dev/null 2>&1
+
+# Sauvegarde DB PostgreSQL — quotidien à 2h, conservation 30 jours
+0 2 * * * pg_dump -U optimiz_prod optimiz_prod | gzip > /var/backups/optimiz/db-$(date +\%Y\%m\%d).sql.gz && find /var/backups/optimiz -name "db-*.sql.gz" -mtime +30 -delete

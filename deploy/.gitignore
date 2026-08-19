@@ -1,0 +1,9 @@
+# Ne jamais committer les .env de prod
+.env
+.env.production
+.env.staging
+
+# Certificats et secrets
+*.pem
+*.key
+*.crt

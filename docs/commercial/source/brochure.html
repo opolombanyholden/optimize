@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>OptimiZe — Brochure commerciale</title>
+<style>
+@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:block;src:url('fonts/Inter-400.woff2') format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:block;src:url('fonts/Inter-500.woff2') format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:block;src:url('fonts/Inter-600.woff2') format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:700;font-display:block;src:url('fonts/Inter-700.woff2') format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:800;font-display:block;src:url('fonts/Inter-800.woff2') format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:900;font-display:block;src:url('fonts/Inter-900.woff2') format('woff2');}
+
+@page { size: 210mm 297mm; margin: 0; }
+
+:root{
+  --ink:#0F172A; --ink2:#334155; --muted:#64748B; --faint:#94A3B8;
+  --line:#E2E8F0; --bg:#F8FAFC;
+  --teal:#0D9488; --teald:#0F766E; --tealL:#2DD4BF;
+  --rose:#DB2777; --rosed:#BE185D;
+  --indigo:#4F46E5; --violet:#7C3AED;
+  --amber:#D97706; --red:#DC2626;
+  --green:#059669; --cyan:#0891B2;
+  --slate:#1E293B;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{ -webkit-font-smoothing:antialiased; }
+body{ font-family:'Inter',sans-serif; color:var(--ink); background:#8894a5; }
+
+.page{
+  width:210mm; height:297mm; position:relative; overflow:hidden;
+  background:#fff; page-break-after:always; break-after:page;
+}
+.page:last-child{ page-break-after:auto; }
+
+.shot{ position:relative; overflow:hidden; background:#fff; }
+.shot img{ position:absolute; top:0; left:0; display:block; }
+.frame{ border-radius:2.4mm; overflow:hidden; box-shadow:0 1.2mm 5mm rgba(15,23,42,.20); border:.25mm solid rgba(15,23,42,.10); }
+.bar{ height:5.2mm; background:#E9EDF2; display:flex; align-items:center; padding:0 3mm; gap:1.4mm; border-bottom:.25mm solid #D8DEE6; }
+.dot{ width:1.5mm; height:1.5mm; border-radius:50%; }
+.bar .u{ margin-left:2.5mm; font-size:2.3mm; color:#8A97A6; letter-spacing:.02em; font-weight:500; }
+svg.i{ width:1em; height:1em; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round; }
+svg.f{ fill:currentColor; stroke:none; }
+
+.pad{ padding:14mm 14mm 0; }
+.ftr{ position:absolute; left:14mm; right:14mm; bottom:8mm; display:flex; justify-content:space-between;
+      align-items:center; font-size:2.5mm; color:var(--faint); border-top:.25mm solid var(--line); padding-top:2.6mm; }
+.ftr b{ color:var(--ink2); font-weight:600; }
+.pnum{ font-weight:800; color:var(--teal); font-size:3mm; }
+
+.eyebrow{ display:inline-flex; align-items:center; gap:1.6mm; font-size:2.6mm; font-weight:700;
+          letter-spacing:.16em; text-transform:uppercase; color:var(--teal); }
+.eyebrow::before{ content:''; width:6mm; height:.6mm; background:var(--teal); border-radius:1mm; }
+h2.t{ font-size:8.8mm; font-weight:800; letter-spacing:-.035em; line-height:1.06; margin:3mm 0 2.4mm; }
+p.sub{ font-size:3.4mm; line-height:1.48; color:var(--muted); max-width:150mm; }
+p.sub b{ color:var(--ink2); font-weight:600; }
+
+/* ══════════════ P1 · COVER ═══════════════════ */
+.cover{ background:#0B1220; color:#fff; }
+.cover .glow1{ position:absolute; width:150mm; height:150mm; right:-45mm; top:-55mm; border-radius:50%;
+  background:radial-gradient(circle,rgba(13,148,136,.55),rgba(13,148,136,0) 66%); }
+.cover .glow2{ position:absolute; width:120mm; height:120mm; left:-45mm; top:38mm; border-radius:50%;
+  background:radial-gradient(circle,rgba(124,58,237,.34),rgba(124,58,237,0) 66%); }
+.cover .glow3{ position:absolute; width:110mm; height:110mm; right:-20mm; bottom:26mm; border-radius:50%;
+  background:radial-gradient(circle,rgba(219,39,119,.20),rgba(219,39,119,0) 68%); }
+.cover .in{ position:relative; padding:15mm 16mm 0; }
+
+.logo{ display:flex; align-items:center; gap:3.2mm; }
+.logo .mk{ width:11mm; height:11mm; border-radius:3mm; background:linear-gradient(135deg,var(--teal),var(--teald));
+  display:flex; align-items:center; justify-content:center; color:#fff; font-size:5.6mm;
+  box-shadow:0 1.5mm 5mm rgba(13,148,136,.5); }
+.logo .nm{ font-size:7.4mm; font-weight:800; letter-spacing:-.03em; line-height:1; }
+.logo .nm span{ color:var(--tealL); }
+.logo .by{ font-size:2.5mm; color:#8FA3B8; letter-spacing:.13em; text-transform:uppercase; font-weight:600; margin-top:1mm; }
+
+.kicker{ margin-top:12mm; display:inline-flex; align-items:center; gap:2mm; font-size:2.7mm; font-weight:700;
+  letter-spacing:.15em; text-transform:uppercase; color:var(--tealL);
+  background:rgba(45,212,191,.10); border:.25mm solid rgba(45,212,191,.32); padding:2mm 4mm; border-radius:20mm; }
+
+h1{ font-size:14.6mm; line-height:1.035; font-weight:800; letter-spacing:-.045em; margin-top:6.5mm; max-width:172mm; }
+h1 em{ font-style:normal; background:linear-gradient(100deg,var(--tealL),#5EEAD4 45%,#A78BFA);
+  -webkit-background-clip:text; background-clip:text; color:transparent; }
+.lede{ margin-top:5.5mm; font-size:4mm; line-height:1.52; color:#B7C6D6; max-width:150mm; font-weight:400; }
+.lede b{ color:#fff; font-weight:600; }
+
+.stats{ margin-top:8mm; display:grid; grid-template-columns:repeat(4,1fr);
+  border-top:.25mm solid rgba(255,255,255,.16); border-bottom:.25mm solid rgba(255,255,255,.16); }
+.stats > div{ padding:5mm 4mm 5mm 0; }
+.stats > div + div{ padding-left:5mm; border-left:.25mm solid rgba(255,255,255,.13); }
+.stats .n{ font-size:8mm; font-weight:800; letter-spacing:-.04em; line-height:1.05;
+  background:linear-gradient(120deg,#fff,#9DE9DE); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.stats .l{ font-size:2.55mm; color:#8FA3B8; margin-top:2mm; line-height:1.35; font-weight:500; }
+
+.covshot{ position:absolute; left:16mm; right:-30mm; top:169mm; }
+.cover .cta{ position:absolute; left:0; right:0; bottom:0; background:#080D17;
+  border-top:.3mm solid rgba(45,212,191,.28); padding:6mm 16mm; }
+.cibles{ display:flex; align-items:center; }
+.cibles .c{ flex:1; }
+.cibles .c+.c{ border-left:.25mm solid rgba(255,255,255,.16); padding-left:5mm; }
+.cibles .k{ font-size:2.3mm; letter-spacing:.14em; text-transform:uppercase; color:#7E93A8; font-weight:700; }
+.cibles .v{ font-size:3.5mm; font-weight:700; color:#fff; margin-top:1.4mm; letter-spacing:-.01em; }
+
+/* ══════════════ P2 · PROBLÈME ════════════════ */
+.pains{ display:grid; grid-template-columns:1fr 1fr; gap:3.6mm; margin-top:6mm; }
+.pain{ background:var(--bg); border:.25mm solid var(--line); border-radius:2.6mm; padding:4.6mm 4.6mm; position:relative; }
+.pain .n{ font-size:3.2mm; font-weight:800; color:#CBD5E1; position:absolute; right:4.2mm; top:3.6mm; letter-spacing:-.02em; }
+.pain h4{ font-size:3.6mm; font-weight:700; letter-spacing:-.015em; margin-bottom:1.8mm; padding-right:8mm; }
+.pain p{ font-size:3mm; line-height:1.46; color:var(--muted); }
+
+.answer{ margin-top:6.5mm; background:linear-gradient(135deg,#0F766E,#0D9488 55%,#14B8A6); border-radius:3mm;
+  padding:6mm 6mm; color:#fff; position:relative; overflow:hidden; }
+.answer::after{ content:''; position:absolute; width:70mm; height:70mm; right:-24mm; top:-30mm; border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.16),transparent 65%); }
+.answer h3{ font-size:4.7mm; font-weight:800; letter-spacing:-.03em; margin-bottom:4mm; }
+.prom{ display:grid; grid-template-columns:1fr 1fr; gap:3.6mm 5.4mm; position:relative; }
+.prom .p{ display:flex; gap:2.4mm; }
+.prom .ic{ width:4.8mm; height:4.8mm; border-radius:1.4mm; background:rgba(255,255,255,.22); flex:none;
+  display:flex; align-items:center; justify-content:center; font-size:2.7mm; margin-top:.2mm; }
+.prom h5{ font-size:3.3mm; font-weight:700; letter-spacing:-.01em; }
+.prom p{ font-size:2.9mm; line-height:1.44; color:rgba(255,255,255,.86); margin-top:.9mm; }
+
+.roi{ margin-top:7mm; display:flex; gap:5mm; align-items:flex-start; }
+.roi .txt{ flex:1; }
+.roi h4{ font-size:4.1mm; font-weight:800; letter-spacing:-.02em; margin-bottom:2.8mm; }
+.roi ul{ list-style:none; }
+.roi li{ font-size:3.05mm; line-height:1.45; color:var(--ink2); padding-left:5.6mm; position:relative; margin-bottom:2.4mm; }
+.roi li svg{ position:absolute; left:0; top:.4mm; color:var(--teal); font-size:3.4mm; }
+.roi li b{ font-weight:700; color:var(--ink); }
+.note{ font-size:2.4mm; color:var(--faint); line-height:1.4; margin-top:2mm; font-style:italic; }
+.cap{ font-size:2.5mm; color:var(--faint); margin-top:1.8mm; font-weight:500; line-height:1.35; }
+.cap b{ color:var(--ink2); font-weight:700; }
+
+/* ══════════════ P3 · MODULES ═════════════════ */
+.mods{ display:grid; grid-template-columns:1fr 1fr; gap:2.9mm; margin-top:4.5mm; }
+.mod{ border:.25mm solid var(--line); border-radius:2.6mm; padding:3.2mm 3.8mm; position:relative; overflow:hidden; background:#fff; }
+.mod::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:1.1mm; background:var(--mc); }
+.mod .hd{ display:flex; align-items:center; gap:2.4mm; margin-bottom:2mm; }
+.mod .ic{ width:6.6mm; height:6.6mm; border-radius:1.9mm; background:var(--mg); color:#fff; flex:none;
+  display:flex; align-items:center; justify-content:center; font-size:3.6mm; }
+.mod h4{ font-size:3.6mm; font-weight:800; letter-spacing:-.02em; line-height:1.15; }
+.mod .tag{ font-size:2.1mm; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--mc); margin-top:.6mm; }
+.mod .fx{ font-size:2.7mm; line-height:1.42; color:var(--muted); }
+.mod .fx b{ color:var(--ink2); font-weight:600; }
+.mod .cl{ font-size:2.7mm; line-height:1.35; color:var(--ink); font-weight:600; margin-top:2mm;
+  padding-top:2mm; border-top:.25mm dashed var(--line); font-style:italic; }
+.mod.wide{ grid-column:1/3; }
+
+.p3shots{ display:grid; grid-template-columns:1fr 1fr; gap:4mm; margin-top:3mm; }
+
+/* ══════════════ P4 · CIBLES ══════════════════ */
+.tgt{ border:.25mm solid var(--line); border-radius:2.8mm; overflow:hidden; margin-bottom:2.8mm; display:flex; }
+.tgt .side{ width:42mm; flex:none; padding:4.2mm 4mm; color:#fff; background:var(--tg); position:relative; overflow:hidden; }
+.tgt .side::after{ content:''; position:absolute; width:40mm; height:40mm; right:-18mm; bottom:-20mm; border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.18),transparent 66%); }
+.tgt .side .ic{ font-size:5.6mm; opacity:.9; }
+.tgt .side h3{ font-size:4.4mm; font-weight:800; letter-spacing:-.03em; margin-top:2mm; line-height:1.08; }
+.tgt .side .u{ font-size:2.6mm; margin-top:1.4mm; color:rgba(255,255,255,.85); font-weight:500; }
+.tgt .side .pk{ display:inline-block; margin-top:3mm; background:rgba(255,255,255,.20); border:.25mm solid rgba(255,255,255,.34);
+  border-radius:1.5mm; padding:1.2mm 2.4mm; font-size:2.6mm; font-weight:700; }
+.tgt .body{ flex:1; padding:3.6mm 4.2mm; display:grid; grid-template-columns:1fr 1fr; gap:2.7mm 4.4mm; align-content:start; }
+.tgt .body .k{ font-size:2.1mm; font-weight:700; letter-spacing:.11em; text-transform:uppercase; color:var(--faint); margin-bottom:1mm; }
+.tgt .body .f p{ font-size:2.65mm; line-height:1.4; color:var(--ink2); }
+.tgt .body .f b{ color:var(--ink); font-weight:700; }
+.tgt .body .full{ grid-column:1/3; padding-top:2.2mm; border-top:.25mm solid var(--line); }
+.tgt .body .full p{ font-size:2.8mm; line-height:1.4; color:var(--ink2); }
+.tgt .body .full p b{ color:var(--tgc); }
+
+/* ══════════════ P5 · TARIFS ══════════════════ */
+.build{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:3.4mm; margin-top:5.5mm; }
+.brick{ border:.25mm solid var(--line); border-radius:2.6mm; padding:4.4mm; background:#fff; position:relative; }
+.brick.hi{ border-color:var(--teal); border-width:.5mm; background:linear-gradient(180deg,#F0FDFA,#fff 60%); }
+.brick .k{ font-size:2.3mm; font-weight:700; letter-spacing:.11em; text-transform:uppercase; color:var(--faint); }
+.brick.hi .k{ color:var(--teald); }
+.brick h4{ font-size:3.9mm; font-weight:800; letter-spacing:-.02em; margin:1.6mm 0 2.6mm; }
+.brick .pr{ font-size:7.4mm; font-weight:800; letter-spacing:-.045em; color:var(--teal); line-height:1.05; }
+.brick .pr small{ font-size:2.7mm; font-weight:600; color:var(--muted); letter-spacing:0; display:block; margin-top:1.4mm; }
+.brick .ds{ font-size:2.6mm; line-height:1.42; color:var(--muted); margin-top:3mm;
+  padding-top:2.8mm; border-top:.25mm solid var(--line); }
+.brick .badge{ position:absolute; right:3.4mm; top:-2.4mm; background:var(--rose); color:#fff; font-size:2.4mm;
+  font-weight:800; padding:1.2mm 2.6mm; border-radius:1.4mm; letter-spacing:.04em; }
+.plus{ position:absolute; left:-2.6mm; top:50%; margin-top:-2mm; width:4mm; height:4mm; border-radius:50%;
+  background:var(--ink); color:#fff; font-size:2.6mm; font-weight:800; display:flex; align-items:center;
+  justify-content:center; z-index:2; }
+
+.disc{ display:grid; grid-template-columns:1.45fr 1fr; gap:5mm; margin-top:5.5mm; }
+table{ width:100%; border-collapse:collapse; }
+th,td{ text-align:left; font-size:2.75mm; padding:2.3mm 2.6mm; border-bottom:.25mm solid var(--line); }
+th{ font-size:2.3mm; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--faint);
+    border-bottom:.4mm solid var(--ink); }
+td.r,th.r{ text-align:right; }
+.pc{ color:var(--teal); font-weight:800; }
+.hlab{ font-size:3.2mm; font-weight:800; letter-spacing:-.015em; margin-bottom:2.4mm; display:flex; align-items:center; gap:2mm; }
+.hlab svg{ color:var(--teal); font-size:3.8mm; }
+
+.ex{ margin-top:5.5mm; }
+.exg{ display:grid; grid-template-columns:repeat(3,1fr); gap:3.4mm; margin-top:3mm; }
+.exc{ border:.25mm solid var(--line); border-radius:2.6mm; overflow:hidden; }
+.exc .h{ padding:3mm 3.6mm; color:#fff; background:var(--ec); }
+.exc .h .t{ font-size:3.2mm; font-weight:800; letter-spacing:-.015em; }
+.exc .h .s{ font-size:2.4mm; color:rgba(255,255,255,.85); margin-top:.8mm; }
+.exc .b{ padding:3.4mm 3.6mm; }
+.calc{ font-size:2.55mm; line-height:1.55; color:var(--muted); font-variant-numeric:tabular-nums; }
+.calc span{ color:var(--ink2); }
+.exc .tot{ margin-top:2.6mm; padding-top:2.6mm; border-top:.25mm solid var(--line); }
+.exc .tot .v{ font-size:5.4mm; font-weight:800; letter-spacing:-.04em; color:var(--ink); line-height:1.05; }
+.exc .tot .v small{ font-size:2.6mm; font-weight:600; color:var(--muted); letter-spacing:0; }
+.exc .tot .y{ font-size:2.5mm; color:var(--muted); margin-top:1.4mm; line-height:1.35; }
+.exc .tot .y b{ color:var(--teald); font-weight:700; }
+
+.trialband{ margin-top:5.5mm; background:var(--ink); border-radius:2.8mm; padding:4.4mm 5.4mm; color:#fff;
+  display:flex; align-items:center; gap:5mm; position:relative; overflow:hidden; }
+.trialband::after{ content:''; position:absolute; width:60mm; height:60mm; right:-22mm; top:-24mm; border-radius:50%;
+  background:radial-gradient(circle,rgba(45,212,191,.30),transparent 66%); }
+.trialband .big{ font-size:9mm; font-weight:800; letter-spacing:-.045em; line-height:1; color:var(--tealL); flex:none; }
+.trialband .big small{ display:block; font-size:2.5mm; color:#94A3B8; letter-spacing:.1em;
+  text-transform:uppercase; font-weight:700; margin-top:1.4mm; }
+.trialband p{ font-size:2.95mm; line-height:1.48; color:#CBD5E1; position:relative; }
+.trialband p b{ color:#fff; font-weight:700; }
+
+/* ══════════════ P6 · ACQUISITION + CTA ═══════ */
+.acq{ display:grid; grid-template-columns:repeat(3,1fr); gap:3.2mm; margin-top:4mm; }
+.ac{ border:.25mm solid var(--line); border-radius:2.8mm; overflow:hidden; display:flex; flex-direction:column; }
+.ac .h{ padding:3.6mm 3.8mm; background:var(--ac); color:#fff; }
+.ac .h .n{ font-size:2.2mm; font-weight:800; letter-spacing:.13em; text-transform:uppercase; opacity:.75; }
+.ac .h h4{ font-size:3.9mm; font-weight:800; letter-spacing:-.025em; margin-top:1.2mm; line-height:1.1;
+  min-height:8.6mm; }
+.ac .h .w{ font-size:2.45mm; color:rgba(255,255,255,.84); margin-top:1.4mm; line-height:1.35;
+  min-height:6.6mm; }
+.ac .b{ padding:3.4mm 3.8mm; flex:1; }
+.ac dt{ font-size:2.1mm; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); margin-bottom:.8mm; }
+.ac dd{ font-size:2.5mm; line-height:1.38; color:var(--ink2); margin-bottom:2mm; }
+.ac dd b{ color:var(--ink); font-weight:700; }
+.ac dd:last-child{ margin-bottom:0; }
+.ac .prc{ padding:3.2mm 3.8mm; background:var(--bg); border-top:.25mm solid var(--line); min-height:19mm; }
+.ac .prc .k{ font-size:2.1mm; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); }
+.ac .prc .v{ font-size:4.2mm; font-weight:800; letter-spacing:-.03em; color:var(--acc); margin-top:1.1mm; line-height:1.12; }
+.ac .prc .v small{ display:block; font-size:2.35mm; font-weight:500; color:var(--muted); letter-spacing:0;
+  margin-top:1mm; line-height:1.35; }
+
+.steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:3.4mm; margin-top:3mm; }
+.st{ position:relative; padding-top:5.4mm; }
+.st .n{ position:absolute; top:0; left:0; width:5.8mm; height:5.8mm; border-radius:50%; background:var(--teal); color:#fff;
+  font-size:2.8mm; font-weight:800; display:flex; align-items:center; justify-content:center; }
+.st h5{ font-size:3mm; font-weight:800; letter-spacing:-.01em; margin-top:1.4mm; }
+.st p{ font-size:2.5mm; line-height:1.4; color:var(--muted); margin-top:1mm; }
+
+.faq{ display:grid; grid-template-columns:1fr 1fr; gap:2.4mm 5.4mm; margin-top:2.6mm; }
+.faq .q{ font-size:2.8mm; font-weight:700; color:var(--ink); }
+.faq .a{ font-size:2.55mm; line-height:1.4; color:var(--muted); margin-top:.8mm; }
+
+.contact{ position:absolute; left:0; right:0; bottom:0; background:#0B1220; color:#fff; padding:6mm 14mm 5.5mm; overflow:hidden; }
+.contact::after{ content:''; position:absolute; width:90mm; height:90mm; right:-34mm; top:-40mm; border-radius:50%;
+  background:radial-gradient(circle,rgba(13,148,136,.42),transparent 66%); }
+.contact .in{ position:relative; display:flex; justify-content:space-between; align-items:flex-end; gap:8mm; }
+.contact h3{ font-size:7mm; font-weight:800; letter-spacing:-.04em; line-height:1.08; max-width:105mm; }
+.contact h3 em{ font-style:normal; color:var(--tealL); }
+.contact .p{ font-size:2.9mm; color:#94A3B8; margin-top:2.6mm; line-height:1.48; max-width:100mm; }
+.coords{ flex:none; text-align:right; }
+.coords .row{ display:flex; align-items:center; justify-content:flex-end; gap:2.4mm; font-size:3mm;
+  font-weight:600; margin-bottom:2.4mm; }
+.coords .row svg{ color:var(--tealL); font-size:3.5mm; }
+.coords .row .ph{ color:#5B6B7F; font-weight:500; font-style:italic; }
+.contact .fin{ position:relative; margin-top:4.6mm; padding-top:3mm; border-top:.25mm solid rgba(255,255,255,.14);
+  display:flex; justify-content:space-between; align-items:center; font-size:2.4mm; color:#64748B; }
+</style>
+</head>
+<body>
+
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="bolt" viewBox="0 0 24 24"><path d="M13 2 4.4 13.6H11l-1 8.4 8.6-11.6H12z"/></symbol>
+  <symbol id="coins" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+  <symbol id="users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M2.6 20c0-3.6 2.8-5.6 6.4-5.6s6.4 2 6.4 5.6"/><circle cx="17.6" cy="9.2" r="2.3"/><path d="M16.4 15c3 .1 5 1.9 5 5"/></symbol>
+  <symbol id="cart" viewBox="0 0 24 24"><circle cx="9.5" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.7 12.4h11.1L21.2 7H6.1"/></symbol>
+  <symbol id="build" viewBox="0 0 24 24"><path d="M4 21V5.4a1.4 1.4 0 0 1 1-1.35l8-2.3A1.4 1.4 0 0 1 14.8 3.1V21"/><path d="M14.8 9h4a1.2 1.2 0 0 1 1.2 1.2V21"/><path d="M2 21h20"/><path d="M7.6 8h3.6M7.6 12h3.6M7.6 16h3.6"/></symbol>
+  <symbol id="nodes" viewBox="0 0 24 24"><rect x="8.8" y="2" width="6.4" height="5" rx="1.3"/><rect x="1.6" y="17" width="6.4" height="5" rx="1.3"/><rect x="16" y="17" width="6.4" height="5" rx="1.3"/><path d="M12 7v4.6M4.8 17v-3.2h14.4V17"/></symbol>
+  <symbol id="target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4"/></symbol>
+  <symbol id="grid" viewBox="0 0 24 24"><rect x="2.8" y="2.8" width="7.4" height="7.4" rx="1.6"/><rect x="13.8" y="2.8" width="7.4" height="7.4" rx="1.6"/><rect x="2.8" y="13.8" width="7.4" height="7.4" rx="1.6"/><rect x="13.8" y="13.8" width="7.4" height="7.4" rx="1.6"/></symbol>
+  <symbol id="shield" viewBox="0 0 24 24"><path d="M12 2.2 20 5.6v5.9c0 5-3.4 8.9-8 10.3-4.6-1.4-8-5.3-8-10.3V5.6z"/><path d="M9 12.2l2.1 2.1 4-4.1"/></symbol>
+  <symbol id="check" viewBox="0 0 24 24"><path d="M20 6.5 9.4 17.5 4 12.4"/></symbol>
+  <symbol id="mail" viewBox="0 0 24 24"><rect x="2.4" y="4.6" width="19.2" height="14.8" rx="2.2"/><path d="M3.2 6.4 12 13l8.8-6.6"/></symbol>
+  <symbol id="phone" viewBox="0 0 24 24"><path d="M6.4 2.8h3.1l1.6 4-2.1 1.6a12.3 12.3 0 0 0 6.6 6.6l1.6-2.1 4 1.6v3.1a2.1 2.1 0 0 1-2.3 2.1A17.6 17.6 0 0 1 4.3 5.1 2.1 2.1 0 0 1 6.4 2.8z"/></symbol>
+  <symbol id="globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3.4 9h17.2M3.4 15h17.2"/></symbol>
+  <symbol id="pin" viewBox="0 0 24 24"><path d="M12 21.4s7-6.4 7-11.2a7 7 0 1 0-14 0c0 4.8 7 11.2 7 11.2z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6.6V12l3.6 2.2"/></symbol>
+  <symbol id="layers" viewBox="0 0 24 24"><path d="M12 2.6 2.6 7.4 12 12.2l9.4-4.8z"/><path d="M2.6 12.4 12 17.2l9.4-4.8"/><path d="M2.6 17 12 21.8l9.4-4.8"/></symbol>
+  <symbol id="lock" viewBox="0 0 24 24"><rect x="4" y="10.2" width="16" height="11" rx="2.2"/><path d="M7.8 10.2V7a4.2 4.2 0 0 1 8.4 0v3.2"/></symbol>
+  <symbol id="arrow" viewBox="0 0 24 24"><path d="M3.4 12h15.6M13 6l6 6-6 6"/></symbol>
+  <symbol id="flag" viewBox="0 0 24 24"><path d="M5 21V3.4"/><path d="M5 4.2h12.8l-2.4 4 2.4 4H5"/></symbol>
+</svg>
+
+
+<!-- ═══════════════ PAGE 1 — COUVERTURE ═══════════════ -->
+<section class="page cover">
+  <div class="glow1"></div><div class="glow2"></div><div class="glow3"></div>
+  <div class="in">
+
+    <div class="logo">
+      <div class="mk"><svg class="i f"><use href="#bolt"/></svg></div>
+      <div>
+        <div class="nm">Optimi<span>Ze</span></div>
+        <div class="by">par Yubile Technologie</div>
+      </div>
+    </div>
+
+    <div class="kicker">ERP intégré · Conçu en Afrique, pour l'Afrique</div>
+
+    <h1>Toute votre organisation.<br><em>Une seule plateforme.</em></h1>
+
+    <p class="lede">Finance &amp; Budget, RH &amp; Paie, Achats, Moyens Généraux, Projets et Objectifs —
+      réunis autour d'un intranet collaboratif. <b>En français, en francs CFA, sur une base de données unique.</b>
+      Vous n'activez que les modules dont vous avez besoin, et vous ne payez que ceux-là.</p>
+
+    <div class="stats">
+      <div><div class="n">7</div><div class="l">sous-ensembles<br>activables à la carte</div></div>
+      <div><div class="n">15 j</div><div class="l">d'essai gratuit,<br>sans carte bancaire</div></div>
+      <div><div class="n">−50 %</div><div class="l">de remise<br>au volume</div></div>
+      <div><div class="n">3</div><div class="l">modes d'acquisition&nbsp;: abonnement,<br>licence, propriété</div></div>
+    </div>
+  </div>
+
+  <div class="covshot">
+    <div class="frame">
+      <div class="bar">
+        <span class="dot" style="background:#FF5F57"></span>
+        <span class="dot" style="background:#FEBC2E"></span>
+        <span class="dot" style="background:#28C840"></span>
+        <span class="u">optimize.app / portail</span>
+      </div>
+      <div class="shot" style="width:194mm;height:86mm">
+        <img src="shots/dashboard.png" style="width:194mm">
+      </div>
+    </div>
+  </div>
+
+  <div class="cta">
+    <div class="cibles">
+      <div class="c"><div class="k">Cible 01</div><div class="v">TPE</div></div>
+      <div class="c"><div class="k">Cible 02</div><div class="v">PME</div></div>
+      <div class="c"><div class="k">Cible 03</div><div class="v">Grande Entreprise</div></div>
+      <div class="c"><div class="k">Cible 04</div><div class="v">Institution Publique</div></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════ PAGE 2 — LE CONSTAT ═══════════════ -->
+<section class="page">
+  <div class="pad">
+    <div class="eyebrow">Le constat</div>
+    <h2 class="t">Vos données travaillent-elles<br>pour vous — ou contre vous&nbsp;?</h2>
+    <p class="sub">Dans la plupart des organisations que nous rencontrons, l'information existe. Elle est
+      simplement éparpillée dans dix outils qui ne se parlent pas. Voilà ce que ça coûte.</p>
+
+    <div class="pains">
+      <div class="pain"><div class="n">01</div>
+        <h4>Excel partout, la vérité nulle part</h4>
+        <p>Le budget dans un classeur, la paie dans un autre, les commandes sur WhatsApp. Trois chiffres
+           différents pour la même question.</p></div>
+      <div class="pain"><div class="n">02</div>
+        <h4>Des logiciels étrangers mal adaptés</h4>
+        <p>Plan comptable OHADA, cotisations sociales, bulletins en français, facturation en XAF&nbsp;: ce qui
+           marche à Paris demande six mois de contournements ici.</p></div>
+      <div class="pain"><div class="n">03</div>
+        <h4>Des licences hors de proportion</h4>
+        <p>Facturées en euros, indexées sur des effectifs que vous n'avez pas, avec des modules verrouillés
+           dans des packs inutilisés.</p></div>
+      <div class="pain"><div class="n">04</div>
+        <h4>Aucune traçabilité opposable</h4>
+        <p>Qui a validé cet engagement&nbsp;? Quand&nbsp;? Sur quelle pièce&nbsp;? Le jour du contrôle, la
+           réponse tient rarement trois minutes.</p></div>
+    </div>
+
+    <div class="answer">
+      <h3>La réponse OptimiZe, en quatre principes</h3>
+      <div class="prom">
+        <div class="p"><div class="ic"><svg class="i"><use href="#layers"/></svg></div>
+          <div><h5>Une seule base de données</h5>
+            <p>Un achat engage une ligne budgétaire, qui alimente la comptabilité, qui remonte au tableau de
+               bord du dirigeant. Sans ressaisie, donc sans écart.</p></div></div>
+        <div class="p"><div class="ic"><svg class="i"><use href="#globe"/></svg></div>
+          <div><h5>Pensé pour le contexte local</h5>
+            <p>XAF par défaut, référentiels OHADA, rubriques de paie et déclarations sociales, interface
+               intégralement française et assez légère pour une connexion instable.</p></div></div>
+        <div class="p"><div class="ic"><svg class="i"><use href="#grid"/></svg></div>
+          <div><h5>Vous n'activez que l'utile</h5>
+            <p>Le socle, puis module par module. Un de plus quand vous grandissez, un de moins si vous changez
+               d'avis. La facture suit, au prorata.</p></div></div>
+        <div class="p"><div class="ic"><svg class="i"><use href="#lock"/></svg></div>
+          <div><h5>Tout est tracé, tout est opposable</h5>
+            <p>Chaque validation, modification et suppression laisse une trace horodatée et nominative.
+               Le workflow d'approbation est natif, pas une option.</p></div></div>
+      </div>
+    </div>
+
+    <div class="roi">
+      <div class="txt">
+        <h4>Ce que la centralisation change, concrètement</h4>
+        <ul>
+          <li><svg class="i"><use href="#check"/></svg><b>La ressaisie disparaît.</b> Une donnée saisie une
+            fois circule dans tous les modules. Vos agents récupèrent les heures passées à recopier d'un
+            fichier à l'autre.</li>
+          <li><svg class="i"><use href="#check"/></svg><b>Le dépassement se voit avant, pas après.</b>
+            Une alerte se déclenche dès qu'une ligne atteint 90&nbsp;% d'engagement — pas à la clôture.</li>
+          <li><svg class="i"><use href="#check"/></svg><b>La clôture devient une formalité.</b> Les écritures
+            sont déjà là, rattachées à leurs pièces et à leur validateur.</li>
+          <li><svg class="i"><use href="#check"/></svg><b>Le pilotage devient quotidien.</b> Objectifs, KPI et
+            avancement des projets se recalculent en continu, sans réclamer un point à personne.</li>
+        </ul>
+        <p class="note">Gains liés au mécanisme de centralisation lui-même&nbsp;; leur ampleur dépend de votre
+          organisation de départ. Nous les chiffrons avec vous pendant les 15 jours d'essai, sur vos données réelles.</p>
+      </div>
+      <div style="width:92mm;flex:none">
+        <div class="frame">
+          <div class="shot" style="width:92mm;height:57.96mm">
+            <img src="shots/finance.png" style="width:202.64mm;left:-38.91mm;top:-39.52mm">
+          </div>
+        </div>
+        <div class="cap"><b>Finance &amp; Budget</b> — exécution budgétaire en temps réel&nbsp;: budget total,
+          engagé et disponible, taux d'exécution et lignes les plus consommées.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ftr"><div><b>OptimiZe</b> par Yubile Technologie — Brochure commerciale 2026</div><div class="pnum">02</div></div>
+</section>
+
+
+<!-- ═══════════════ PAGE 3 — LES SOUS-ENSEMBLES ═══════════════ -->
+<section class="page">
+  <div class="pad">
+    <div class="eyebrow">La plateforme</div>
+    <h2 class="t">Sept sous-ensembles.<br>Vous choisissez lesquels.</h2>
+    <p class="sub">Chaque sous-ensemble est un ERP à part entière, avec ses écrans, ses référentiels et ses
+      circuits de validation. Tous partagent la même base, le même annuaire et les mêmes droits.</p>
+
+    <div class="mods">
+
+      <div class="mod wide" style="--mc:#7C3AED;--mg:linear-gradient(135deg,#7C3AED,#A855F7)">
+        <div class="hd"><div class="ic"><svg class="i"><use href="#grid"/></svg></div>
+          <div><h4>Intranet &amp; Collaboration</h4><div class="tag">Socle · inclus dans toutes les formules</div></div></div>
+        <p class="fx"><b>Annonces &amp; actualités</b> · <b>Agenda</b> partagé · <b>CRM</b> contacts, organisations,
+          opportunités et pipeline · <b>GED</b> : courrier entrant/sortant, ressources, médiathèque, archives,
+          modèles · <b>Wiki</b> de connaissances · <b>Annuaire</b> collaborateurs, entités et équipes.</p>
+        <div class="cl">« Le portail unique où vos équipes commencent leur journée. »</div>
+      </div>
+
+      <div class="mod" style="--mc:#4F46E5;--mg:linear-gradient(135deg,#4F46E5,#7C3AED)">
+        <div class="hd"><div class="ic"><svg class="i"><use href="#coins"/></svg></div>
+          <div><h4>Finance &amp; Budget</h4><div class="tag">Module ERP</div></div></div>
+        <p class="fx">Exercices, plan comptable OHADA, budgets et lignes, modifications budgétaires, engagements,
+          ordres de paiement et de recette, factures, grand-livre, trésorerie, sources de financement.</p>
+        <div class="cl">« Le franc engagé est un franc suivi. »</div>
+      </div>
+
+      <div class="mod" style="--mc:#059669;--mg:linear-gradient(135deg,#059669,#0891B2)">
+        <div class="hd"><div class="ic"><svg class="i"><use href="#users"/></svg></div>
+          <div><h4>RH &amp; Paiement</h4><div class="tag">Module ERP</div></div></div>
+        <p class="fx">Dossiers agents et ayants droit, contrats, absences et congés, pointage par QR code,
+          plannings, campagnes de paie et bulletins, déclarations sociales, formations, recrutement,
+          évaluations, départs.</p>
+        <div class="cl">« La paie sort à date, et elle est justifiable. »</div>
+      </div>
+
+      <div class="mod" style="--mc:#D97706;--mg:linear-gradient(135deg,#D97706,#DC2626)">
+        <div class="hd"><div class="ic"><svg class="i"><use href="#cart"/></svg></div>
+          <div><h4>Achats &amp; Approvisionnement</h4><div class="tag">Module ERP</div></div></div>
+        <p class="fx">Fournisseurs, demandes internes, campagnes d'achat, commandes et réceptions, produits,
+          stocks multi-emplacements, mouvements, inventaires, évaluation des prestataires.</p>
+        <div class="cl">« Plus rien ne se commande sans être vu. »</div>
+      </div>
+
+      <div class="mod" style="--mc:#0891B2;--mg:linear-gradient(135deg,#0891B2,#22D3EE)">
+        <div class="hd"><div class="ic"><svg class="i"><use href="#build"/></svg></div>
+          <div><h4>Moyens Généraux</h4><div class="tag">Module ERP</div></div></div>
+        <p class="fx">Immobilisations et amortissements, parc et affectations, interventions et maintenance
+          préventive, signalement et suivi des dysfonctionnements.</p>
+        <div class="cl">« Vous savez ce que vous possédez, et dans quel état. »</div>
+      </div>
+
+      <div class="mod" style="--mc:#0D9488;--mg:linear-gradient(135deg,#0D9488,#0F766E)">
+        <div class="hd"><div class="ic"><svg class="i"><use href="#nodes"/></svg></div>
+          <div><h4>Projets &amp; Tâches — PMP</h4><div class="tag">Module ERP</div></div></div>
+        <p class="fx">WBS et phases, jalons, kanban, ressources, feuilles de temps, livrables, risques,
+          changements, coûts, <b>valeur acquise (EVM)</b>, workflow de clôture à validateurs multiples.
+          Avancement et coûts cascadent automatiquement.</p>
+        <div class="cl">« Le standard PMI, sans le tableur qui va avec. »</div>
+      </div>
+
+      <div class="mod" style="--mc:#DB2777;--mg:linear-gradient(135deg,#DB2777,#BE185D)">
+        <div class="hd"><div class="ic"><svg class="i"><use href="#target"/></svg></div>
+          <div><h4>Objectifs &amp; KPI</h4><div class="tag">Module ERP</div></div></div>
+        <p class="fx">Objectifs stratégiques et opérationnels en OKR, KPI avec cibles, seuils d'alerte et
+          tendances, plans d'action, évaluations périodiques. Projets et tâches se rattachent à l'objectif
+          qu'ils servent.</p>
+        <div class="cl">« La stratégie devient un écran, plus un document. »</div>
+      </div>
+
+      <div class="mod wide" style="--mc:#475569;--mg:linear-gradient(135deg,#1E293B,#334155)">
+        <div class="hd"><div class="ic"><svg class="i"><use href="#shield"/></svg></div>
+          <div><h4>Administration &amp; Sécurité</h4><div class="tag">Transverse · inclus dans le socle</div></div></div>
+        <p class="fx">Multi-organisations et multi-entités · rôles et <b>permissions fines</b> écran par écran ·
+          <b>journal d'audit</b> horodaté et nominatif · verrouillage des entités validées, avec demandes de
+          modification et de suppression soumises à approbation · sauvegardes quotidiennes et chiffrement.</p>
+      </div>
+
+    </div>
+
+    <div class="p3shots">
+      <div>
+        <div class="frame">
+          <div class="shot" style="width:88mm;height:25.5mm"><img src="shots/projet.png" style="width:88mm"></div>
+        </div>
+        <div class="cap"><b>Projets &amp; Tâches (PMP)</b> — budget consolidé, jalons et risques critiques.</div>
+      </div>
+      <div>
+        <div class="frame">
+          <div class="shot" style="width:88mm;height:25.5mm"><img src="shots/objectifs-kpi.png" style="width:88mm"></div>
+        </div>
+        <div class="cap"><b>Objectifs &amp; KPI</b> — indicateurs suivis, cibles atteintes et écarts en alerte.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ftr"><div><b>OptimiZe</b> par Yubile Technologie — Brochure commerciale 2026</div><div class="pnum">03</div></div>
+</section>
+
+
+<!-- ═══════════════ PAGE 4 — LES 4 CIBLES ═══════════════ -->
+<section class="page">
+  <div class="pad">
+    <div class="eyebrow">À qui s'adresse OptimiZe</div>
+    <h2 class="t">Quatre tailles d'organisation,<br>quatre façons de démarrer.</h2>
+    <p class="sub">Le produit est le même. Ce qui change, c'est ce qu'on active, le rythme du déploiement
+      et le mode d'acquisition qui vous convient.</p>
+
+    <div style="margin-top:5.5mm">
+
+      <div class="tgt" style="--tg:linear-gradient(135deg,#0D9488,#0F766E);--tgc:#0F766E">
+        <div class="side">
+          <svg class="i"><use href="#flag"/></svg>
+          <h3>TPE</h3>
+          <div class="u">1 à 15 utilisateurs</div>
+          <div class="pk">Formule Essentiel</div>
+        </div>
+        <div class="body">
+          <div class="f"><div class="k">Profils types</div>
+            <p>Commerce et distribution, cabinet conseil ou comptable, clinique, école privée, entreprise
+              familiale, jeune société de services.</p></div>
+          <div class="f"><div class="k">Ce qu'on active</div>
+            <p><b>Socle Intranet</b> + <b>Finance &amp; Budget</b>, souvent complété par <b>Achats</b>.
+              Le reste attend que vous en ayez besoin.</p></div>
+          <div class="f"><div class="k">Mise en service</div>
+            <p><b>5 jours ouvrés.</b> Formation d'une demi-journée. Aucune infrastructure à acheter.</p></div>
+          <div class="f"><div class="k">Mode conseillé</div>
+            <p>Abonnement <b>mensuel ou annuel</b>. Zéro investissement de départ.</p></div>
+          <div class="full"><p><svg class="i" style="font-size:3.2mm;vertical-align:-.45mm;margin-right:1.2mm;color:var(--tgc)"><use href="#arrow"/></svg><b>Ce que ça change :</b> chaque lundi matin, vous savez exactement ce que vous
+            avez encaissé, ce que vous devez, et à qui. Sans rien recopier.</p></div>
+        </div>
+      </div>
+
+      <div class="tgt" style="--tg:linear-gradient(135deg,#4F46E5,#7C3AED);--tgc:#4F46E5">
+        <div class="side">
+          <svg class="i"><use href="#layers"/></svg>
+          <h3>PME</h3>
+          <div class="u">16 à 100 utilisateurs</div>
+          <div class="pk">Formule Business</div>
+        </div>
+        <div class="body">
+          <div class="f"><div class="k">Profils types</div>
+            <p>Industrie et agro-industrie, BTP, distribution, transport et logistique, santé privée, ESN,
+              sociétés de services multi-sites.</p></div>
+          <div class="f"><div class="k">Ce qu'on active</div>
+            <p><b>Socle</b> + <b>Finance</b> + <b>RH &amp; Paie</b> + <b>Achats</b>, très souvent
+              <b>Projets (PMP)</b>.</p></div>
+          <div class="f"><div class="k">Mise en service</div>
+            <p><b>3 à 6 semaines.</b> Reprise du plan comptable et des dossiers agents incluse.</p></div>
+          <div class="f"><div class="k">Mode conseillé</div>
+            <p>Abonnement <b>annuel</b> (−15 %), ou <b>licence perpétuelle</b> si vous avez une DSI.</p></div>
+          <div class="full"><p><svg class="i" style="font-size:3.2mm;vertical-align:-.45mm;margin-right:1.2mm;color:var(--tgc)"><use href="#arrow"/></svg><b>Ce que ça change :</b> la paie sort à date, aucun achat ne passe hors circuit
+            de validation, et la direction pilote sur des chiffres issus d'une base unique.</p></div>
+        </div>
+      </div>
+
+      <div class="tgt" style="--tg:linear-gradient(135deg,#1E293B,#475569);--tgc:#334155">
+        <div class="side">
+          <svg class="i"><use href="#build"/></svg>
+          <h3>Grande Entreprise</h3>
+          <div class="u">101 à 500+ utilisateurs</div>
+          <div class="pk">Formule Enterprise</div>
+        </div>
+        <div class="body">
+          <div class="f"><div class="k">Profils types</div>
+            <p>Groupes et holdings multi-filiales, opérateurs télécoms, banques et assurances, mines, énergie,
+              pétrole, grands groupes de BTP.</p></div>
+          <div class="f"><div class="k">Ce qu'on active</div>
+            <p><b>Pack Intégral</b> (les 6 modules), en <b>multi-organisations</b> et multi-entités,
+              avec consolidation.</p></div>
+          <div class="f"><div class="k">Mise en service</div>
+            <p><b>2 à 4 mois</b>, par vagues : cadrage, reprise d'historique, formation des référents métier.</p></div>
+          <div class="f"><div class="k">Options</div>
+            <p>Déploiement <b>sur votre infrastructure</b>, SSO, API d'intégration, SLA 99,5 %, environnement
+              de recette dédié.</p></div>
+          <div class="full"><p><svg class="i" style="font-size:3.2mm;vertical-align:-.45mm;margin-right:1.2mm;color:var(--tgc)"><use href="#arrow"/></svg><b>Ce que ça change :</b> consolidation multi-filiales, délégations de pouvoir
+            modélisées, valeur acquise (EVM) sur les projets d'investissement, piste d'audit complète de
+            l'engagement au paiement.</p></div>
+        </div>
+      </div>
+
+      <div class="tgt" style="--tg:linear-gradient(135deg,#DB2777,#BE185D);--tgc:#BE185D">
+        <div class="side">
+          <svg class="i"><use href="#shield"/></svg>
+          <h3>Institution Publique</h3>
+          <div class="u">Effectif variable · sur devis</div>
+          <div class="pk">Formule Souverain</div>
+        </div>
+        <div class="body">
+          <div class="f"><div class="k">Profils types</div>
+            <p>Ministères et directions générales, agences et établissements publics, collectivités locales,
+              projets financés par bailleurs.</p></div>
+          <div class="f"><div class="k">Ce qu'on active</div>
+            <p><b>Pack Intégral</b>, avec exécution budgétaire par <b>titre, chapitre et ligne</b> et circuits
+              d'ordonnancement.</p></div>
+          <div class="f"><div class="k">Souveraineté</div>
+            <p><b>Hébergement sur le territoire national</b>, ou acquisition <b>avec droits de propriété</b>
+              et remise du code source.</p></div>
+          <div class="f"><div class="k">Contractualisation</div>
+            <p>Compatible <b>marché public</b>, appel d'offres, gré à gré ou financement bailleur. Devis et BPU
+              sur demande.</p></div>
+          <div class="full"><p><svg class="i" style="font-size:3.2mm;vertical-align:-.45mm;margin-right:1.2mm;color:var(--tgc)"><use href="#arrow"/></svg><b>Ce que ça change :</b> engagement, ordonnancement et paiement tracés de bout
+            en bout, avec les états de reporting prêts pour la tutelle, le contrôle financier et la Cour des comptes.</p></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="ftr"><div><b>OptimiZe</b> par Yubile Technologie — Brochure commerciale 2026</div><div class="pnum">04</div></div>
+</section>
+
+
+<!-- ═══════════════ PAGE 5 — TARIFICATION ═══════════════ -->
+<section class="page">
+  <div class="pad">
+    <div class="eyebrow">Tarification</div>
+    <h2 class="t">Vous composez.<br>Le prix suit.</h2>
+    <p class="sub">Trois curseurs, et rien d'autre&nbsp;: les <b>modules</b> que vous activez, le <b>nombre
+      d'utilisateurs</b>, et la <b>durée d'engagement</b>. Tous les prix sont en francs CFA, hors taxes.</p>
+
+    <div class="build">
+      <div class="brick hi">
+        <div class="k">Étape 1 · obligatoire</div>
+        <h4>Le socle OptimiZe</h4>
+        <div class="pr">6 000<small>XAF / utilisateur / mois</small></div>
+        <div class="ds">Portail intranet, annonces, agenda, CRM contacts, GED &amp; courrier, wiki, annuaire,
+          administration, rôles &amp; permissions, journal d'audit, sauvegardes et support.</div>
+      </div>
+      <div class="brick">
+        <div class="plus">+</div>
+        <div class="k">Étape 2 · à la carte</div>
+        <h4>Chaque module ERP</h4>
+        <div class="pr" style="color:var(--indigo)">2 500<small>XAF / utilisateur / mois / module</small></div>
+        <div class="ds">Finance &amp; Budget · RH &amp; Paiement · Achats &amp; Approvisionnement ·
+          Moyens Généraux · Projets &amp; Tâches (PMP) · Objectifs &amp; KPI.</div>
+      </div>
+      <div class="brick">
+        <div class="plus">=</div>
+        <div class="badge">−33 %</div>
+        <div class="k">Ou bien · tout compris</div>
+        <h4>Le Pack Intégral</h4>
+        <div class="pr" style="color:var(--rose)">10 000<small>au lieu de 15 000 XAF / util. / mois</small></div>
+        <div class="ds">Les six modules ERP activés d'un coup. Recommandé dès que vous en utilisez quatre ou
+          plus — et systématique pour les Grandes Entreprises et les Institutions.</div>
+      </div>
+    </div>
+
+    <div class="disc">
+      <div>
+        <div class="hlab"><svg class="i"><use href="#users"/></svg>Dégressif au volume</div>
+        <table>
+          <tr><th>Utilisateurs actifs</th><th class="r">Remise</th><th class="r">Appliquée sur</th></tr>
+          <tr><td>1 à 10</td><td class="r">—</td><td class="r" style="color:var(--faint)">tarif de référence</td></tr>
+          <tr><td>11 à 50</td><td class="r pc">−20 %</td><td class="r" style="color:var(--faint)">total mensuel</td></tr>
+          <tr><td>51 à 150</td><td class="r pc">−35 %</td><td class="r" style="color:var(--faint)">total mensuel</td></tr>
+          <tr><td>151 à 500</td><td class="r pc">−50 %</td><td class="r" style="color:var(--faint)">total mensuel</td></tr>
+          <tr><td><b>Plus de 500</b></td><td class="r pc">sur devis</td><td class="r" style="color:var(--faint)">forfait négocié</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="hlab"><svg class="i"><use href="#clock"/></svg>Remise d'engagement</div>
+        <table>
+          <tr><th>Périodicité</th><th class="r">Remise</th></tr>
+          <tr><td>Mensuel</td><td class="r">—</td></tr>
+          <tr><td>Trimestriel</td><td class="r pc">−5 %</td></tr>
+          <tr><td><b>Annuel</b></td><td class="r pc">−15 %</td></tr>
+        </table>
+        <p style="font-size:2.5mm;color:var(--muted);margin-top:2.6mm;line-height:1.45">
+          <b style="color:var(--ink)">Les deux remises se cumulent.</b> L'engagement annuel revient à environ
+          deux mois offerts.</p>
+      </div>
+    </div>
+
+    <div class="ex">
+      <div class="hlab"><svg class="i"><use href="#coins"/></svg>Trois cas concrets, calculés</div>
+      <div class="exg">
+
+        <div class="exc" style="--ec:linear-gradient(135deg,#0D9488,#0F766E)">
+          <div class="h"><div class="t">TPE · 8 utilisateurs</div><div class="s">Socle + Finance · engagement annuel</div></div>
+          <div class="b">
+            <div class="calc">
+              (6 000 + 2 500) × 8<br>
+              = <span>68 000</span> XAF / mois<br>
+              volume 1–10 : <span>—</span><br>
+              annuel : <span>−15 %</span>
+            </div>
+            <div class="tot">
+              <div class="v">57 800 <small>XAF/mois</small></div>
+              <div class="y">soit <b>693 600 XAF / an</b><br>7 225 XAF par utilisateur</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exc" style="--ec:linear-gradient(135deg,#4F46E5,#7C3AED)">
+          <div class="h"><div class="t">PME · 40 utilisateurs</div><div class="s">Socle + 3 modules · engagement annuel</div></div>
+          <div class="b">
+            <div class="calc">
+              (6 000 + 3 × 2 500) × 40<br>
+              = <span>540 000</span> XAF / mois<br>
+              volume 11–50 : <span>−20 %</span><br>
+              annuel : <span>−15 %</span>
+            </div>
+            <div class="tot">
+              <div class="v">367 200 <small>XAF/mois</small></div>
+              <div class="y">soit <b>4 406 400 XAF / an</b><br>9 180 XAF par utilisateur</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="exc" style="--ec:linear-gradient(135deg,#1E293B,#475569)">
+          <div class="h"><div class="t">Grande Ent. · 200 utilisateurs</div><div class="s">Pack Intégral · engagement annuel</div></div>
+          <div class="b">
+            <div class="calc">
+              (6 000 + 10 000) × 200<br>
+              = <span>3 200 000</span> XAF / mois<br>
+              volume 151–500 : <span>−50 %</span><br>
+              annuel : <span>−15 %</span>
+            </div>
+            <div class="tot">
+              <div class="v">1 360 000 <small>XAF/mois</small></div>
+              <div class="y">soit <b>16 320 000 XAF / an</b><br>6 800 XAF par utilisateur</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="trialband">
+      <div class="big">15<small>jours offerts</small></div>
+      <p><b>Aucun de ces montants n'est engagé avant que vous ayez essayé.</b> L'essai porte sur l'environnement
+        complet, avec vos données réelles, sans carte bancaire et sans reconduction automatique. Le déroulé
+        détaillé se trouve page suivante.</p>
+    </div>
+
+  </div>
+  <div class="ftr"><div>Prix en XAF hors taxes · Grille 2026, valable 12 mois</div><div class="pnum">05</div></div>
+</section>
+
+
+<!-- ═══════════════ PAGE 6 — ACQUISITION · ESSAI · CONTACT ═══════════════ -->
+<section class="page">
+  <div class="pad" style="padding-bottom:0">
+    <div class="eyebrow">Modes d'acquisition</div>
+    <h2 class="t" style="font-size:8.4mm">Louer, acheter, ou posséder.</h2>
+    <p class="sub">Le même produit, trois façons de l'acquérir — et aucune n'est un piège&nbsp;: un abonnement
+      peut se transformer en acquisition à tout moment, et les mensualités déjà versées sont déduites du prix.</p>
+
+    <div class="acq">
+
+      <div class="ac" style="--ac:linear-gradient(135deg,#0D9488,#0F766E);--acc:#0F766E">
+        <div class="h"><div class="n">Mode 01</div><h4>Abonnement SaaS</h4>
+          <div class="w">Vous louez l'usage. Nous hébergeons, maintenons et faisons évoluer.</div></div>
+        <div class="b">
+          <dl>
+            <dt>Ce que vous obtenez</dt><dd>Droit d'usage, hébergement, mises à jour et support inclus.
+              <b>Résiliable</b> à échéance.</dd>
+            <dt>Hébergement</dt><dd>Cloud OptimiZe, sauvegardes quotidiennes comprises.</dd>
+            <dt>Évolutions</dt><dd><b>Toutes incluses</b>, sans surcoût de version.</dd>
+            <dt>Pour qui</dt><dd>TPE, PME, et tout démarrage prudent.</dd>
+          </dl>
+        </div>
+        <div class="prc"><div class="k">À partir de</div>
+          <div class="v">57 800 XAF / mois<small>TPE, 8 utilisateurs, engagement annuel.
+            Mensuel, trimestriel ou annuel.</small></div></div>
+      </div>
+
+      <div class="ac" style="--ac:linear-gradient(135deg,#4F46E5,#7C3AED);--acc:#4F46E5">
+        <div class="h"><div class="n">Mode 02</div><h4>Acquisition — licence d'usage</h4>
+          <div class="w">Vous achetez le droit d'utiliser le logiciel sans limite de durée. Le code reste à nous.</div></div>
+        <div class="b">
+          <dl>
+            <dt>Ce que vous obtenez</dt><dd>Licence <b>perpétuelle</b> d'usage, installée chez vous ou sur
+              votre cloud.</dd>
+            <dt>Hébergement</dt><dd>Votre infrastructure. Nous installons et formons votre DSI.</dd>
+            <dt>Évolutions</dt><dd>Correctifs 12 mois inclus. Maintenance <b>18 %/an</b> pour les versions
+              majeures.</dd>
+            <dt>Pour qui</dt><dd>PME structurée, Grande Entreprise, institution avec DSI.</dd>
+          </dl>
+        </div>
+        <div class="prc"><div class="k">Barème</div>
+          <div class="v">30 × la mensualité<small>dès 1 800 000 XAF (TPE) · dès 11 000 000 XAF (PME, 40 util.).
+            Paiement unique, échelonnable.</small></div></div>
+      </div>
+
+      <div class="ac" style="--ac:linear-gradient(135deg,#DB2777,#BE185D);--acc:#BE185D">
+        <div class="h"><div class="n">Mode 03</div><h4>Acquisition — avec droits de propriété</h4>
+          <div class="w">Vous achetez le logiciel et son code source. Vous en devenez propriétaire.</div></div>
+        <div class="b">
+          <dl>
+            <dt>Ce que vous obtenez</dt><dd><b>Cession du code source</b> et des droits d'exploitation,
+              documentation technique et transfert de compétences.</dd>
+            <dt>Hébergement</dt><dd>Le vôtre, sans aucune dépendance à Yubile Technologie.</dd>
+            <dt>Évolutions</dt><dd>À votre main. Accompagnement <b>15 %/an</b> en option.</dd>
+            <dt>Pour qui</dt><dd>Institution publique, enjeu de souveraineté, groupe stratégique.</dd>
+          </dl>
+        </div>
+        <div class="prc"><div class="k">Sur devis</div>
+          <div class="v">dès 65 000 000 XAF<small>selon le périmètre de modules et l'étendue des droits cédés.
+            Échelonnable par jalons.</small></div></div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:5mm">
+      <div class="hlab" style="font-size:4.2mm"><svg class="i"><use href="#clock"/></svg>Les 15 jours d'essai,
+        jour par jour — sans carte bancaire et sans reconduction automatique</div>
+      <div class="steps">
+        <div class="st"><div class="n">1</div><h5>Jour 0 — Ouverture</h5>
+          <p>Vous nous dites qui vous êtes et ce que vous voulez piloter. Votre environnement est ouvert sous
+             24 heures.</p></div>
+        <div class="st"><div class="n">2</div><h5>Jours 1–2 — Vos données</h5>
+          <p>Nous chargeons votre plan comptable, vos agents et vos fournisseurs. Vous testez sur vos chiffres,
+             pas sur une démo.</p></div>
+        <div class="st"><div class="n">3</div><h5>Jours 3–14 — Le vrai travail</h5>
+          <p>Vos équipes utilisent la plateforme. Nous restons joignables, avec un point d'étape à mi-parcours.</p></div>
+        <div class="st"><div class="n">4</div><h5>Jour 15 — Vous décidez</h5>
+          <p>Vous continuez et tout est conservé en l'état. Ou vous arrêtez : export complet remis, données
+             supprimées.</p></div>
+      </div>
+    </div>
+
+    <div class="hlab" style="font-size:3.6mm;margin-top:3.6mm;margin-bottom:0"><svg class="i"><use href="#shield"/></svg>Les questions qu'on nous pose avant de signer</div>
+    <div class="faq">
+      <div><div class="q">Puis-je commencer par un module et en ajouter plus tard&nbsp;?</div>
+        <div class="a">C'est le principe même. L'activation prend quelques minutes et se facture au prorata
+          de la période en cours.</div></div>
+      <div><div class="q">Mes données m'appartiennent-elles&nbsp;?</div>
+        <div class="a">Sans réserve, dans les trois modes d'acquisition. Export complet disponible à tout
+          moment, sans frais.</div></div>
+      <div><div class="q">Et si ma connexion internet est mauvaise&nbsp;?</div>
+        <div class="a">L'interface est légère et conçue pour la 3G. En mode acquisition, une installation
+          locale supprime la dépendance réseau.</div></div>
+      <div><div class="q">Que se passe-t-il si mon effectif change&nbsp;?</div>
+        <div class="a">La facturation suit vos utilisateurs actifs et change automatiquement de tranche,
+          à la hausse comme à la baisse.</div></div>
+    </div>
+  </div>
+
+  <div class="contact">
+    <div class="in">
+      <div>
+        <h3>Quinze jours pour vérifier.<br><em>Puis vous décidez.</em></h3>
+        <p class="p">Dites-nous votre taille et les modules qui vous intéressent&nbsp;: nous revenons sous
+          48 heures avec un devis chiffré et une date d'ouverture.</p>
+      </div>
+      <div class="coords">
+        <div class="row"><svg class="i"><use href="#mail"/></svg><span>contact@yubile-tech.com</span></div>
+        <div class="row"><svg class="i"><use href="#phone"/></svg><span class="ph">+241 &nbsp;__ __ __ __</span></div>
+        <div class="row"><svg class="i"><use href="#globe"/></svg><span class="ph">www.___________</span></div>
+        <div class="row"><svg class="i"><use href="#pin"/></svg><span>Libreville, Gabon</span></div>
+      </div>
+    </div>
+    <div class="fin">
+      <div>© 2026 Yubile Technologie. Tous droits réservés. OptimiZe est une marque de Yubile Technologie.</div>
+      <div>Prix en XAF hors taxes · Grille 2026 · Document non contractuel</div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

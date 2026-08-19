@@ -1,0 +1,20 @@
+; ═════════════════════════════════════════════════════════════
+; OptimiZe ERP — Configuration Supervisor pour queue worker
+; ═════════════════════════════════════════════════════════════
+; Copier vers /etc/supervisor/conf.d/optimiz-worker.conf
+; puis : sudo supervisorctl reread
+;        sudo supervisorctl update
+;        sudo supervisorctl start optimiz-worker:*
+
+[program:optimiz-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=/usr/bin/php /var/www/optimiz/artisan queue:work database --sleep=3 --tries=3 --max-time=3600 --queue=default
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/var/log/supervisor/optimiz-worker.log
+stopwaitsecs=3600

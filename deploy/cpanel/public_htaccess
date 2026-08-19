@@ -1,0 +1,27 @@
+# ═════════════════════════════════════════════════════════════
+# OptimiZe ERP — .htaccess à placer dans public_html/
+# ═════════════════════════════════════════════════════════════
+# À utiliser UNIQUEMENT si vous ne pouvez pas repointer le
+# document root vers /home/user/optimiz/public.
+#
+# Suppose l'app installée dans /home/user/optimiz/
+# et public_html/ contient uniquement ce .htaccess.
+# ─────────────────────────────────────────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Sécurité : bloque l'accès aux fichiers sensibles
+    RewriteRule ^(\.env|composer\.(json|lock)|package\.json|artisan|README\.md)$ - [F,L]
+
+    # Redirige toutes les requêtes vers /public/ du dossier applicatif parent
+    RewriteRule ^(.*)$ ../optimiz/public/$1 [L]
+</IfModule>
+
+# Empêche listing des dossiers
+Options -Indexes
+
+# Force HTTPS (à décommenter après configuration SSL)
+# <IfModule mod_rewrite.c>
+#     RewriteCond %{HTTPS} !=on
+#     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+# </IfModule>

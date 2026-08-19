@@ -1,0 +1,43 @@
+---
+# ═════════════════════════════════════════════════════════════
+# OptimiZe ERP — Deploy via cPanel Git Version Control
+# ═════════════════════════════════════════════════════════════
+# À copier à la racine du repo sous le nom .cpanel.yml
+# puis committer, pousser, puis dans cPanel :
+#   Git Version Control → Manage → Pull or Deploy → Deploy HEAD Commit
+#
+# Prérequis :
+#   1. Adapter DEPLOYPATH avec votre username cPanel
+#   2. Adapter le chemin PHP (ea-php83) si nécessaire
+#   3. Créer manuellement .env sur le serveur une seule fois
+#   4. Composer + vendor doivent être présents dans le repo
+#      (ou installer composer côté cPanel)
+# ─────────────────────────────────────────────────────────────
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/CPANEL_USER/optimiz/
+    - export PHPBIN=/usr/local/bin/ea-php83
+
+    # Synchro fichiers (sans .env ni logs)
+    - /bin/mkdir -p $DEPLOYPATH
+    - /usr/bin/rsync -a --delete
+        --exclude='.git' --exclude='.env'
+        --exclude='node_modules' --exclude='tests'
+        --exclude='storage/logs/*' --exclude='storage/framework/cache/*'
+        --exclude='storage/framework/sessions/*' --exclude='storage/framework/views/*'
+        --exclude='bootstrap/cache/*'
+        ./ $DEPLOYPATH
+
+    # Composer (uniquement si vendor absent — activez si vous ne committez pas vendor/)
+    # - cd $DEPLOYPATH && /opt/cpanel/composer/bin/composer install --no-dev --optimize-autoloader --no-interaction
+
+    # Migrations + cache
+    - cd $DEPLOYPATH && $PHPBIN artisan migrate --force
+    - cd $DEPLOYPATH && $PHPBIN artisan optimize:clear
+    - cd $DEPLOYPATH && $PHPBIN artisan config:cache
+    - cd $DEPLOYPATH && $PHPBIN artisan route:cache
+    - cd $DEPLOYPATH && $PHPBIN artisan view:cache
+    - cd $DEPLOYPATH && $PHPBIN artisan storage:link 2>/dev/null || true
+
+    # Permissions
+    - /bin/chmod -R 755 ${DEPLOYPATH}storage ${DEPLOYPATH}bootstrap/cache
