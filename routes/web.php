@@ -50,8 +50,15 @@ use App\Http\Controllers\Intranet\CourrierController;
 use App\Http\Controllers\Intranet\RessourceController;
 use App\Http\Controllers\Intranet\MediathequeController;
 
-// Page d'accueil publique (vitrine)
-Route::get('/', [\App\Http\Controllers\VitrineController::class, 'home'])->name('home');
+// Racine : redirige vers dashboard (si connecté) sinon login
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login');
+})->name('home');
+
+// Page vitrine publique (accessible via lien depuis /login)
+Route::get('/vitrine', [\App\Http\Controllers\VitrineController::class, 'home'])->name('vitrine.public');
 
 // Auth
 // ─── ROUTES PUBLIQUES POINTAGE QR ──────────────────────

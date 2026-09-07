@@ -70,6 +70,12 @@
         </form>
 
         <div class="text-center mt-4">
+            <a class="small text-decoration-none" href="{{ route('vitrine.public') }}">
+                <i class="fas fa-compass me-1"></i>Découvrir OptimiZe
+            </a>
+        </div>
+
+        <div class="text-center mt-3">
             <small class="text-muted">&copy; {{ date('Y') }} OptimiZe ERP — Tous droits réservés</small>
         </div>
     </div>
