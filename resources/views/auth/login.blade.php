@@ -1,20 +1,28 @@
 @extends('layouts.auth')
 
+@php
+    $brand      = config('branding.name');
+    $brandColor = config('branding.color');
+@endphp
+
 @section('title', 'Connexion')
 
 @push('styles')
 <style>
     :root {
-        --brand-teal: #0D9488;
-        --brand-teal-dark: #0F766E;
-        --brand-emerald-deep: #064E3B;
+        /* Couleur brand injectée depuis .env — les nuances sont dérivées via color-mix() */
+        --brand-color:       {{ $brandColor }};
+        --brand-color-dark:  color-mix(in srgb, var(--brand-color) 70%, black);
+        --brand-color-deep:  color-mix(in srgb, var(--brand-color) 30%, black);
+        --brand-color-tint:  color-mix(in srgb, var(--brand-color) 8%, white);
+        --brand-color-glow:  color-mix(in srgb, var(--brand-color) 20%, transparent);
+        --brand-color-halo:  color-mix(in srgb, var(--brand-color) 40%, transparent);
+        --brand-color-mist:  color-mix(in srgb, var(--brand-color) 25%, white);
+
         --brand-slate-900: #0F172A;
         --brand-slate-600: #475569;
         --brand-slate-400: #94A3B8;
-        --brand-mint-50: #F0FDFA;
-        --brand-mint-100: #CCFBF1;
-        --brand-mint-200: #A7F3D0;
-        --brand-border: #E2E8F0;
+        --brand-border:    #E2E8F0;
     }
 
     .auth-shell {
@@ -33,12 +41,11 @@
         flex-direction: column;
         justify-content: space-between;
         background:
-            radial-gradient(circle at 25% 15%, rgba(20, 184, 166, 0.35) 0%, transparent 45%),
-            radial-gradient(circle at 85% 80%, rgba(16, 185, 129, 0.25) 0%, transparent 55%),
-            linear-gradient(135deg, #0D9488 0%, #0F766E 35%, #064E3B 100%);
+            radial-gradient(circle at 25% 15%, var(--brand-color-halo) 0%, transparent 45%),
+            radial-gradient(circle at 85% 80%, var(--brand-color-halo) 0%, transparent 55%),
+            linear-gradient(135deg, var(--brand-color) 0%, var(--brand-color-dark) 35%, var(--brand-color-deep) 100%);
     }
 
-    /* Grid subtil overlay */
     .auth-brand::before {
         content: "";
         position: absolute; inset: 0;
@@ -49,13 +56,12 @@
         pointer-events: none;
     }
 
-    /* Blob décoratif bas-droite */
     .auth-brand::after {
         content: "";
         position: absolute;
         bottom: -120px; right: -120px;
         width: 400px; height: 400px;
-        background: radial-gradient(circle, rgba(167, 243, 208, 0.15) 0%, transparent 70%);
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.10) 0%, transparent 70%);
         border-radius: 50%;
         pointer-events: none;
     }
@@ -88,9 +94,7 @@
         50%      { transform: scale(1.04); box-shadow: 0 0 0 12px rgba(255,255,255,0); }
     }
 
-    .brand-hero {
-        max-width: 480px;
-    }
+    .brand-hero { max-width: 480px; }
 
     .brand-eyebrow {
         display: inline-flex;
@@ -118,7 +122,7 @@
 
     .brand-title em {
         font-style: normal;
-        background: linear-gradient(135deg, #A7F3D0 0%, #CCFBF1 100%);
+        background: linear-gradient(135deg, var(--brand-color-mist) 0%, #FFFFFF 100%);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
@@ -126,16 +130,12 @@
 
     .brand-subtitle {
         font-size: 1.05rem;
-        color: rgba(240, 253, 250, 0.75);
+        color: rgba(255, 255, 255, 0.78);
         line-height: 1.6;
         margin-bottom: 2.5rem;
     }
 
-    .brand-features {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
+    .brand-features { display: flex; flex-direction: column; gap: 1rem; }
 
     .brand-feature {
         display: flex;
@@ -154,9 +154,7 @@
     .brand-feature:nth-child(2) { animation-delay: 0.30s; }
     .brand-feature:nth-child(3) { animation-delay: 0.45s; }
 
-    @keyframes fade-up {
-        to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fade-up { to { opacity: 1; transform: translateY(0); } }
 
     .feature-icon {
         width: 38px; height: 38px;
@@ -167,30 +165,18 @@
         flex-shrink: 0;
     }
 
-    .feature-text strong {
-        display: block;
-        font-size: 0.92rem;
-        font-weight: 600;
-        color: #fff;
-    }
-    .feature-text span {
-        font-size: 0.8rem;
-        color: rgba(240, 253, 250, 0.65);
-    }
+    .feature-text strong { display: block; font-size: 0.92rem; font-weight: 600; color: #fff; }
+    .feature-text span  { font-size: 0.8rem; color: rgba(255, 255, 255, 0.68); }
 
     .brand-footer {
         display: flex;
         align-items: center;
         justify-content: space-between;
         font-size: 0.78rem;
-        color: rgba(240, 253, 250, 0.55);
+        color: rgba(255, 255, 255, 0.60);
     }
 
-    .brand-footer .signature {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+    .brand-footer .signature { display: flex; align-items: center; gap: 0.5rem; }
 
     .brand-footer .dot-live {
         width: 8px; height: 8px;
@@ -215,10 +201,7 @@
         overflow-y: auto;
     }
 
-    .auth-form {
-        width: 100%;
-        max-width: 400px;
-    }
+    .auth-form { width: 100%; max-width: 400px; }
 
     .form-title {
         font-size: 1.85rem;
@@ -257,9 +240,7 @@
         margin-bottom: 0.5rem;
     }
 
-    .field-input {
-        position: relative;
-    }
+    .field-input { position: relative; }
 
     .field-input input {
         width: 100%;
@@ -275,16 +256,12 @@
 
     .field-input input:focus {
         outline: none;
-        border-color: var(--brand-teal);
-        box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.12);
+        border-color: var(--brand-color);
+        box-shadow: 0 0 0 4px var(--brand-color-glow);
     }
 
-    .field-input input.has-error {
-        border-color: #DC2626;
-    }
-    .field-input input.has-error:focus {
-        box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
-    }
+    .field-input input.has-error { border-color: #DC2626; }
+    .field-input input.has-error:focus { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12); }
 
     .field-input .field-icon {
         position: absolute;
@@ -334,13 +311,13 @@
 
     .remember input {
         width: 16px; height: 16px;
-        accent-color: var(--brand-teal);
+        accent-color: var(--brand-color);
         cursor: pointer;
     }
 
     .link-muted {
         font-size: 0.83rem;
-        color: var(--brand-teal-dark);
+        color: var(--brand-color-dark);
         text-decoration: none;
         font-weight: 500;
         transition: color 0.15s;
@@ -350,7 +327,7 @@
     .btn-submit {
         width: 100%;
         padding: 0.9rem 1rem;
-        background: var(--brand-teal);
+        background: var(--brand-color);
         color: #fff;
         border: none;
         border-radius: 10px;
@@ -365,8 +342,8 @@
         gap: 0.55rem;
     }
     .btn-submit:hover {
-        background: var(--brand-teal-dark);
-        box-shadow: 0 8px 20px -6px rgba(13, 148, 136, 0.4);
+        background: var(--brand-color-dark);
+        box-shadow: 0 8px 20px -6px var(--brand-color-halo);
     }
     .btn-submit:active { transform: translateY(1px); }
 
@@ -404,9 +381,9 @@
         transition: all 0.15s;
     }
     .discover-link:hover {
-        border-color: var(--brand-teal);
-        color: var(--brand-teal-dark);
-        background: var(--brand-mint-50);
+        border-color: var(--brand-color);
+        color: var(--brand-color-dark);
+        background: var(--brand-color-tint);
     }
 
     .form-footer {
@@ -418,20 +395,11 @@
 
     /* ═══ MOBILE ═══ */
     @media (max-width: 991.98px) {
-        .auth-shell {
-            grid-template-columns: 1fr;
-        }
-        .auth-brand {
-            padding: 2rem 1.5rem;
-            min-height: auto;
-        }
-        .brand-hero { display: none; }
-        .brand-features { display: none; }
-        .brand-footer { display: none; }
+        .auth-shell { grid-template-columns: 1fr; }
+        .auth-brand { padding: 2rem 1.5rem; min-height: auto; }
+        .brand-hero, .brand-features, .brand-footer { display: none; }
         .brand-header { justify-content: center; }
-        .auth-form-wrap {
-            padding: 2rem 1.25rem;
-        }
+        .auth-form-wrap { padding: 2rem 1.25rem; }
     }
 
     @media (max-width: 480px) {
@@ -447,7 +415,7 @@
     <aside class="auth-brand">
         <div class="brand-header">
             <div class="brand-mark"><i class="fas fa-cube"></i></div>
-            <span>OptimiZe</span>
+            <span>{{ $brand }}</span>
         </div>
 
         <div class="brand-hero">
@@ -500,7 +468,7 @@
     <main class="auth-form-wrap">
         <div class="auth-form">
             <h2 class="form-title">Bon retour</h2>
-            <p class="form-lead">Connectez-vous à votre espace OptimiZe.</p>
+            <p class="form-lead">Connectez-vous à votre espace {{ $brand }}.</p>
 
             @if(session('status'))
                 <div class="alert-inline ok">
@@ -569,11 +537,11 @@
 
             <a href="{{ route('vitrine.public') }}" class="discover-link">
                 <i class="fas fa-compass"></i>
-                Découvrir OptimiZe
+                Découvrir {{ $brand }}
             </a>
 
             <p class="form-footer">
-                &copy; {{ date('Y') }} OptimiZe ERP · Tous droits réservés
+                &copy; {{ date('Y') }} {{ $brand }} ERP · Tous droits réservés
             </p>
         </div>
     </main>
