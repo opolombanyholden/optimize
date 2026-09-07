@@ -1,0 +1,35 @@
+# ═══════════════════════════════════════════════════════════════
+# OptimiZe — .htaccess racine (app installée à /public_html/)
+# ═══════════════════════════════════════════════════════════════
+# Layout choisi : Laravel entier à la racine du domaine, avec
+# public/ comme front controller. Ce fichier :
+#   1) Bloque l'accès direct aux fichiers/dossiers sensibles
+#   2) Redirige toute requête vers /public/index.php via rewrite
+# ─────────────────────────────────────────────────────────────
+
+Options -Indexes -MultiViews
+
+# ── 1) Blocage des fichiers cachés (.env, .env.backup, .git, .htaccess…)
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# ── 2) Blocage des fichiers sensibles Laravel à la racine
+<FilesMatch "^(composer\.(json|lock)|package(-lock)?\.json|artisan|README\.md|CLAUDE\.md|phpunit\.xml|webpack\.mix\.js|vite\.config\.js|\.cpanel\.yml)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # ── 3) Blocage des dossiers privés (matché avant le rewrite vers public/)
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor|deploy|node_modules|conception)(/|$) - [F,L]
+
+    # ── 4) Blocage explicite des fichiers .env de toute forme
+    RewriteRule ^\.env - [F,L]
+    RewriteRule ^\.env\..* - [F,L]
+
+    # ── 5) Front controller : tout ce qui n'est pas déjà /public/... y est renvoyé
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>

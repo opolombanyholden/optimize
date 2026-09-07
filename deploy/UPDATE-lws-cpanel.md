@@ -50,7 +50,7 @@ Durée totale : ~10-15 minutes pour un update standard.
 
 ```bash
 # Sur le serveur, connecté en SSH
-cd ~/public_html/optimize
+cd ~/public_html
 bash deploy/scripts/backup.sh
 ```
 
@@ -104,7 +104,7 @@ Si le repo Git est configuré dans cPanel (menu **Git Version Control**) :
 ### Voie B — Git manuel en SSH (recommandé pour update contrôlé)
 
 ```bash
-cd ~/public_html/optimize
+cd ~/public_html
 php artisan down --retry=60           # site en maintenance
 git fetch origin
 git status                            # vérifier qu'il n'y a rien de modifié localement
@@ -122,7 +122,7 @@ Depuis votre poste dev, générez une archive propre :
 
 ```bash
 # Sur votre poste dev
-git archive --format=tar.gz --prefix=optimize/ HEAD -o /tmp/optimize-$(date +%Y%m%d).tar.gz
+git archive --format=tar.gz HEAD -o /tmp/optimize-$(date +%Y%m%d).tar.gz
 
 # Upload FTP (via FileZilla ou en CLI)
 # Cible : ~/uploads/optimize-XXX.tar.gz sur le serveur
@@ -131,9 +131,9 @@ git archive --format=tar.gz --prefix=optimize/ HEAD -o /tmp/optimize-$(date +%Y%
 Puis sur le serveur :
 
 ```bash
-cd ~/public_html/optimize
+cd ~/public_html
 php artisan down --retry=60
-tar xzf ~/uploads/optimize-XXX.tar.gz --strip-components=1 -C .
+tar xzf ~/uploads/optimize-XXX.tar.gz -C .
 ```
 
 ⚠️ FTP **écrase** — assurez-vous de ne pas écraser `.env`, `storage/`, `public/uploads/`. L'archive `git archive` ne les contient pas par défaut ; vérifiez avec `tar tzf archive.tar.gz | head`.
@@ -145,7 +145,7 @@ tar xzf ~/uploads/optimize-XXX.tar.gz --strip-components=1 -C .
 Nouvelles libs à installer : **phpoffice/phpspreadsheet** + **phpoffice/phpword**.
 
 ```bash
-cd ~/public_html/optimize
+cd ~/public_html
 
 # Composer disponible via cPanel
 which composer  ||  ls /opt/cpanel/composer/bin/composer
@@ -291,7 +291,7 @@ bash deploy/scripts/rollback.sh ~/backups/optimize-db-XXX.dump <SHA_PRÉCÉDENT>
 Si pas déjà en place, ajouter dans **cPanel → Cron Jobs** :
 
 ```
-* * * * * cd /home/rs2755624/public_html/optimize && /usr/local/bin/ea-php83 artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /home/rs2755624/public_html && /usr/local/bin/ea-php83 artisan schedule:run >> /dev/null 2>&1
 ```
 
 Vérifier : `crontab -l | grep optimize`.

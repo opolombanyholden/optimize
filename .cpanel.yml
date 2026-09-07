@@ -3,13 +3,12 @@
 # OptimiZe ERP — Deploy automatique via cPanel Git Version Control
 # ═════════════════════════════════════════════════════════════
 # Exécuté à chaque clic "Deploy HEAD Commit" dans cPanel.
-# Le repo est cloné dans /home/rs2755624/optimize/, ce script
-# copie le code vers le dossier applicatif puis fait tourner
-# les commandes Laravel de post-déploiement.
+# L'application vit à la racine du domaine (/home/rs2755624/public_html/).
+# Ce script fait tourner les commandes Laravel de post-déploiement.
 # ─────────────────────────────────────────────────────────────
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/rs2755624/optimize/
+    - export DEPLOYPATH=/home/rs2755624/public_html/
     - export PHPBIN=/usr/local/bin/ea-php83
 
     # 1) Composer prod (nécessite composer disponible côté cPanel)
