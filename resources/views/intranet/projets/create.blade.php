@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Nouveau projet')
 @section('breadcrumb')
-<ol class="breadcrumb mb-0" style="font-size:.78rem;"><li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Intranet</a></li><li class="breadcrumb-item"><a href="{{ route('intranet.projets.index') }}">Projets</a></li><li class="breadcrumb-item active">Nouveau</li></ol>
+<ol class="breadcrumb mb-0" style="font-size:.78rem;"><li class="breadcrumb-item"><a href="{{ route('projet.dashboard') }}">Gestion Projet</a></li><li class="breadcrumb-item"><a href="{{ route('intranet.projets.index') }}">Projets</a></li><li class="breadcrumb-item active">Nouveau</li></ol>
 @endsection
 @section('content')
 <div class="page-intranet">

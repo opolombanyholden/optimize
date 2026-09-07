@@ -7,7 +7,7 @@
     <div class="sb-switcher-label">Changer de module</div>
     <div class="sb-switcher-grid">
         @canany(['read:exercice','read:budget','read:grandlivre','read:compte'])
-        <a href="{{ route('finance.exercices.index') }}"
+        <a href="{{ route('finance.dashboard') }}"
            class="sb-switcher-btn finance {{ request()->routeIs('finance.*') ? 'active' : '' }}"
            title="Finance & Budget">
             <i class="fas fa-coins"></i>
@@ -15,7 +15,7 @@
         @endcanany
 
         @canany(['read:employee','read:absence','read:paie','read:recrutement'])
-        <a href="{{ route('rh.employees.index') }}"
+        <a href="{{ route('rh.dashboard') }}"
            class="sb-switcher-btn rh {{ request()->routeIs('rh.*') ? 'active' : '' }}"
            title="RH & Paiement">
             <i class="fas fa-users"></i>

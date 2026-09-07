@@ -3,7 +3,7 @@
 
 @section('breadcrumb')
 <ol class="breadcrumb mb-0" style="font-size:.78rem;">
-    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Intranet</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('projet.dashboard') }}">Gestion Projet</a></li>
     <li class="breadcrumb-item active">Tâches</li>
 </ol>
 @endsection
@@ -55,6 +55,9 @@
 
     {{-- Filtres --}}
     <form method="GET" class="filters-bar mb-4">
+        <div class="w-100 mb-2">
+            @include('intranet._partials.scopes-filter', ['scopesFilterLabel' => 'Visibilité tâches'])
+        </div>
         <div class="filters-search">
             <i class="fas fa-magnifying-glass"></i>
             <input type="text" name="q" value="{{ request('q') }}" placeholder="Rechercher une tâche…">

@@ -30,9 +30,15 @@
 
 <header class="top-navbar" id="topNavbar" data-module="{{ $navMod }}">
 
-    {{-- Toggle button mobile --}}
-    <button class="btn btn-link text-dark d-lg-none me-2 p-0" id="sidebarToggle">
+    {{-- Toggle button mobile (ouverture overlay) --}}
+    <button class="btn btn-link text-dark d-lg-none me-2 p-0" id="sidebarToggle" aria-label="Ouvrir le menu">
         <i class="fas fa-bars fa-lg"></i>
+    </button>
+
+    {{-- Toggle button desktop (réduire / étendre la sidebar) --}}
+    <button type="button" class="navbar-icon-btn d-none d-lg-inline-flex me-2" id="sidebarDesktopToggle"
+            title="Réduire ou étendre le menu latéral" aria-label="Réduire ou étendre le menu latéral">
+        <i class="fas fa-chevron-left"></i>
     </button>
 
     {{-- Module badge + breadcrumb --}}
@@ -173,60 +179,12 @@
             </div>
         </div>
 
-        {{-- Outils ERP --}}
-        <div class="dropdown">
-            <button class="navbar-icon-btn" data-bs-toggle="dropdown"
-                    title="Modules ERP" aria-label="Modules ERP">
-                <i class="fas fa-grip"></i>
-            </button>
-            <div class="dropdown-menu dropdown-menu-end navbar-dropdown navbar-tools-menu" style="width:260px;">
-                <div class="navbar-dropdown-header">Modules ERP</div>
-                <div class="navbar-tools-grid">
-                    <a href="{{ route('dashboard') }}" class="navbar-tool-btn {{ $navMod === 'portal' ? 'active' : '' }}" style="--tool-color:#7C3AED;">
-                        <span class="navbar-tool-icon"><i class="fas fa-home"></i></span>
-                        <span class="navbar-tool-label">Portail</span>
-                    </a>
-                    @canany(['read:exercice','read:budget','read:grandlivre','read:compte'])
-                    <a href="{{ route('finance.exercices.index') }}" class="navbar-tool-btn {{ $navMod === 'finance' ? 'active' : '' }}" style="--tool-color:#4F46E5;">
-                        <span class="navbar-tool-icon"><i class="fas fa-coins"></i></span>
-                        <span class="navbar-tool-label">Finance</span>
-                    </a>
-                    @endcanany
-                    @canany(['read:employee','read:absence','read:paie','read:recrutement'])
-                    <a href="{{ route('rh.employees.index') }}" class="navbar-tool-btn {{ $navMod === 'rh' ? 'active' : '' }}" style="--tool-color:#059669;">
-                        <span class="navbar-tool-icon"><i class="fas fa-users"></i></span>
-                        <span class="navbar-tool-label">RH</span>
-                    </a>
-                    @endcanany
-                    @canany(['read:fournisseur','read:produit','read:commande'])
-                    <a href="{{ route('appro.fournisseurs.index') }}" class="navbar-tool-btn {{ $navMod === 'appro' ? 'active' : '' }}" style="--tool-color:#D97706;">
-                        <span class="navbar-tool-icon"><i class="fas fa-cart-flatbed"></i></span>
-                        <span class="navbar-tool-label">Achat</span>
-                    </a>
-                    @endcanany
-                    @canany(['read:immobilisation','read:dysfonctionnement','read:intervention'])
-                    <a href="{{ route('mg.immobilisations.index') }}" class="navbar-tool-btn {{ $navMod === 'mg' ? 'active' : '' }}" style="--tool-color:#0891B2;">
-                        <span class="navbar-tool-icon"><i class="fas fa-building"></i></span>
-                        <span class="navbar-tool-label">Moy. Gén.</span>
-                    </a>
-                    @endcanany
-                    <a href="{{ route('projet.dashboard') }}" class="navbar-tool-btn {{ $navMod === 'projet' ? 'active' : '' }}" style="--tool-color:#0D9488;">
-                        <span class="navbar-tool-icon"><i class="fas fa-diagram-project"></i></span>
-                        <span class="navbar-tool-label">Projets</span>
-                    </a>
-                    <a href="{{ route('objectifs.dashboard') }}" class="navbar-tool-btn {{ $navMod === 'objectifs' ? 'active' : '' }}" style="--tool-color:#DB2777;">
-                        <span class="navbar-tool-icon"><i class="fas fa-bullseye"></i></span>
-                        <span class="navbar-tool-label">Objectifs</span>
-                    </a>
-                    @role('super-admin|admin')
-                    <a href="{{ route('systeme.organisations.index') }}" class="navbar-tool-btn {{ $navMod === 'admin' ? 'active' : '' }}" style="--tool-color:#475569;">
-                        <span class="navbar-tool-icon"><i class="fas fa-shield-halved"></i></span>
-                        <span class="navbar-tool-label">Admin</span>
-                    </a>
-                    @endrole
-                </div>
-            </div>
-        </div>
+        {{-- Outils ERP — ouvre le workspace picker global --}}
+        <button type="button" class="navbar-icon-btn"
+                title="Changer d'espace de travail" aria-label="Changer d'espace de travail"
+                onclick="if (window.openWorkspacePicker) window.openWorkspacePicker({ mandatory: false });">
+            <i class="fas fa-grip"></i>
+        </button>
 
         {{-- Notifications --}}
         <div class="dropdown">

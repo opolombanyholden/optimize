@@ -2,7 +2,7 @@
 @section('title', 'Nouveau rapport')
 @section('breadcrumb')
 <ol class="breadcrumb mb-0" style="font-size:.78rem;">
-    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Intranet</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('projet.dashboard') }}">Gestion Projet</a></li>
     <li class="breadcrumb-item"><a href="{{ route('intranet.rapports.index') }}">Rapports & CR</a></li>
     <li class="breadcrumb-item active">Nouveau</li>
 </ol>

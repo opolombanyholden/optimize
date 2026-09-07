@@ -41,10 +41,10 @@ class Intervention extends Model
 
     protected $fillable = [
         'label', 'description', 'dysfonctionnement_id', 'thematique_id',
-        'immobilisation_id', 'technicien_id', 'type_intervention',
+        'immobilisation_id', 'type_id', 'technicien_id', 'type_intervention', 'nature_id',
         'date_planifiee', 'date_debut', 'date_fin',
         'cout', 'rapport',
-        'nature_probleme', 'pistes_solution', 'solution_appliquee', 'resultat',
+        'nature_probleme', 'pistes_solution', 'solution_appliquee', 'resultat', 'preuve',
         'statut_resolution',
         'demarree_par', 'terminee_par', 'annulee_par', 'annulee_at', 'motif_annulation',
         'fichiersjoin', 'statut', 'extra_attributes',
@@ -65,6 +65,8 @@ class Intervention extends Model
 
     public function dysfonctionnement() { return $this->belongsTo(Dysfonctionnement::class, 'dysfonctionnement_id'); }
     public function immobilisation() { return $this->belongsTo(Immobilisation::class, 'immobilisation_id'); }
+    public function type() { return $this->belongsTo(TypeDysfonctionnement::class, 'type_id'); }
+    public function nature() { return $this->belongsTo(NatureIntervention::class, 'nature_id'); }
     public function technicien() { return $this->belongsTo(User::class, 'technicien_id'); }
     public function thematique() { return $this->belongsTo(MgThematique::class, 'thematique_id'); }
 
@@ -100,10 +102,12 @@ class Intervention extends Model
      */
     public function terminer(array $data = [], ?int $userId = null): void
     {
+        $userId = $userId ?? auth()->id();
+
         $this->update(array_merge([
             'statut' => self::STATUT_TERMINEE,
             'date_fin' => now(),
-            'terminee_par' => $userId ?? auth()->id(),
+            'terminee_par' => $userId,
         ], array_filter([
             'rapport' => $data['rapport'] ?? null,
             'cout' => $data['cout'] ?? null,
@@ -111,15 +115,19 @@ class Intervention extends Model
             'pistes_solution' => $data['pistes_solution'] ?? null,
             'solution_appliquee' => $data['solution_appliquee'] ?? null,
             'resultat' => $data['resultat'] ?? null,
+            'preuve' => $data['preuve'] ?? null,
             'statut_resolution' => $data['statut_resolution'] ?? null,
         ], fn ($v) => $v !== null && $v !== '')));
 
+        // Si résolution proposée : le ticket bascule en "résolution proposée"
+        // et attend la validation de l'émetteur (déclarant) — il ne passe PAS
+        // à RESOLU directement.
         if ($this->dysfonctionnement
             && $this->statut_resolution === self::RESOLUTION_RESOLU
-            && $this->dysfonctionnement->peutEtreResolu()) {
-            $this->dysfonctionnement->resoudre(
-                "Intervention #{$this->id} terminée avec résolution.",
-                $userId ?? auth()->id()
+            && $this->dysfonctionnement->peutRecevoirPropositionResolution()) {
+            $this->dysfonctionnement->proposerResolution(
+                "Intervention #{$this->id} terminée avec proposition de résolution.",
+                $userId
             );
         }
     }

@@ -17,23 +17,28 @@ use Illuminate\Support\Facades\DB;
 
 class ProjetController extends Controller
 {
+    use \App\Traits\Intranet\AppliqueScopesVisibilite;
+
     public function index(Request $request)
     {
-        $projets = Projet::with(['statut', 'priorite', 'chefProjet', 'auteur'])
+        // Compat rétro : ?mes_projets=1 → ?scopes[]=mes
+        if ($request->boolean('mes_projets') && !$request->filled('scopes')) {
+            $request->merge(['scopes' => ['mes']]);
+        }
+
+        $query = Projet::with(['statut', 'priorite', 'chefProjet', 'auteur'])
             ->withCount(['taches', 'membres'])
             ->recherche($request->input('q'))
             ->when($request->filled('statut'),    fn($q) => $q->where('statut_id', $request->statut))
-            ->when($request->filled('categorie'), fn($q) => $q->where('categorie', $request->categorie))
-            ->when($request->boolean('mes_projets'), function ($q) {
-                $q->where(function ($w) {
-                    $w->where('chef_projet_id', auth()->id())
-                      ->orWhere('created_by', auth()->id())
-                      ->orWhereHas('membres', fn($m) => $m->where('users.id', auth()->id()));
-                });
-            })
-            ->orderByDesc('created_at')
-            ->paginate(12)
-            ->withQueryString();
+            ->when($request->filled('categorie'), fn($q) => $q->where('categorie', $request->categorie));
+
+        // Filtre unifié Mes / Groupes / Publiques
+        $this->appliqueScopesVisibilite($query, $request, [
+            'mes_columns'   => ['chef_projet_id', 'sponsor_id', 'created_by'],
+            'mes_relations' => ['membres'],
+        ]);
+
+        $projets = $query->orderByDesc('created_at')->paginate(12)->withQueryString();
 
         $categories = Projet::whereNotNull('categorie')->distinct()->orderBy('categorie')->pluck('categorie');
 

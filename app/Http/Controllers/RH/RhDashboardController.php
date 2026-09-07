@@ -4,6 +4,7 @@ namespace App\Http\Controllers\RH;
 
 use App\Http\Controllers\Controller;
 use App\Models\Absence;
+use App\Models\Avancement;
 use App\Models\Depart;
 use App\Models\Employee;
 use App\Models\EvaluationPerformance;
@@ -21,53 +22,133 @@ class RhDashboardController extends Controller
 {
     public function index()
     {
-        $kpis = [
-            'employes_actifs'     => Employee::where('statut', 1)->count(),
-            'absences_en_attente' => Absence::where('statut', 0)->count(),
-            'bulletins_mois'      => Paie::whereMonth('debut', now()->month)->whereYear('debut', now()->year)->count(),
-            'recrutements_ouverts'=> Recrutement::where('statut', 0)->count(),
-            'sanctions_actives'   => Sanction::where('statut', 1)->count(),
-            'departs_en_cours'    => Depart::where('statut', 1)->count(),
-            'evaluations_en_cours'=> EvaluationPerformance::whereIn('statut', [0, 1])->count(),
-            'missions_actives'    => Mission::where('statut', 1)->count(),
-        ];
+        $now       = now();
+        $startMois = $now->copy()->startOfMonth();
+        $moisPrec  = $now->copy()->subMonth();
 
-        $masseSalarialeMois = Paie::whereMonth('debut', now()->month)
-            ->whereYear('debut', now()->year)
+        // ── EFFECTIF ──────────────────────────────────────
+        $effectifActif   = Employee::where('statut', 1)->count();
+        $embauchesMois   = Employee::where('statut', 1)->whereBetween('date_embauche', [$startMois, $now])->count();
+        $departsMois     = Depart::where('statut', 1)
+            ->whereBetween('created_at', [$startMois, $now])->count();
+
+        // Contrats CDD arrivant à échéance sous 30 jours
+        $cddProchainement = Employee::where('statut', 1)
+            ->whereNotNull('date_fin_contrat')
+            ->whereBetween('date_fin_contrat', [$now->copy()->startOfDay(), $now->copy()->addDays(30)->endOfDay()])
+            ->with([])
+            ->orderBy('date_fin_contrat')
+            ->take(5)
+            ->get();
+        $nbCddProchainement = Employee::where('statut', 1)
+            ->whereNotNull('date_fin_contrat')
+            ->whereBetween('date_fin_contrat', [$now->copy()->startOfDay(), $now->copy()->addDays(30)->endOfDay()])
+            ->count();
+
+        // ── MASSE SALARIALE ───────────────────────────────
+        $masseSalarialeMois = (float) Paie::whereBetween('debut', [$startMois, $now])
             ->whereIn('statut', [1, 2])
             ->sum('net_a_payer');
+        $masseSalarialeMoisPrec = (float) Paie::whereBetween('debut', [
+                $moisPrec->copy()->startOfMonth(), $moisPrec->copy()->endOfMonth()
+            ])->whereIn('statut', [1, 2])->sum('net_a_payer');
+        $tendanceMasse = $masseSalarialeMoisPrec > 0
+            ? round((($masseSalarialeMois - $masseSalarialeMoisPrec) / $masseSalarialeMoisPrec) * 100)
+            : ($masseSalarialeMois > 0 ? 100 : 0);
 
+        // Sparkline masse 6 mois
+        $masseSix = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $d = $now->copy()->subMonths($i);
+            $brut = (float) Paie::whereYear('debut', $d->year)->whereMonth('debut', $d->month)
+                ->whereIn('statut', [1, 2])->sum('net_a_payer');
+            $masseSix[] = [
+                'label'   => $d->locale('fr')->isoFormat('MMM'),
+                'montant' => $brut,
+            ];
+        }
+        $masseMax = max(array_column($masseSix, 'montant')) ?: 1;
+
+        // ── ABSENCES ──────────────────────────────────────
+        $absencesEnAttente     = Absence::where('statut', 0)->count();
+        $absencesRetardApprobation = Absence::where('statut', 0)
+            ->where('created_at', '<=', $now->copy()->subDays(3))->count();
+        $absencesEnCours       = Absence::whereIn('statut', [1])
+            ->whereDate('debut', '<=', $now)
+            ->whereDate('fin', '>=', $now)
+            ->count();
+        $dernieresAbsences     = Absence::with(['employee'])
+            ->where('statut', 0)
+            ->latest()->take(5)->get();
+
+        // ── PAIE ──────────────────────────────────────────
+        $bulletinsMois       = Paie::whereBetween('debut', [$startMois, $now])->count();
+        $bulletinsMoisPrec   = Paie::whereBetween('debut', [
+                $moisPrec->copy()->startOfMonth(), $moisPrec->copy()->endOfMonth()
+            ])->count();
+        $tendanceBulletins = $bulletinsMoisPrec > 0
+            ? round((($bulletinsMois - $bulletinsMoisPrec) / $bulletinsMoisPrec) * 100)
+            : ($bulletinsMois > 0 ? 100 : 0);
+        $bulletinsBrouillon  = Paie::where('statut', 0)->count();
+
+        // ── RÉPARTITION CONTRATS (donut) ──────────────────
         $repartitionContrats = Employee::where('statut', 1)
-            ->selectRaw('type_contrat, count(*) as n')
+            ->selectRaw("COALESCE(NULLIF(TRIM(type_contrat), ''), 'Non renseigné') as type_contrat, count(*) as n")
             ->groupBy('type_contrat')
+            ->orderByDesc('n')
             ->pluck('n', 'type_contrat')
             ->toArray();
+        $totalContrats = array_sum($repartitionContrats) ?: 1;
 
-        $effectifParDept = Employee::where('statut', 1)
-            ->selectRaw('departement, count(*) as n')
+        // ── TOP DÉPARTEMENTS (podium) ─────────────────────
+        $topDepartements = Employee::where('statut', 1)
+            ->selectRaw("COALESCE(NULLIF(TRIM(departement), ''), 'Non renseigné') as departement, count(*) as n")
             ->groupBy('departement')
             ->orderByDesc('n')
-            ->limit(10)
-            ->pluck('n', 'departement')
-            ->toArray();
-
-        $derniereActivite = Activity::query()
-            ->whereIn('log_name', ['employee', 'paie', 'payement', 'sanction', 'depart'])
-            ->latest()
-            ->limit(10)
+            ->limit(5)
             ->get();
+        $topDeptMax = $topDepartements->max('n') ?: 1;
 
-        // Évolution masse salariale 12 derniers mois
-        $evolutionMasse = collect(range(0, 11))->map(function ($i) {
-            $d = Carbon::now()->subMonths($i);
-            $brut = (float) Paie::whereYear('debut', $d->year)->whereMonth('debut', $d->month)
-                ->whereIn('statut', [1, 2])->sum('brut');
-            return ['mois' => $d->format('M Y'), 'brut' => round($brut)];
-        })->reverse()->values();
+        // ── ACTIVITÉ ──────────────────────────────────────
+        $sanctionsActives     = Sanction::where('statut', 1)->count();
+        $departsEnCours       = Depart::where('statut', 1)->count();
+        $evaluationsEnCours   = EvaluationPerformance::whereIn('statut', [0, 1])->count();
+        $missionsActives      = Mission::where('statut', 1)->count();
+        $recrutementsOuverts  = Recrutement::where('statut', 0)->count();
+
+        $derniersEmbauches = Employee::where('statut', 1)
+            ->whereNotNull('date_embauche')
+            ->orderByDesc('date_embauche')
+            ->take(5)
+            ->get(['id', 'noms', 'prenoms', 'poste', 'departement', 'date_embauche', 'type_contrat']);
+
+        // ── ANNIVERSAIRES DU MOIS ─────────────────────────
+        $anniversairesMois = Employee::where('statut', 1)
+            ->whereNotNull('date_naissance')
+            ->whereRaw("EXTRACT(MONTH FROM date_naissance) = ?", [$now->month])
+            ->orderByRaw("EXTRACT(DAY FROM date_naissance)")
+            ->get(['id', 'noms', 'prenoms', 'date_naissance', 'poste']);
+
+        // ── AVANCEMENTS AUTOMATIQUES EN ATTENTE ────────────
+        $avancementsAttente = Avancement::proposes()->automatiques()
+            ->with(['employee:id,noms,prenoms,poste,departement,date_embauche', 'grade:id,code,libelle', 'gradePrecedent:id,code,libelle'])
+            ->orderByDesc('date_effet')
+            ->take(10)
+            ->get();
+        $nbAvancementsAttente = Avancement::proposes()->automatiques()->count();
 
         return view('rh.dashboard', compact(
-            'kpis', 'masseSalarialeMois', 'repartitionContrats',
-            'effectifParDept', 'derniereActivite', 'evolutionMasse'
+            'effectifActif', 'embauchesMois', 'departsMois',
+            'cddProchainement', 'nbCddProchainement',
+            'masseSalarialeMois', 'masseSalarialeMoisPrec', 'tendanceMasse',
+            'masseSix', 'masseMax',
+            'absencesEnAttente', 'absencesRetardApprobation', 'absencesEnCours', 'dernieresAbsences',
+            'bulletinsMois', 'bulletinsMoisPrec', 'tendanceBulletins', 'bulletinsBrouillon',
+            'repartitionContrats', 'totalContrats',
+            'topDepartements', 'topDeptMax',
+            'sanctionsActives', 'departsEnCours', 'evaluationsEnCours', 'missionsActives', 'recrutementsOuverts',
+            'derniersEmbauches', 'anniversairesMois',
+            'avancementsAttente', 'nbAvancementsAttente'
         ));
     }
 

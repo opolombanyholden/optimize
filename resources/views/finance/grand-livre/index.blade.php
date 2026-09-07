@@ -14,11 +14,44 @@
 <div class="page-header d-flex justify-content-between align-items-center">
     <div>
         <h1>Grand Livre</h1>
-        <p class="text-muted mb-0">Consultez et g&eacute;rez les &eacute;critures comptables.</p>
+        <p class="text-muted mb-0">
+            Consultation des &eacute;critures comptables.
+            <span class="badge" style="background:#EEF2FF;color:#4338CA;font-weight:600;">Lecture seule</span>
+            &mdash; les &eacute;critures sont g&eacute;n&eacute;r&eacute;es via les <a href="{{ route('finance.ordres.index') }}">ordres de d&eacute;pense/recette</a>.
+        </p>
     </div>
-    <a href="{{ route('finance.grand-livre.create') }}" class="btn btn-primary">
-        <i class="fas fa-plus me-2"></i>Nouvelle &eacute;criture
-    </a>
+    <div class="d-flex gap-2 flex-wrap">
+        {{-- Dropdown export multi-format --}}
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-file-arrow-down me-1"></i>Exporter
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ route('finance.grand-livre.export', array_merge(request()->query(), ['format' => 'csv'])) }}">
+                    <i class="fas fa-file-csv me-2" style="color:#0891B2;"></i>CSV
+                </a></li>
+                <li><a class="dropdown-item" href="{{ route('finance.grand-livre.export', array_merge(request()->query(), ['format' => 'xlsx'])) }}">
+                    <i class="fas fa-file-excel me-2" style="color:#059669;"></i>Excel (XLSX)
+                </a></li>
+                <li><a class="dropdown-item" href="{{ route('finance.grand-livre.export', array_merge(request()->query(), ['format' => 'pdf'])) }}">
+                    <i class="fas fa-file-pdf me-2" style="color:#DC2626;"></i>PDF
+                </a></li>
+                <li><a class="dropdown-item" href="{{ route('finance.grand-livre.export', array_merge(request()->query(), ['format' => 'docx'])) }}">
+                    <i class="fas fa-file-word me-2" style="color:#2563EB;"></i>Word (DOCX)
+                </a></li>
+            </ul>
+        </div>
+        @can('create:grandlivre')
+        <a href="{{ route('finance.grand-livre.import.form') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-file-arrow-up me-1"></i>Importer (CSV / XLSX)
+        </a>
+        @endcan
+        @can('read:operation')
+        <a href="{{ route('finance.ordres.index') }}" class="btn" style="background:#4F46E5;color:#fff;">
+            <i class="fas fa-file-signature me-1"></i>Aller aux ordres
+        </a>
+        @endcan
+    </div>
 </div>
 
 {{-- Filtres --}}
@@ -117,16 +150,6 @@
                                 <a href="{{ route('finance.grand-livre.show', $ecriture) }}" class="btn btn-sm btn-outline-primary" title="Voir">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{{ route('finance.grand-livre.edit', $ecriture) }}" class="btn btn-sm btn-outline-secondary" title="Modifier">
-                                    <i class="fas fa-pen"></i>
-                                </a>
-                                <form action="{{ route('finance.grand-livre.destroy', $ecriture) }}" method="POST" class="d-inline" onsubmit="return confirm('Supprimer cette &eacute;criture ?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Supprimer">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
                             </td>
                         </tr>
                         @endforeach

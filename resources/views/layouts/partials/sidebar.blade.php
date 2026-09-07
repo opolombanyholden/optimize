@@ -6,8 +6,13 @@
 
 @php
     $mod = 'portal';
+    // Types de référentiel RH métier (hors géographiques) — restent dans la sidebar RH
+    $rhReferentielTypes = ['types-contrat','postes','departements','types-evenement','niveaux-qualification','nationalites','groupes-rubriques'];
+
     if      (request()->routeIs('finance.*'))    $mod = 'finance';
     elseif  (request()->routeIs('rh.*'))         $mod = 'rh';
+    elseif  (request()->routeIs('admin.referentiel-rh.*') && in_array(request()->route('type'), $rhReferentielTypes))
+                                                 $mod = 'rh';
     elseif  (request()->routeIs('appro.*'))      $mod = 'logistique';
     elseif  (request()->routeIs('mg.*'))         $mod = 'logistique';
     elseif  (request()->routeIs('referentiel.*')) $mod = 'logistique';
@@ -15,12 +20,14 @@
     elseif  (request()->routeIs('intranet.projets.*'))  $mod = 'projet';
     elseif  (request()->routeIs('intranet.taches.*'))   $mod = 'projet';
     elseif  (request()->routeIs('intranet.rapports.*')) $mod = 'projet';
+    elseif  (request()->routeIs('admin.roles-projet.*')) $mod = 'projet';
     elseif  (request()->routeIs('objectifs.*'))  $mod = 'objectifs';
+    elseif  (request()->routeIs('social.*'))     $mod = 'social';
     elseif  (request()->routeIs('systeme.*'))    $mod = 'admin';
     elseif  (request()->routeIs('admin.*'))     $mod = 'admin';
 
     $modules = [
-        'finance'    => ['name' => 'Finance & Budget',            'icon' => 'fa-coins',            'color' => '#818CF8', 'gradient' => 'linear-gradient(135deg,#4F46E5,#7C3AED)', 'route' => 'finance.exercices.index'],
+        'finance'    => ['name' => 'Finance & Budget',            'icon' => 'fa-coins',            'color' => '#818CF8', 'gradient' => 'linear-gradient(135deg,#4F46E5,#7C3AED)', 'route' => 'finance.dashboard'],
         'rh'         => ['name' => 'RH & Paiement',               'icon' => 'fa-users',            'color' => '#34D399', 'gradient' => 'linear-gradient(135deg,#059669,#0891B2)', 'route' => 'rh.dashboard'],
         'logistique' => ['name' => 'Achats & Moyens Généraux',    'icon' => 'fa-cart-flatbed',     'color' => '#FCD34D', 'gradient' => 'linear-gradient(135deg,#D97706,#DC2626)', 'route' => 'appro.commandes.index'],
         'projet'     => ['name' => 'Projets / Tâches',            'icon' => 'fa-diagram-project',  'color' => '#2DD4BF', 'gradient' => 'linear-gradient(135deg,#0D9488,#0F766E)', 'route' => 'dashboard'],
@@ -326,64 +333,6 @@
 
         </div>{{-- /sb-accordion --}}
 
-        {{-- ── Modules ERP ─────────────────────────────────── --}}
-        <div class="sb-section-header" style="margin-top:.25rem;">
-            <span class="sb-section-dot" style="background:#475569;"></span>
-            <span class="sb-section-name" style="color:#475569;">Modules ERP</span>
-        </div>
-        <ul class="sb-group">
-            @canany(['read:exercice','read:budget','read:grandlivre','read:compte'])
-            <li>
-                <a href="{{ route('finance.exercices.index') }}" class="sb-link sb-portal-module-link finance">
-                    <span class="sb-icon"><i class="fas fa-coins"></i></span>
-                    <span class="sb-label">Finance & Budget</span>
-                    <i class="fas fa-chevron-right sb-portal-arrow"></i>
-                </a>
-            </li>
-            @endcanany
-            @canany(['read:employee','read:absence','read:paie','read:recrutement'])
-            <li>
-                <a href="{{ route('rh.dashboard') }}" class="sb-link sb-portal-module-link rh">
-                    <span class="sb-icon"><i class="fas fa-users"></i></span>
-                    <span class="sb-label">RH & Paiement</span>
-                    <i class="fas fa-chevron-right sb-portal-arrow"></i>
-                </a>
-            </li>
-            @endcanany
-            @canany(['read:fournisseur','read:produit','read:commande','read:immobilisation','read:dysfonctionnement','read:intervention'])
-            <li>
-                <a href="{{ route('appro.commandes.index') }}" class="sb-link sb-portal-module-link logistique">
-                    <span class="sb-icon"><i class="fas fa-cart-flatbed"></i></span>
-                    <span class="sb-label">Achats & Moyens Généraux</span>
-                    <i class="fas fa-chevron-right sb-portal-arrow"></i>
-                </a>
-            </li>
-            @endcanany
-            <li>
-                <a href="{{ route('projet.dashboard') }}" class="sb-link sb-portal-module-link projet">
-                    <span class="sb-icon"><i class="fas fa-diagram-project"></i></span>
-                    <span class="sb-label">Projets / Tâches</span>
-                    <i class="fas fa-chevron-right sb-portal-arrow"></i>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('objectifs.dashboard') }}" class="sb-link sb-portal-module-link objectifs">
-                    <span class="sb-icon"><i class="fas fa-bullseye"></i></span>
-                    <span class="sb-label">Objectifs & KPI</span>
-                    <i class="fas fa-chevron-right sb-portal-arrow"></i>
-                </a>
-            </li>
-            @role('super-admin|admin')
-            <li>
-                <a href="{{ route('systeme.organisations.index') }}" class="sb-link sb-portal-module-link admin">
-                    <span class="sb-icon"><i class="fas fa-shield-halved"></i></span>
-                    <span class="sb-label">Administration</span>
-                    <i class="fas fa-chevron-right sb-portal-arrow"></i>
-                </a>
-            </li>
-            @endrole
-        </ul>
-
     </nav>
 
 
@@ -403,118 +352,155 @@
     </div>
 
     <nav class="sb-nav">
-        <div class="sb-section-header finance" style="margin-top:.75rem;">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Vue d'ensemble</span>
-        </div>
-        <ul class="sb-group sb-module-finance">
+        {{-- Lien direct Tableau de bord (hors accordéon) --}}
+        <ul class="sb-group sb-module-finance" style="margin-bottom:.35rem;">
             <li><a href="{{ route('finance.dashboard') }}" class="sb-link {{ request()->routeIs('finance.dashboard') ? 'active' : '' }}">
                 <span class="sb-icon"><i class="fas fa-gauge-high"></i></span><span class="sb-label">Tableau de bord</span>
             </a></li>
-            <li><a href="{{ route('finance.v2.dashboard') }}" class="sb-link {{ request()->routeIs('finance.v2.dashboard') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-scale-balanced"></i></span><span class="sb-label">Finance V2 (CdC)</span>
-            </a></li>
         </ul>
 
-        <div class="sb-section-header finance">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">V2 — Modèle initial</span>
-        </div>
-        <ul class="sb-group sb-module-finance">
-            <li><a href="{{ route('finance.v2.sources.index') }}" class="sb-link {{ request()->routeIs('finance.v2.sources.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-money-check-alt"></i></span><span class="sb-label">Sources de financement</span>
-            </a></li>
-            <li><a href="{{ route('finance.v2.budgets.index') }}" class="sb-link {{ request()->routeIs('finance.v2.budgets.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-wallet"></i></span><span class="sb-label">Budgets (V2)</span>
-            </a></li>
-            <li><a href="{{ route('finance.v2.transactions.index') }}" class="sb-link {{ request()->routeIs('finance.v2.transactions.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-exchange-alt"></i></span><span class="sb-label">Transactions</span>
-            </a></li>
-            <li><a href="{{ route('finance.v2.modifs.index') }}" class="sb-link {{ request()->routeIs('finance.v2.modifs.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-shuffle"></i></span><span class="sb-label">Modifs budgétaires</span>
-            </a></li>
-        </ul>
+        @php
+            $accOpenFi = [
+                'comptabilite'     => request()->routeIs('finance.exercices.*','finance.budgets.*','finance.modifications-budgetaires.*','finance.comptes.*','finance.grand-livre.*','finance.execution-budgetaire'),
+                'depenses'         => request()->routeIs('finance.ordres.*','finance.operations.*','finance.factures.*','finance.clients.*'),
+                'referentiels-fin' => request()->routeIs('finance.referentiels.*'),
+            ];
+            if (!array_filter($accOpenFi)) $accOpenFi['comptabilite'] = true;
+        @endphp
 
-        <div class="sb-section-header finance">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Comptabilité</span>
-        </div>
-        <ul class="sb-group sb-module-finance">
-            @can('read:exercice')
-            <li><a href="{{ route('finance.exercices.index') }}" class="sb-link {{ request()->routeIs('finance.exercices.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-calendar-alt"></i></span><span class="sb-label">Exercices</span>
-            </a></li>
-            @endcan
-            @can('read:budget')
-            <li><a href="{{ route('finance.budgets.index') }}" class="sb-link {{ request()->routeIs('finance.budgets.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-wallet"></i></span><span class="sb-label">Budgets</span>
-            </a></li>
-            <li><a href="{{ route('finance.modifications-budgetaires.index') }}" class="sb-link {{ request()->routeIs('finance.modifications-budgetaires.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-exchange-alt"></i></span><span class="sb-label">Modifications budg.</span>
-            </a></li>
-            @endcan
-            @can('read:compte')
-            <li><a href="{{ route('finance.comptes.index') }}" class="sb-link {{ request()->routeIs('finance.comptes.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-wallet"></i></span><span class="sb-label">Comptes de trésorerie</span>
-            </a></li>
-            @endcan
-            @can('read:grandlivre')
-            <li><a href="{{ route('finance.grand-livre.index') }}" class="sb-link {{ request()->routeIs('finance.grand-livre.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-book"></i></span><span class="sb-label">Grand-livre</span>
-            </a></li>
-            @endcan
-        </ul>
+        <div class="sb-accordion sb-accordion-finance" id="sbAccordionFinance">
 
-        <div class="sb-section-header finance">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Dépenses & Recettes</span>
-        </div>
-        <ul class="sb-group sb-module-finance">
-            @can('read:operation')
-            <li><a href="{{ route('finance.ordres.index') }}" class="sb-link {{ request()->routeIs('finance.ordres.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-exchange-alt"></i></span><span class="sb-label">Dépenses & Recettes</span>
-            </a></li>
-            <li><a href="{{ route('finance.operations.index') }}" class="sb-link {{ request()->routeIs('finance.operations.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-money-bill-transfer"></i></span><span class="sb-label">Opérations (legacy)</span>
-            </a></li>
-            @endcan
-            @can('read:facture')
-            <li><a href="{{ route('finance.factures.index') }}" class="sb-link {{ request()->routeIs('finance.factures.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-file-invoice"></i></span><span class="sb-label">Factures</span>
-            </a></li>
-            @endcan
-            @can('read:client')
-            <li><a href="{{ route('finance.clients.index') }}" class="sb-link {{ request()->routeIs('finance.clients.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-handshake"></i></span><span class="sb-label">Clients</span>
-            </a></li>
-            @endcan
-        </ul>
+            {{-- ══════ COMPTABILITÉ ══════════════════════════ --}}
+            @canany(['read:exercice','read:budget','read:compte','read:grandlivre'])
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpenFi['comptabilite'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-fi-comptabilite"
+                        aria-expanded="{{ $accOpenFi['comptabilite'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-book"></i></span>
+                        <span class="sb-acc-name">Comptabilité</span>
+                    </span>
+                    <span class="sb-acc-right">
+                        <i class="fas fa-chevron-down sb-acc-chevron"></i>
+                    </span>
+                </button>
+                <div class="collapse {{ $accOpenFi['comptabilite'] ? 'show' : '' }}" id="acc-fi-comptabilite" data-bs-parent="#sbAccordionFinance">
+                    <ul class="sb-group sb-module-finance sb-acc-body">
+                        @can('read:exercice')
+                        <li><a href="{{ route('finance.exercices.index') }}" class="sb-link {{ request()->routeIs('finance.exercices.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-calendar-alt"></i></span><span class="sb-label">Exercices</span>
+                        </a></li>
+                        @endcan
+                        @can('read:budget')
+                        <li><a href="{{ route('finance.budgets.index') }}" class="sb-link {{ request()->routeIs('finance.budgets.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-wallet"></i></span><span class="sb-label">Budgets</span>
+                        </a></li>
+                        <li><a href="{{ route('finance.execution-budgetaire') }}" class="sb-link {{ request()->routeIs('finance.execution-budgetaire') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-gauge-high"></i></span><span class="sb-label">Exécution budgétaire</span>
+                        </a></li>
+                        <li><a href="{{ route('finance.modifications-budgetaires.index') }}" class="sb-link {{ request()->routeIs('finance.modifications-budgetaires.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-exchange-alt"></i></span><span class="sb-label">Modifications budg.</span>
+                        </a></li>
+                        @endcan
+                        @can('read:compte')
+                        <li><a href="{{ route('finance.comptes.index') }}" class="sb-link {{ request()->routeIs('finance.comptes.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-piggy-bank"></i></span><span class="sb-label">Comptes de trésorerie</span>
+                        </a></li>
+                        @endcan
+                        @can('read:grandlivre')
+                        <li><a href="{{ route('finance.grand-livre.index') }}" class="sb-link {{ request()->routeIs('finance.grand-livre.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-book-open"></i></span><span class="sb-label">Grand-livre</span>
+                        </a></li>
+                        @endcan
+                    </ul>
+                </div>
+            </div>
+            @endcanany
 
-        <div class="sb-section-header finance">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Référentiels</span>
-        </div>
-        <ul class="sb-group sb-module-finance">
-            @can('read:titre')
-            <li><a href="{{ route('finance.referentiels.titres.index') }}" class="sb-link {{ request()->routeIs('finance.referentiels.titres.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-sitemap"></i></span><span class="sb-label">Titres / Familles</span>
-            </a></li>
-            @endcan
-            @can('read:ligne')
-            <li><a href="{{ route('finance.referentiels.lignes.index') }}" class="sb-link {{ request()->routeIs('finance.referentiels.lignes.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-list"></i></span><span class="sb-label">Lignes (codes analyt.)</span>
-            </a></li>
-            @endcan
-            @can('read:rubrique_operation')
-            <li><a href="{{ route('finance.referentiels.rubriques.index') }}" class="sb-link {{ request()->routeIs('finance.referentiels.rubriques.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-tags"></i></span><span class="sb-label">Rubriques opérations</span>
-            </a></li>
-            <li><a href="{{ route('finance.referentiels.ordres-modeles.index') }}" class="sb-link {{ request()->routeIs('finance.referentiels.ordres-modeles.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-file-invoice"></i></span><span class="sb-label">Modèles d'ordre</span>
-            </a></li>
-            @endcan
-        </ul>
-        @include('layouts.partials.sidebar-module-switcher')
+            {{-- ══════ DÉPENSES & RECETTES ══════════════════ --}}
+            @canany(['read:operation','read:facture','read:client'])
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpenFi['depenses'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-fi-depenses"
+                        aria-expanded="{{ $accOpenFi['depenses'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-money-bill-transfer"></i></span>
+                        <span class="sb-acc-name">Dépenses & Recettes</span>
+                    </span>
+                    <span class="sb-acc-right">
+                        <i class="fas fa-chevron-down sb-acc-chevron"></i>
+                    </span>
+                </button>
+                <div class="collapse {{ $accOpenFi['depenses'] ? 'show' : '' }}" id="acc-fi-depenses" data-bs-parent="#sbAccordionFinance">
+                    <ul class="sb-group sb-module-finance sb-acc-body">
+                        @can('read:operation')
+                        <li><a href="{{ route('finance.ordres.index') }}" class="sb-link {{ request()->routeIs('finance.ordres.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-exchange-alt"></i></span><span class="sb-label">Ordres de paiement</span>
+                        </a></li>
+                        <li><a href="{{ route('finance.operations.index') }}" class="sb-link {{ request()->routeIs('finance.operations.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-money-bill-transfer"></i></span><span class="sb-label">Opérations (legacy)</span>
+                        </a></li>
+                        @endcan
+                        @can('read:facture')
+                        <li><a href="{{ route('finance.factures.index') }}" class="sb-link {{ request()->routeIs('finance.factures.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-file-invoice"></i></span><span class="sb-label">Factures</span>
+                        </a></li>
+                        @endcan
+                        @can('read:client')
+                        <li><a href="{{ route('finance.clients.index') }}" class="sb-link {{ request()->routeIs('finance.clients.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-handshake"></i></span><span class="sb-label">Clients</span>
+                        </a></li>
+                        @endcan
+                    </ul>
+                </div>
+            </div>
+            @endcanany
+
+            {{-- ══════ RÉFÉRENTIELS ═════════════════════════ --}}
+            @canany(['read:budget','read:titre','read:ligne','read:rubrique_operation'])
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpenFi['referentiels-fin'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-fi-referentiels"
+                        aria-expanded="{{ $accOpenFi['referentiels-fin'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-database"></i></span>
+                        <span class="sb-acc-name">Référentiels</span>
+                    </span>
+                    <span class="sb-acc-right">
+                        <i class="fas fa-chevron-down sb-acc-chevron"></i>
+                    </span>
+                </button>
+                <div class="collapse {{ $accOpenFi['referentiels-fin'] ? 'show' : '' }}" id="acc-fi-referentiels" data-bs-parent="#sbAccordionFinance">
+                    <ul class="sb-group sb-module-finance sb-acc-body">
+                        @can('read:budget')
+                        <li><a href="{{ route('finance.referentiels.sources.index') }}" class="sb-link {{ request()->routeIs('finance.referentiels.sources.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-money-check-alt"></i></span><span class="sb-label">Sources de financement</span>
+                        </a></li>
+                        @endcan
+                        @can('read:titre')
+                        <li><a href="{{ route('finance.referentiels.titres.index') }}" class="sb-link {{ request()->routeIs('finance.referentiels.titres.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-sitemap"></i></span><span class="sb-label">Titres / Familles</span>
+                        </a></li>
+                        @endcan
+                        @can('read:ligne')
+                        <li><a href="{{ route('finance.referentiels.lignes.index') }}" class="sb-link {{ request()->routeIs('finance.referentiels.lignes.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-list"></i></span><span class="sb-label">Lignes (codes analyt.)</span>
+                        </a></li>
+                        @endcan
+                        @can('read:rubrique_operation')
+                        <li><a href="{{ route('finance.referentiels.rubriques.index') }}" class="sb-link {{ request()->routeIs('finance.referentiels.rubriques.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-tags"></i></span><span class="sb-label">Rubriques opérations</span>
+                        </a></li>
+                        <li><a href="{{ route('finance.referentiels.ordres-modeles.index') }}" class="sb-link {{ request()->routeIs('finance.referentiels.ordres-modeles.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-file-invoice"></i></span><span class="sb-label">Modèles d'ordre</span>
+                        </a></li>
+                        @endcan
+                    </ul>
+                </div>
+            </div>
+            @endcanany
+
+        </div>{{-- /sb-accordion-finance --}}
     </nav>
 
 
@@ -534,12 +520,8 @@
     </div>
 
     <nav class="sb-nav">
-        {{-- ── Vue d'ensemble (hors accordéon) ─────────── --}}
-        <div class="sb-section-header rh" style="margin-top:.75rem;">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Vue d'ensemble</span>
-        </div>
-        <ul class="sb-group sb-module-rh">
+        {{-- Liens directs (hors accordéon) — Tableau de bord + Audit log --}}
+        <ul class="sb-group sb-module-rh" style="margin-bottom:.35rem;">
             <li><a href="{{ route('rh.dashboard') }}" class="sb-link {{ request()->routeIs('rh.dashboard') ? 'active' : '' }}">
                 <span class="sb-icon"><i class="fas fa-gauge-high"></i></span><span class="sb-label">Tableau de bord</span>
             </a></li>
@@ -552,12 +534,13 @@
 
         @php
         $accOpen = [
-            'personnel'   => request()->routeIs('rh.employees.*','rh.affilies.*','rh.evenements-carriere.*'),
-            'carriere'    => request()->routeIs('rh.competences.*','rh.qualifications.*','rh.formations.*'),
-            'temps'       => request()->routeIs('rh.absences.*','rh.conges-soldes.*','rh.plannings.*','rh.missions.*','rh.pointages.*'),
-            'performance' => request()->routeIs('rh.evaluations-performance.*','rh.sanctions.*','rh.departs.*'),
-            'paie'        => request()->routeIs('rh.paie.*','rh.rubriques.*','rh.payements.*','rh.payements-globals.*','rh.campagnes-paie.*','rh.declarations-sociales.*','rh.echantillons-paie.*'),
-            'recrutement' => request()->routeIs('rh.recrutements.*','rh.postulants.*'),
+            'personnel'      => request()->routeIs('rh.employees.*','rh.affilies.*','rh.evenements-carriere.*'),
+            'carriere'       => request()->routeIs('rh.competences.*','rh.qualifications.*','rh.formations.*'),
+            'temps'          => request()->routeIs('rh.absences.*','rh.conges-soldes.*','rh.plannings.*','rh.missions.*','rh.pointages.*'),
+            'performance'    => request()->routeIs('rh.evaluations-performance.*','rh.sanctions.*','rh.departs.*'),
+            'paie'           => request()->routeIs('rh.paie.*','rh.rubriques.*','rh.payements.*','rh.payements-globals.*','rh.campagnes-paie.*','rh.declarations-sociales.*','rh.echantillons-paie.*'),
+            'recrutement'    => request()->routeIs('rh.recrutements.*','rh.postulants.*'),
+            'referentiels-rh'=> request()->routeIs('rh.grades.*') || (request()->routeIs('admin.referentiel-rh.*') && in_array(request()->route('type'), $rhReferentielTypes)),
         ];
         if (!array_filter($accOpen)) $accOpen['personnel'] = true;
         @endphp
@@ -801,9 +784,56 @@
                 </div>
             </div>
 
+            {{-- ══════ RÉFÉRENTIELS RH ═══════════════════════ --}}
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpen['referentiels-rh'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-rh-referentiels"
+                        aria-expanded="{{ $accOpen['referentiels-rh'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-database"></i></span>
+                        <span class="sb-acc-name">Référentiels</span>
+                    </span>
+                    <span class="sb-acc-right">
+                        <i class="fas fa-chevron-down sb-acc-chevron"></i>
+                    </span>
+                </button>
+                <div class="collapse {{ $accOpen['referentiels-rh'] ? 'show' : '' }}" id="acc-rh-referentiels" data-bs-parent="#sbAccordionRh">
+                    <ul class="sb-group sb-module-rh sb-acc-body">
+                        <li><a href="{{ route('rh.grades.index') }}" class="sb-link {{ request()->routeIs('rh.grades.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-medal"></i></span><span class="sb-label">Grades</span>
+                        </a></li>
+                        <li><a href="{{ route('admin.referentiel-rh.index', 'types-contrat') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'types-contrat' ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-file-contract"></i></span><span class="sb-label">Types de contrat</span>
+                        </a></li>
+                        <li><a href="{{ route('admin.referentiel-rh.index', 'postes') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'postes' ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-briefcase"></i></span><span class="sb-label">Postes</span>
+                        </a></li>
+                        <li><a href="{{ route('admin.referentiel-rh.index', 'departements') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'departements' ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-sitemap"></i></span><span class="sb-label">Départements</span>
+                        </a></li>
+                        <li><a href="{{ route('admin.referentiel-rh.index', 'types-evenement') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'types-evenement' ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-arrow-trend-up"></i></span><span class="sb-label">Types évén. carrière</span>
+                        </a></li>
+                        <li><a href="{{ route('admin.referentiel-rh.index', 'niveaux-qualification') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'niveaux-qualification' ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-graduation-cap"></i></span><span class="sb-label">Niveaux qualification</span>
+                        </a></li>
+                        <li><a href="{{ route('admin.referentiel-rh.index', 'nationalites') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'nationalites' ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-flag"></i></span><span class="sb-label">Nationalités</span>
+                        </a></li>
+                        <li><a href="{{ route('admin.referentiel-rh.index', 'groupes-rubriques') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'groupes-rubriques' ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-layer-group"></i></span><span class="sb-label">Groupes rubriques paie</span>
+                        </a></li>
+                        @can('read:rubrique')
+                        <li><a href="{{ route('rh.rubriques.index') }}" class="sb-link {{ request()->routeIs('rh.rubriques.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-tags"></i></span><span class="sb-label">Rubriques de paie</span>
+                        </a></li>
+                        @endcan
+                    </ul>
+                </div>
+            </div>
+
         </div>
 
-        @include('layouts.partials.sidebar-module-switcher')
     </nav>
 
 
@@ -823,6 +853,13 @@
     </div>
 
     <nav class="sb-nav">
+        {{-- ── Accueil module (hors accordéon) ──────────── --}}
+        <ul class="sb-group sb-module-appro" style="margin-top:.75rem;">
+            <li><a href="{{ route('appro.dashboard') }}" class="sb-link sb-link-home {{ request()->routeIs('appro.dashboard') ? 'active' : '' }}">
+                <span class="sb-icon"><i class="fas fa-house"></i></span><span class="sb-label">Dashboard</span>
+            </a></li>
+        </ul>
+
         {{-- ── Vue d'ensemble (hors accordéon) ─────────── --}}
         <div class="sb-section-header appro" style="margin-top:.75rem;">
             <span class="sb-section-dot"></span>
@@ -836,7 +873,7 @@
 
         @php
         $accOpen = [
-            'achats'        => request()->routeIs('appro.commandes.*','appro.fournisseurs.*','appro.devis-fournisseur.*','appro.livraisons-fournisseur.*'),
+            'achats'        => request()->routeIs('appro.commandes.*','appro.fournisseurs.*','appro.devis-fournisseur.*','appro.livraisons-fournisseur.*','appro.contrats.*'),
             'demandes'      => request()->routeIs('appro.commandes-internes.*'),
             'stock'         => request()->routeIs('appro.stock.*','appro.inventaires.*'),
             'evaluations'   => request()->routeIs('appro.evaluations.*','appro.campagnes.*'),
@@ -874,6 +911,9 @@
                         </a></li>
                         <li><a href="{{ route('appro.livraisons-fournisseur.index') }}" class="sb-link {{ request()->routeIs('appro.livraisons-fournisseur.*') ? 'active' : '' }}">
                             <span class="sb-icon"><i class="fas fa-truck-loading"></i></span><span class="sb-label">Livraisons fournisseur</span>
+                        </a></li>
+                        <li><a href="{{ route('appro.contrats.index') }}" class="sb-link {{ request()->routeIs('appro.contrats.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-file-contract"></i></span><span class="sb-label">Engagements fournisseurs</span>
                         </a></li>
                         @endcan
                         @can('read:fournisseur')
@@ -1005,7 +1045,7 @@
                         aria-expanded="{{ $accOpen['maintenance'] ? 'true' : 'false' }}">
                     <span class="sb-acc-left">
                         <span class="sb-acc-icon"><i class="fas fa-tools"></i></span>
-                        <span class="sb-acc-name">Maintenance</span>
+                        <span class="sb-acc-name">Action Interne</span>
                     </span>
                     <span class="sb-acc-right">
                         @if(isset($dysfonctionnementsOuverts) && $dysfonctionnementsOuverts > 0)
@@ -1058,6 +1098,21 @@
                         <li><a href="{{ route('referentiel.mg-thematiques.index') }}" class="sb-link {{ request()->routeIs('referentiel.mg-thematiques.*') ? 'active' : '' }}">
                             <span class="sb-icon"><i class="fas fa-tags"></i></span><span class="sb-label">Thématiques MG</span>
                         </a></li>
+                        <li><a href="{{ route('referentiel.familles-dysfonctionnement.index') }}" class="sb-link {{ request()->routeIs('referentiel.familles-dysfonctionnement.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-layer-group"></i></span><span class="sb-label">Familles de dysfonctionnement</span>
+                        </a></li>
+                        <li><a href="{{ route('referentiel.types-dysfonctionnement.index') }}" class="sb-link {{ request()->routeIs('referentiel.types-dysfonctionnement.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-triangle-exclamation"></i></span><span class="sb-label">Types de dysfonctionnement</span>
+                        </a></li>
+                        <li><a href="{{ route('referentiel.natures-intervention.index') }}" class="sb-link {{ request()->routeIs('referentiel.natures-intervention.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-wrench"></i></span><span class="sb-label">Natures d'intervention</span>
+                        </a></li>
+                        <li><a href="{{ route('referentiel.types-engagement.index') }}" class="sb-link {{ request()->routeIs('referentiel.types-engagement.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-file-contract"></i></span><span class="sb-label">Types d'engagement</span>
+                        </a></li>
+                        <li><a href="{{ route('referentiel.frequences-paiement.index') }}" class="sb-link {{ request()->routeIs('referentiel.frequences-paiement.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-calendar-check"></i></span><span class="sb-label">Fréquences de paiement</span>
+                        </a></li>
                         <li><a href="{{ route('referentiel.emplacements.index') }}" class="sb-link {{ request()->routeIs('referentiel.emplacements.*') ? 'active' : '' }}">
                             <span class="sb-icon"><i class="fas fa-warehouse"></i></span><span class="sb-label">Emplacements de stockage</span>
                         </a></li>
@@ -1067,7 +1122,6 @@
 
         </div>
 
-        @include('layouts.partials.sidebar-module-switcher')
     </nav>
 
 
@@ -1125,27 +1179,14 @@
         </div>
     </div>
 
-    {{-- Indicateur du projet courant --}}
-    @if($currentProjet)
-        <a href="{{ route('projet.overview', $currentProjet) }}" class="sb-current-projet" title="Projet actif">
-            <i class="fas fa-folder-open"></i>
-            <span class="sb-current-projet-name">{{ \Illuminate\Support\Str::limit($currentProjet->nom, 28) }}</span>
-        </a>
-    @else
-        <a href="{{ route('intranet.projets.index') }}" class="sb-current-projet sb-current-projet-empty" title="Aucun projet sélectionné">
-            <i class="fas fa-folder"></i>
-            <span class="sb-current-projet-name">Sélectionner un projet…</span>
-        </a>
-    @endif
+    {{-- L'indicateur du « projet courant » a été retiré. Le contexte projet
+         est visible depuis /projet/{id}/overview et /intranet/projets. --}}
 
     <nav class="sb-nav">
 
-        {{-- ── Vue d'ensemble ───────────────────────────── --}}
-        <div class="sb-section-header projet" style="margin-top:.75rem;">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Vue d'ensemble</span>
-        </div>
-        <ul class="sb-group sb-module-projet">
+        {{-- Liens directs (hors accordéon) — priorités du module --}}
+        <ul class="sb-group sb-module-projet" style="margin-bottom:.35rem;">
+            {{-- Tableau de bord --}}
             <li>
                 <a href="{{ route('projet.dashboard') }}" class="sb-link {{ request()->routeIs('projet.dashboard') ? 'active' : '' }}">
                     <span class="sb-icon"><i class="fas fa-gauge-high"></i></span>
@@ -1153,172 +1194,220 @@
                     @if(!empty($projetsEnCours))<span class="sb-badge-alert">{{ $projetsEnCours }}</span>@endif
                 </a>
             </li>
+
+            {{-- PROJETS — accès direct liste + création rapide --}}
             <li>
-                <a href="{{ route('intranet.projets.index') }}" class="sb-link {{ request()->routeIs('intranet.projets.*') ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-folder-tree"></i></span>
-                    <span class="sb-label">Tous les projets</span>
-                </a>
+                <div class="sb-link-row priority">
+                    <a href="{{ route('intranet.projets.index') }}" class="sb-link {{ request()->routeIs('intranet.projets.*') && !request()->routeIs('intranet.projets.create') ? 'active' : '' }}">
+                        <span class="sb-icon"><i class="fas fa-folder-tree"></i></span>
+                        <span class="sb-label">Projets</span>
+                    </a>
+                    <a href="{{ route('intranet.projets.create') }}" class="sb-quick-add {{ request()->routeIs('intranet.projets.create') ? 'active' : '' }}"
+                       title="Nouveau projet" aria-label="Nouveau projet">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                </div>
             </li>
+
+            {{-- TÂCHES — accès direct liste + création rapide --}}
             <li>
-                <a href="{{ route('intranet.taches.index', ['mes_taches' => 1]) }}" class="sb-link {{ request()->routeIs('intranet.taches.*') ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-list-check"></i></span>
-                    <span class="sb-label">Mes tâches</span>
-                    @if(!empty($tachesUrgentes))<span class="sb-badge-alert" style="background:rgba(220,38,38,.2);color:#FCA5A5;">{{ $tachesUrgentes }}</span>
-                    @elseif(!empty($tachesEnCours))<span class="sb-badge-alert">{{ $tachesEnCours }}</span>@endif
-                </a>
+                <div class="sb-link-row priority">
+                    <a href="{{ route('intranet.taches.index') }}" class="sb-link {{ request()->routeIs('intranet.taches.*') && !request()->routeIs('intranet.taches.create') ? 'active' : '' }}">
+                        <span class="sb-icon"><i class="fas fa-list-check"></i></span>
+                        <span class="sb-label">Tâches</span>
+                        @if(!empty($tachesUrgentes))<span class="sb-badge-alert" style="background:rgba(220,38,38,.2);color:#FCA5A5;">{{ $tachesUrgentes }}</span>
+                        @elseif(!empty($tachesEnCours))<span class="sb-badge-alert">{{ $tachesEnCours }}</span>@endif
+                    </a>
+                    <a href="{{ route('intranet.taches.create') }}" class="sb-quick-add {{ request()->routeIs('intranet.taches.create') ? 'active' : '' }}"
+                       title="Nouvelle tâche" aria-label="Nouvelle tâche">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                </div>
             </li>
         </ul>
 
-        {{-- ── Planification ─────────────────────────────── --}}
-        <div class="sb-section-header projet">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Planification</span>
-        </div>
-        <ul class="sb-group sb-module-projet">
-            @php $L = $projetLink('projet.wbs.index', 'projet.wbs.*'); @endphp
-            <li>
-                <a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
-                    <span class="sb-icon"><i class="fas fa-sitemap"></i></span>
-                    <span class="sb-label">WBS & Phases</span>
-                </a>
-            </li>
-            @php $L = $projetLink('projet.jalons.index', 'projet.jalons.*'); @endphp
-            <li>
-                <a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
-                    <span class="sb-icon"><i class="fas fa-flag-checkered"></i></span>
-                    <span class="sb-label">Jalons</span>
-                </a>
-            </li>
-            @php $L = $projetLink('projet.ressources.index', 'projet.ressources.*'); @endphp
-            <li>
-                <a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
-                    <span class="sb-icon"><i class="fas fa-people-carry-box"></i></span>
-                    <span class="sb-label">Ressources</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('intranet.calendrier') }}" class="sb-link {{ request()->routeIs('intranet.calendrier') ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-calendar-days"></i></span>
-                    <span class="sb-label">Calendrier</span>
-                </a>
-            </li>
-        </ul>
+        @php
+        $accOpenPr = [
+            'planification'    => request()->routeIs('projet.wbs.*','projet.jalons.*','projet.ressources.*','intranet.calendrier'),
+            'execution'        => request()->routeIs('projet.feuilles-temps.*','projet.livrables.*'),
+            'maitrise'         => request()->routeIs('projet.couts.*','projet.evm.*','projet.changements.*'),
+            'risques'          => request()->routeIs('projet.risques.*','projet.problemes.*'),
+            'gouvernance'      => request()->routeIs('projet.parties-prenantes.*','projet.lecons.*','intranet.rapports.*','projet.demandes.*'),
+            'referentiels-pr'  => request()->routeIs('admin.roles-projet.*'),
+        ];
+        if (!array_filter($accOpenPr)) $accOpenPr['planification'] = true;
+        @endphp
 
-        {{-- ── Exécution ─────────────────────────────────── --}}
-        <div class="sb-section-header projet">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Exécution</span>
-        </div>
-        <ul class="sb-group sb-module-projet">
-            <li>
-                <a href="{{ route('intranet.taches.index') }}" class="sb-link {{ request()->routeIs('intranet.taches.index') && !request()->boolean('mes_taches') ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-bars-progress"></i></span>
-                    <span class="sb-label">Tâches & Activités</span>
-                </a>
-            </li>
-            @php $L = $projetLink('projet.feuilles-temps.index', 'projet.feuilles-temps.*'); @endphp
-            <li>
-                <a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
-                    <span class="sb-icon"><i class="fas fa-clock-rotate-left"></i></span>
-                    <span class="sb-label">Feuilles de temps</span>
-                </a>
-            </li>
-            @php $L = $projetLink('projet.livrables.index', 'projet.livrables.*'); @endphp
-            <li>
-                <a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
-                    <span class="sb-icon"><i class="fas fa-box-open"></i></span>
-                    <span class="sb-label">Livrables</span>
-                </a>
-            </li>
-        </ul>
+        <div class="sb-accordion sb-accordion-projet" id="sbAccordionProjet">
 
-        {{-- ── Maîtrise ──────────────────────────────────── --}}
-        <div class="sb-section-header projet">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Maîtrise</span>
-        </div>
-        <ul class="sb-group sb-module-projet">
-            @php $L = $projetLink('projet.couts.index', 'projet.couts.*'); @endphp
-            <li>
-                <a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
-                    <span class="sb-icon"><i class="fas fa-coins"></i></span>
-                    <span class="sb-label">Coûts & Budget</span>
-                </a>
-            </li>
-            @php $L = $projetLink('projet.evm.index', 'projet.evm.*'); @endphp
-            <li>
-                <a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
-                    <span class="sb-icon"><i class="fas fa-chart-line"></i></span>
-                    <span class="sb-label">Valeur acquise (EVM)</span>
-                </a>
-            </li>
-            @php $L = $projetLink('projet.changements.index', 'projet.changements.*'); @endphp
-            <li>
-                <a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
-                    <span class="sb-icon"><i class="fas fa-code-compare"></i></span>
-                    <span class="sb-label">Changements</span>
-                </a>
-            </li>
-        </ul>
+            {{-- ══════ PLANIFICATION ═══════════════════════ --}}
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpenPr['planification'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-pr-planification"
+                        aria-expanded="{{ $accOpenPr['planification'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-sitemap"></i></span>
+                        <span class="sb-acc-name">Planification</span>
+                    </span>
+                    <span class="sb-acc-right"><i class="fas fa-chevron-down sb-acc-chevron"></i></span>
+                </button>
+                <div class="collapse {{ $accOpenPr['planification'] ? 'show' : '' }}" id="acc-pr-planification" data-bs-parent="#sbAccordionProjet">
+                    <ul class="sb-group sb-module-projet sb-acc-body">
+                        @php $L = $projetLink('projet.wbs.index', 'projet.wbs.*'); @endphp
+                        <li><a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
+                            <span class="sb-icon"><i class="fas fa-sitemap"></i></span><span class="sb-label">WBS & Phases</span>
+                        </a></li>
+                        @php $L = $projetLink('projet.jalons.index', 'projet.jalons.*'); @endphp
+                        <li><a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
+                            <span class="sb-icon"><i class="fas fa-flag-checkered"></i></span><span class="sb-label">Jalons</span>
+                        </a></li>
+                        @php $L = $projetLink('projet.ressources.index', 'projet.ressources.*'); @endphp
+                        <li><a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
+                            <span class="sb-icon"><i class="fas fa-people-carry-box"></i></span><span class="sb-label">Ressources</span>
+                        </a></li>
+                        <li><a href="{{ route('intranet.calendrier') }}" class="sb-link {{ request()->routeIs('intranet.calendrier') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-calendar-days"></i></span><span class="sb-label">Calendrier</span>
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
 
-        {{-- ── Risques ───────────────────────────────────── --}}
-        <div class="sb-section-header projet">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Risques</span>
-        </div>
-        <ul class="sb-group sb-module-projet">
-            @php $L = $projetLink('projet.risques.index', 'projet.risques.*'); @endphp
-            <li>
-                <a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
-                    <span class="sb-icon"><i class="fas fa-triangle-exclamation"></i></span>
-                    <span class="sb-label">Registre des risques</span>
-                </a>
-            </li>
-            @php $L = $projetLink('projet.problemes.index', 'projet.problemes.*'); @endphp
-            <li>
-                <a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
-                    <span class="sb-icon"><i class="fas fa-circle-exclamation"></i></span>
-                    <span class="sb-label">Journal des problèmes</span>
-                </a>
-            </li>
-        </ul>
+            {{-- ══════ EXÉCUTION ═══════════════════════════ --}}
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpenPr['execution'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-pr-execution"
+                        aria-expanded="{{ $accOpenPr['execution'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-bars-progress"></i></span>
+                        <span class="sb-acc-name">Exécution</span>
+                    </span>
+                    <span class="sb-acc-right"><i class="fas fa-chevron-down sb-acc-chevron"></i></span>
+                </button>
+                <div class="collapse {{ $accOpenPr['execution'] ? 'show' : '' }}" id="acc-pr-execution" data-bs-parent="#sbAccordionProjet">
+                    <ul class="sb-group sb-module-projet sb-acc-body">
+                        {{-- Note : « Tâches » a été promu en lien direct au-dessus de l'accordéon. --}}
+                        @php $L = $projetLink('projet.feuilles-temps.index', 'projet.feuilles-temps.*'); @endphp
+                        <li><a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
+                            <span class="sb-icon"><i class="fas fa-clock-rotate-left"></i></span><span class="sb-label">Feuilles de temps</span>
+                        </a></li>
+                        @php $L = $projetLink('projet.livrables.index', 'projet.livrables.*'); @endphp
+                        <li><a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
+                            <span class="sb-icon"><i class="fas fa-box-open"></i></span><span class="sb-label">Livrables</span>
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
 
-        {{-- ── Gouvernance & Clôture ─────────────────────── --}}
-        <div class="sb-section-header projet">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Gouvernance</span>
-        </div>
-        <ul class="sb-group sb-module-projet">
-            @php $L = $projetLink('projet.parties-prenantes.index', 'projet.parties-prenantes.*'); @endphp
-            <li>
-                <a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
-                    <span class="sb-icon"><i class="fas fa-users-between-lines"></i></span>
-                    <span class="sb-label">Parties prenantes</span>
-                </a>
-            </li>
-            @php $L = $projetLink('projet.lecons.index', 'projet.lecons.*'); @endphp
-            <li>
-                <a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
-                    <span class="sb-icon"><i class="fas fa-lightbulb"></i></span>
-                    <span class="sb-label">Leçons apprises</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('intranet.rapports.index') }}" class="sb-link {{ request()->routeIs('intranet.rapports.*') ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-file-lines"></i></span>
-                    <span class="sb-label">Rapports & CR</span>
-                    @if(!empty($rapportsBrouillon))<span class="sb-badge-alert">{{ $rapportsBrouillon }}</span>@endif
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('projet.demandes.index') }}" class="sb-link {{ request()->routeIs('projet.demandes.*') ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-pen-fancy"></i></span>
-                    <span class="sb-label">Demandes modif.</span>
-                </a>
-            </li>
-        </ul>
+            {{-- ══════ MAÎTRISE ════════════════════════════ --}}
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpenPr['maitrise'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-pr-maitrise"
+                        aria-expanded="{{ $accOpenPr['maitrise'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="sb-acc-name">Maîtrise</span>
+                    </span>
+                    <span class="sb-acc-right"><i class="fas fa-chevron-down sb-acc-chevron"></i></span>
+                </button>
+                <div class="collapse {{ $accOpenPr['maitrise'] ? 'show' : '' }}" id="acc-pr-maitrise" data-bs-parent="#sbAccordionProjet">
+                    <ul class="sb-group sb-module-projet sb-acc-body">
+                        @php $L = $projetLink('projet.couts.index', 'projet.couts.*'); @endphp
+                        <li><a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
+                            <span class="sb-icon"><i class="fas fa-coins"></i></span><span class="sb-label">Coûts & Budget</span>
+                        </a></li>
+                        @php $L = $projetLink('projet.evm.index', 'projet.evm.*'); @endphp
+                        <li><a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
+                            <span class="sb-icon"><i class="fas fa-chart-line"></i></span><span class="sb-label">Valeur acquise (EVM)</span>
+                        </a></li>
+                        @php $L = $projetLink('projet.changements.index', 'projet.changements.*'); @endphp
+                        <li><a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
+                            <span class="sb-icon"><i class="fas fa-code-compare"></i></span><span class="sb-label">Changements</span>
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
 
-        @include('layouts.partials.sidebar-module-switcher')
+            {{-- ══════ RISQUES ═════════════════════════════ --}}
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpenPr['risques'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-pr-risques"
+                        aria-expanded="{{ $accOpenPr['risques'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-triangle-exclamation"></i></span>
+                        <span class="sb-acc-name">Risques</span>
+                    </span>
+                    <span class="sb-acc-right"><i class="fas fa-chevron-down sb-acc-chevron"></i></span>
+                </button>
+                <div class="collapse {{ $accOpenPr['risques'] ? 'show' : '' }}" id="acc-pr-risques" data-bs-parent="#sbAccordionProjet">
+                    <ul class="sb-group sb-module-projet sb-acc-body">
+                        @php $L = $projetLink('projet.risques.index', 'projet.risques.*'); @endphp
+                        <li><a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
+                            <span class="sb-icon"><i class="fas fa-triangle-exclamation"></i></span><span class="sb-label">Registre des risques</span>
+                        </a></li>
+                        @php $L = $projetLink('projet.problemes.index', 'projet.problemes.*'); @endphp
+                        <li><a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
+                            <span class="sb-icon"><i class="fas fa-circle-exclamation"></i></span><span class="sb-label">Journal des problèmes</span>
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+
+            {{-- ══════ GOUVERNANCE & CLÔTURE ═══════════════ --}}
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpenPr['gouvernance'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-pr-gouvernance"
+                        aria-expanded="{{ $accOpenPr['gouvernance'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-users-between-lines"></i></span>
+                        <span class="sb-acc-name">Gouvernance</span>
+                    </span>
+                    <span class="sb-acc-right">
+                        @if(!empty($rapportsBrouillon))<span class="sb-acc-badge-dot"></span>@endif
+                        <i class="fas fa-chevron-down sb-acc-chevron"></i>
+                    </span>
+                </button>
+                <div class="collapse {{ $accOpenPr['gouvernance'] ? 'show' : '' }}" id="acc-pr-gouvernance" data-bs-parent="#sbAccordionProjet">
+                    <ul class="sb-group sb-module-projet sb-acc-body">
+                        @php $L = $projetLink('projet.parties-prenantes.index', 'projet.parties-prenantes.*'); @endphp
+                        <li><a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
+                            <span class="sb-icon"><i class="fas fa-users-between-lines"></i></span><span class="sb-label">Parties prenantes</span>
+                        </a></li>
+                        @php $L = $projetLink('projet.lecons.index', 'projet.lecons.*'); @endphp
+                        <li><a href="{{ $L['href'] }}" class="{{ $L['class'] }}" @if($L['title']) title="{{ $L['title'] }}" @endif>
+                            <span class="sb-icon"><i class="fas fa-lightbulb"></i></span><span class="sb-label">Leçons apprises</span>
+                        </a></li>
+                        <li><a href="{{ route('intranet.rapports.index') }}" class="sb-link {{ request()->routeIs('intranet.rapports.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-file-lines"></i></span><span class="sb-label">Rapports & CR</span>
+                            @if(!empty($rapportsBrouillon))<span class="sb-badge-alert">{{ $rapportsBrouillon }}</span>@endif
+                        </a></li>
+                        <li><a href="{{ route('projet.demandes.index') }}" class="sb-link {{ request()->routeIs('projet.demandes.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-pen-fancy"></i></span><span class="sb-label">Demandes modif.</span>
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+
+            {{-- ══════ RÉFÉRENTIELS PROJET ═══════════════════ --}}
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpenPr['referentiels-pr'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-pr-referentiels"
+                        aria-expanded="{{ $accOpenPr['referentiels-pr'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-database"></i></span>
+                        <span class="sb-acc-name">Référentiels</span>
+                    </span>
+                    <span class="sb-acc-right"><i class="fas fa-chevron-down sb-acc-chevron"></i></span>
+                </button>
+                <div class="collapse {{ $accOpenPr['referentiels-pr'] ? 'show' : '' }}" id="acc-pr-referentiels" data-bs-parent="#sbAccordionProjet">
+                    <ul class="sb-group sb-module-projet sb-acc-body">
+                        <li><a href="{{ route('admin.roles-projet.index') }}" class="sb-link {{ request()->routeIs('admin.roles-projet.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-user-tag"></i></span><span class="sb-label">Rôles projet</span>
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>{{-- /sb-accordion-projet --}}
     </nav>
 
 
@@ -1339,12 +1428,8 @@
 
     <nav class="sb-nav">
 
-        {{-- ── Vue d'ensemble ───────────────────────────── --}}
-        <div class="sb-section-header objectifs" style="margin-top:.75rem;">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Vue d'ensemble</span>
-        </div>
-        <ul class="sb-group sb-module-objectifs">
+        {{-- Lien direct (hors accordéon) --}}
+        <ul class="sb-group sb-module-objectifs" style="margin-bottom:.35rem;">
             <li>
                 <a href="{{ route('objectifs.dashboard') }}" class="sb-link {{ request()->routeIs('objectifs.dashboard') ? 'active' : '' }}">
                     <span class="sb-icon"><i class="fas fa-gauge-high"></i></span>
@@ -1353,71 +1438,178 @@
             </li>
         </ul>
 
-        {{-- ── Objectifs ────────────────────────────────── --}}
-        <div class="sb-section-header objectifs">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Objectifs</span>
-        </div>
-        <ul class="sb-group sb-module-objectifs">
-            <li>
-                <a href="{{ route('objectifs.objectifs.index', ['type' => 'strategique']) }}" class="sb-link {{ request()->routeIs('objectifs.objectifs.*') && request('type') === 'strategique' ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-bullseye"></i></span>
-                    <span class="sb-label">Objectifs stratégiques</span>
-                    @if(!empty($objectifsActifs))<span class="sb-badge-alert">{{ $objectifsActifs }}</span>@endif
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('objectifs.objectifs.index', ['type' => 'operationnel']) }}" class="sb-link {{ request()->routeIs('objectifs.objectifs.*') && request('type') === 'operationnel' ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-crosshairs"></i></span>
-                    <span class="sb-label">Objectifs opérationnels</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('objectifs.objectifs.index') }}" class="sb-link {{ request()->routeIs('objectifs.objectifs.*') && !request('type') ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-list-check"></i></span>
-                    <span class="sb-label">Tous les objectifs</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('objectifs.plans-action.index') }}" class="sb-link {{ request()->routeIs('objectifs.plans-action.*') ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-list-ul"></i></span>
-                    <span class="sb-label">Plans d'action</span>
-                </a>
-            </li>
-        </ul>
+        @php
+        $accOpenOb = [
+            'objectifs'    => request()->routeIs('objectifs.objectifs.*','objectifs.plans-action.*'),
+            'indicateurs'  => request()->routeIs('objectifs.kpi.*'),
+            'evaluations'  => request()->routeIs('objectifs.evaluations.*'),
+        ];
+        if (!array_filter($accOpenOb)) $accOpenOb['objectifs'] = true;
+        @endphp
 
-        {{-- ── KPI ──────────────────────────────────────── --}}
-        <div class="sb-section-header objectifs">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Indicateurs</span>
-        </div>
-        <ul class="sb-group sb-module-objectifs">
-            <li>
-                <a href="{{ route('objectifs.kpi.index') }}" class="sb-link {{ request()->routeIs('objectifs.kpi.*') ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-chart-line"></i></span>
-                    <span class="sb-label">Tableau de KPI</span>
-                    @if(!empty($totalKpi))<span class="sb-badge-alert">{{ $totalKpi }}</span>@endif
-                </a>
-            </li>
-        </ul>
+        <div class="sb-accordion sb-accordion-objectifs" id="sbAccordionObjectifs">
 
-        {{-- ── Évaluations ──────────────────────────────── --}}
-        <div class="sb-section-header objectifs">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Évaluations</span>
-        </div>
-        <ul class="sb-group sb-module-objectifs">
-            <li>
-                <a href="{{ route('objectifs.evaluations.index') }}" class="sb-link {{ request()->routeIs('objectifs.evaluations.*') ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-star-half-stroke"></i></span>
-                    <span class="sb-label">Évaluations</span>
-                </a>
-            </li>
-        </ul>
+            {{-- ══════ OBJECTIFS ═══════════════════════════ --}}
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpenOb['objectifs'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-ob-objectifs"
+                        aria-expanded="{{ $accOpenOb['objectifs'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-bullseye"></i></span>
+                        <span class="sb-acc-name">Objectifs</span>
+                    </span>
+                    <span class="sb-acc-right">
+                        @if(!empty($objectifsActifs))<span class="sb-acc-badge-dot"></span>@endif
+                        <i class="fas fa-chevron-down sb-acc-chevron"></i>
+                    </span>
+                </button>
+                <div class="collapse {{ $accOpenOb['objectifs'] ? 'show' : '' }}" id="acc-ob-objectifs" data-bs-parent="#sbAccordionObjectifs">
+                    <ul class="sb-group sb-module-objectifs sb-acc-body">
+                        <li><a href="{{ route('objectifs.objectifs.index', ['type' => 'strategique']) }}" class="sb-link {{ request()->routeIs('objectifs.objectifs.*') && request('type') === 'strategique' ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-bullseye"></i></span><span class="sb-label">Stratégiques</span>
+                            @if(!empty($objectifsActifs))<span class="sb-badge-alert">{{ $objectifsActifs }}</span>@endif
+                        </a></li>
+                        <li><a href="{{ route('objectifs.objectifs.index', ['type' => 'operationnel']) }}" class="sb-link {{ request()->routeIs('objectifs.objectifs.*') && request('type') === 'operationnel' ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-crosshairs"></i></span><span class="sb-label">Opérationnels</span>
+                        </a></li>
+                        <li><a href="{{ route('objectifs.objectifs.index') }}" class="sb-link {{ request()->routeIs('objectifs.objectifs.*') && !request('type') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-list-check"></i></span><span class="sb-label">Tous les objectifs</span>
+                        </a></li>
+                        <li><a href="{{ route('objectifs.plans-action.index') }}" class="sb-link {{ request()->routeIs('objectifs.plans-action.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-list-ul"></i></span><span class="sb-label">Plans d'action</span>
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
 
-        @include('layouts.partials.sidebar-module-switcher')
+            {{-- ══════ INDICATEURS (KPI) ═══════════════════ --}}
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpenOb['indicateurs'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-ob-indicateurs"
+                        aria-expanded="{{ $accOpenOb['indicateurs'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-chart-line"></i></span>
+                        <span class="sb-acc-name">Indicateurs</span>
+                    </span>
+                    <span class="sb-acc-right"><i class="fas fa-chevron-down sb-acc-chevron"></i></span>
+                </button>
+                <div class="collapse {{ $accOpenOb['indicateurs'] ? 'show' : '' }}" id="acc-ob-indicateurs" data-bs-parent="#sbAccordionObjectifs">
+                    <ul class="sb-group sb-module-objectifs sb-acc-body">
+                        <li><a href="{{ route('objectifs.kpi.index') }}" class="sb-link {{ request()->routeIs('objectifs.kpi.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-chart-line"></i></span><span class="sb-label">Tableau de KPI</span>
+                            @if(!empty($totalKpi))<span class="sb-badge-alert">{{ $totalKpi }}</span>@endif
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+
+            {{-- ══════ ÉVALUATIONS ═════════════════════════ --}}
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpenOb['evaluations'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-ob-evaluations"
+                        aria-expanded="{{ $accOpenOb['evaluations'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-star-half-stroke"></i></span>
+                        <span class="sb-acc-name">Évaluations</span>
+                    </span>
+                    <span class="sb-acc-right"><i class="fas fa-chevron-down sb-acc-chevron"></i></span>
+                </button>
+                <div class="collapse {{ $accOpenOb['evaluations'] ? 'show' : '' }}" id="acc-ob-evaluations" data-bs-parent="#sbAccordionObjectifs">
+                    <ul class="sb-group sb-module-objectifs sb-acc-body">
+                        <li><a href="{{ route('objectifs.evaluations.index') }}" class="sb-link {{ request()->routeIs('objectifs.evaluations.*') ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas fa-star-half-stroke"></i></span><span class="sb-label">Toutes les évaluations</span>
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>{{-- /sb-accordion-objectifs --}}
     </nav>
 
+
+    {{-- ════════════════════════════════════════════════════
+         SOCIAL MODE
+    ════════════════════════════════════════════════════ --}}
+    @elseif($mod === 'social')
+
+    <div class="sb-module-brand" style="--mod-grd: #0A66C2; --mod-color: #F5B800;">
+        <div class="sb-mod-icon"><i class="fas fa-users"></i></div>
+        <div class="sb-mod-brand-text">
+            <span class="sb-mod-name">Réseau social</span>
+            <a href="{{ route('dashboard') }}" class="sb-back-portal">
+                <i class="fas fa-arrow-left"></i> Portail
+            </a>
+        </div>
+    </div>
+
+    <nav class="sb-nav">
+        <ul class="sb-group" style="margin-top:.75rem;">
+            <li>
+                <a href="{{ route('social.dashboard') }}" class="sb-link {{ request()->routeIs('social.dashboard') && (request()->query('filter','feed') === 'feed') ? 'active' : '' }}">
+                    <span class="sb-icon"><i class="fas fa-house"></i></span><span class="sb-label">Fil d'actualité</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('social.dashboard', ['filter' => 'mine']) }}" class="sb-link {{ request()->query('filter') === 'mine' ? 'active' : '' }}">
+                    <span class="sb-icon"><i class="fas fa-user-pen"></i></span><span class="sb-label">Mes publications</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('social.groups.index') }}" class="sb-link {{ request()->routeIs('social.groups.*') ? 'active' : '' }}">
+                    <span class="sb-icon"><i class="fas fa-comments"></i></span><span class="sb-label">Groupes de discussion</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('intranet.mediatheque.index') }}" class="sb-link">
+                    <span class="sb-icon"><i class="fas fa-images"></i></span><span class="sb-label">Médiathèque</span>
+                </a>
+            </li>
+        </ul>
+
+        {{-- ── Modules métier ────────────────────────────── --}}
+        <div class="sb-section-header" style="margin-top:1.25rem;">
+            <span class="sb-section-dot" style="background:#475569;"></span>
+            <span class="sb-section-name" style="color:#475569;">Modules</span>
+        </div>
+        <ul class="sb-group">
+            <li>
+                <a href="{{ route('dashboard') }}" class="sb-link">
+                    <span class="sb-icon"><i class="fas fa-globe"></i></span><span class="sb-label">Intranet</span>
+                </a>
+            </li>
+            @canany(['read:exercice','read:budget','read:grandlivre','read:compte'])
+            <li>
+                <a href="{{ route('finance.dashboard') }}" class="sb-link">
+                    <span class="sb-icon"><i class="fas fa-coins"></i></span><span class="sb-label">Finance & Budget</span>
+                </a>
+            </li>
+            @endcanany
+            @canany(['read:employee','read:absence','read:paie','read:recrutement'])
+            <li>
+                <a href="{{ route('rh.dashboard') }}" class="sb-link">
+                    <span class="sb-icon"><i class="fas fa-users"></i></span><span class="sb-label">RH & Paiement</span>
+                </a>
+            </li>
+            @endcanany
+            @canany(['read:fournisseur','read:produit','read:commande','read:immobilisation','read:dysfonctionnement','read:intervention'])
+            <li>
+                <a href="{{ route('appro.dashboard') }}" class="sb-link">
+                    <span class="sb-icon"><i class="fas fa-cart-flatbed"></i></span><span class="sb-label">Achats & MG</span>
+                </a>
+            </li>
+            @endcanany
+            <li>
+                <a href="{{ route('projet.dashboard') }}" class="sb-link">
+                    <span class="sb-icon"><i class="fas fa-diagram-project"></i></span><span class="sb-label">Projets / Tâches</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('objectifs.dashboard') }}" class="sb-link">
+                    <span class="sb-icon"><i class="fas fa-bullseye"></i></span><span class="sb-label">Objectifs & KPI</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 
     {{-- ════════════════════════════════════════════════════
          ADMINISTRATION MODE
@@ -1435,17 +1627,36 @@
     </div>
 
     <nav class="sb-nav">
-        <div class="sb-section-header admin" style="margin-top:.75rem;">
-            <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Navigation</span>
-        </div>
-        <ul class="sb-group sb-module-admin">
-            <li><a href="#" class="sb-link" style="opacity:.55;cursor:not-allowed;" title="Bientôt"><span class="sb-icon"><i class="fas fa-users-cog"></i></span><span class="sb-label">Utilisateurs</span><span class="sb-badge-alert" style="background:rgba(148,163,184,.2);color:#94A3B8;font-size:.55rem;">Bientôt</span></a></li>
-            <li><a href="#" class="sb-link" style="opacity:.55;cursor:not-allowed;" title="Bientôt"><span class="sb-icon"><i class="fas fa-shield-halved"></i></span><span class="sb-label">Rôles & Permissions</span><span class="sb-badge-alert" style="background:rgba(148,163,184,.2);color:#94A3B8;font-size:.55rem;">Bientôt</span></a></li>
+        {{-- Accès direct — 4 actions prioritaires --}}
+        <ul class="sb-group sb-module-admin" style="margin-top:.5rem; margin-bottom:.35rem;">
+            <li><a href="{{ route('admin.users.index') }}" class="sb-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                <span class="sb-icon"><i class="fas fa-users-cog"></i></span><span class="sb-label">Utilisateurs</span>
+            </a></li>
+            <li><a href="{{ route('admin.roles.index') }}" class="sb-link {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                <span class="sb-icon"><i class="fas fa-shield-halved"></i></span><span class="sb-label">Rôles</span>
+            </a></li>
+            <li><a href="{{ route('admin.permissions.index') }}" class="sb-link {{ request()->routeIs('admin.permissions.*') ? 'active' : '' }}">
+                <span class="sb-icon"><i class="fas fa-key"></i></span><span class="sb-label">Permissions</span>
+            </a></li>
             <li><a href="{{ route('systeme.organisations.index') }}" class="sb-link {{ request()->routeIs('systeme.organisations.*') ? 'active' : '' }}">
                 <span class="sb-icon"><i class="fas fa-sitemap"></i></span><span class="sb-label">Organisations</span>
             </a></li>
-            <li><a href="#" class="sb-link" style="opacity:.55;cursor:not-allowed;" title="Bientôt"><span class="sb-icon"><i class="fas fa-sliders"></i></span><span class="sb-label">Configuration</span><span class="sb-badge-alert" style="background:rgba(148,163,184,.2);color:#94A3B8;font-size:.55rem;">Bientôt</span></a></li>
+            <li><a href="{{ route('admin.config.index') }}" class="sb-link {{ request()->routeIs('admin.config.*') ? 'active' : '' }}">
+                <span class="sb-icon"><i class="fas fa-sliders"></i></span><span class="sb-label">Configuration</span>
+            </a></li>
+        </ul>
+
+        <div class="sb-section-header admin">
+            <span class="sb-section-dot"></span>
+            <span class="sb-section-name">Référentiels intranet</span>
+        </div>
+        <ul class="sb-group sb-module-admin">
+            <li><a href="{{ route('admin.statuts.index') }}" class="sb-link {{ request()->routeIs('admin.statuts.*') ? 'active' : '' }}">
+                <span class="sb-icon"><i class="fas fa-flag"></i></span><span class="sb-label">Statuts</span>
+            </a></li>
+            <li><a href="{{ route('admin.priorites.index') }}" class="sb-link {{ request()->routeIs('admin.priorites.*') ? 'active' : '' }}">
+                <span class="sb-icon"><i class="fas fa-flag-checkered"></i></span><span class="sb-label">Priorités</span>
+            </a></li>
         </ul>
 
         <div class="sb-section-header admin">
@@ -1495,7 +1706,6 @@
                 <span class="sb-icon"><i class="fas fa-globe"></i></span><span class="sb-label">Vitrine (site public)</span>
             </a></li>
         </ul>
-        @include('layouts.partials.sidebar-module-switcher')
     </nav>
 
     @endif

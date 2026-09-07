@@ -64,6 +64,22 @@ class Employee extends Model
     }
 
     /**
+     * Grade actuel (dénormalisé sur employees.grade_id — synchronisé par Avancement::booted).
+     */
+    public function grade()
+    {
+        return $this->belongsTo(Grade::class);
+    }
+
+    /**
+     * Historique des avancements (évolutions de grade), du plus récent au plus ancien.
+     */
+    public function avancements()
+    {
+        return $this->hasMany(Avancement::class)->orderByDesc('date_effet');
+    }
+
+    /**
      * Lien hiérarchique par POSTE (référentiel) — privilégier celui-ci.
      * Suit le poste, pas la personne : si le titulaire change, le lien reste valide.
      */

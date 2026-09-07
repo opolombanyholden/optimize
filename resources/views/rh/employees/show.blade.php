@@ -88,7 +88,11 @@
             </p>
         </div>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ route('rh.employees.avancements.index', $employee) }}" class="btn" style="background:#059669; color:#fff;">
+            <i class="fas fa-medal me-1"></i>Grade &amp; avancement
+            @if($employee->grade)<span class="badge ms-1" style="background:rgba(255,255,255,.25);">{{ $employee->grade->code }}</span>@endif
+        </a>
         <a href="{{ route('rh.employees.edit', $employee) }}" class="btn btn-primary">
             <i class="fas fa-pen me-1"></i>Modifier
         </a>

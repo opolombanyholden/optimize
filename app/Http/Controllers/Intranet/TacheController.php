@@ -18,22 +18,33 @@ use Illuminate\Support\Facades\Storage;
 
 class TacheController extends Controller
 {
+    use \App\Traits\Intranet\AppliqueScopesVisibilite;
+
     private const FOLDER = 'intranet/taches';
 
     public function index(Request $request)
     {
-        $taches = Tache::with(['statut', 'priorite', 'projet', 'responsable', 'auteur'])
+        // Compat rétro : ?mes_taches=1 est équivalent à ?scopes[]=mes
+        if ($request->boolean('mes_taches') && !$request->filled('scopes')) {
+            $request->merge(['scopes' => ['mes']]);
+        }
+
+        $query = Tache::with(['statut', 'priorite', 'projet', 'responsable', 'auteur'])
             ->withCount('activites')
             ->recherche($request->input('q'))
             ->when($request->filled('projet'),   fn($q) => $q->where('projet_id', $request->projet))
             ->when($request->filled('statut'),   fn($q) => $q->where('statut_id', $request->statut))
             ->when($request->filled('priorite'), fn($q) => $q->where('priorite_id', $request->priorite))
-            ->when($request->boolean('mes_taches'),   fn($q) => $q->assigneesA(auth()->id()))
             ->when($request->boolean('en_retard'),    fn($q) => $q->enRetard())
-            ->when($request->boolean('a_valider'),    fn($q) => $q->aValider(auth()->id()))
-            ->orderByDesc('created_at')
-            ->paginate(20)
-            ->withQueryString();
+            ->when($request->boolean('a_valider'),    fn($q) => $q->aValider(auth()->id()));
+
+        // Filtre unifié de visibilité (Mes / Groupes / Publiques)
+        $this->appliqueScopesVisibilite($query, $request, [
+            'mes_columns'   => ['responsable_id', 'created_by'],
+            'mes_relations' => ['assignes'],
+        ]);
+
+        $taches = $query->orderByDesc('created_at')->paginate(20)->withQueryString();
 
         $stats = [
             'total'      => Tache::count(),

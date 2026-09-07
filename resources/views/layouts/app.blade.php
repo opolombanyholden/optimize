@@ -22,6 +22,14 @@
     @stack('styles')
 </head>
 <body>
+    {{-- Restaure l'état réduit de la sidebar AVANT le rendu (évite le flash) --}}
+    <script>
+        try {
+            if (localStorage.getItem('sidebarCollapsed') === '1') {
+                document.body.classList.add('sidebar-collapsed');
+            }
+        } catch (e) {}
+    </script>
 
     @auth
         {{-- Sidebar --}}
@@ -73,6 +81,25 @@
     @endauth
 
     @auth
+    {{-- Workspace picker global — dispo partout, ouvrable via window.openWorkspacePicker() --}}
+    @include('layouts.partials.workspace-picker')
+
+    {{-- Moniteur d'alerte rupture de stock — visible pour les gestionnaires
+         Achats/MG + admins, uniquement dans l'espace Achats & Moyens Généraux --}}
+    @canany(['update:produit', 'update:commande', 'update:dysfonctionnement'])
+        @if(request()->routeIs('appro.*', 'mg.*', 'referentiel.catalogue.*'))
+            @include('appro._partials.stock-alert-monitor')
+        @endif
+    @endcanany
+
+    {{-- Moniteur d'alerte tâches perso — visible pour tout utilisateur ayant
+         accès au module projet, uniquement dans l'espace Gestion de Projet --}}
+    @can('read:tache_intranet')
+        @if(request()->routeIs('projet.*', 'intranet.projets.*', 'intranet.taches.*', 'intranet.rapports.*'))
+            @include('projet._partials.taches-alert-monitor')
+        @endif
+    @endcan
+
     {{-- ════════════════════════════════════════════════════
          MESSAGERIE INSTANTANÉE — BOUTON FLOTTANT
     ════════════════════════════════════════════════════ --}}
@@ -140,6 +167,71 @@
         </button>
 
     </div>{{-- /chatWidget --}}
+
+    {{-- ════════════════════════════════════════════════════
+         RÉSEAU SOCIAL — Bouton flottant vers le module Social
+         (masqué quand on est déjà dans le module social)
+    ════════════════════════════════════════════════════ --}}
+    @unless(request()->routeIs('social.*'))
+    <a href="{{ route('social.dashboard') }}" class="rs-fab" title="Réseau social">
+        <i class="fas fa-users"></i>
+        <span class="rs-fab-badge d-none" id="rsFabBadgeSocial">0</span>
+    </a>
+    @endunless
+
+    {{-- Bouton flottant : accès direct à la liste des Tâches
+         (remplace l'ancien FAB Groupes de discussion) --}}
+    @unless(request()->routeIs('intranet.taches.*', 'projet.*'))
+    <a href="{{ route('intranet.taches.index') }}" class="rs-fab rs-fab-taches" title="Mes tâches">
+        <i class="fas fa-list-check"></i>
+    </a>
+    @endunless
+
+    <style>
+    .rs-fab {
+        position: fixed; bottom: 6rem; right: 1.5rem; z-index: 1055;
+        width: 48px; height: 48px; border-radius: 50%; text-decoration: none;
+        background: #0A66C2; color: #fff;
+        display: flex; align-items: center; justify-content: center; font-size: 1.05rem;
+        transition: background .15s;
+    }
+    .rs-fab:hover { background: #004182; color: #fff; }
+    .rs-fab-taches { bottom: 10rem; background: #0D9488; color: #fff; }
+    .rs-fab-taches:hover { background: #0F766E; color: #fff; }
+    .rs-fab-badge {
+        position: absolute; top: -4px; right: -4px;
+        min-width: 20px; height: 20px; padding: 0 5px;
+        background: #DC2626; color: #fff;
+        border-radius: 10px; border: 2px solid #fff;
+        font-size: .68rem; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .rs-fab { position: fixed; } /* garantir la référence pour le badge absolute */
+    </style>
+
+    @auth
+    <script>
+    (function () {
+        function refreshFabBadges() {
+            fetch("{{ route('social.badges') }}", { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (data) {
+                    if (!data) return;
+                    // Le FAB Groupes a été remplacé par le FAB Tâches (sans badge dynamique).
+                    // Seul le badge Social reste actif.
+                    var el = document.getElementById('rsFabBadgeSocial');
+                    if (!el) return;
+                    var n = parseInt(data.social, 10) || 0;
+                    if (n <= 0) el.classList.add('d-none');
+                    else { el.textContent = n > 99 ? '99+' : String(n); el.classList.remove('d-none'); }
+                }).catch(function () {});
+        }
+        document.addEventListener('DOMContentLoaded', refreshFabBadges);
+        // Rafraîchit toutes les 60 s
+        setInterval(refreshFabBadges, 60000);
+    })();
+    </script>
+    @endauth
     @endauth
 
     <!-- Bootstrap 5 JS -->
@@ -163,6 +255,26 @@
                 overlay.addEventListener('click', function () {
                     sidebar.classList.remove('show');
                     overlay.classList.remove('show');
+                });
+            }
+
+            // ── Toggle desktop : réduire / étendre la sidebar (persisté) ──
+            const desktopToggle = document.getElementById('sidebarDesktopToggle');
+            const SB_KEY = 'sidebarCollapsed';
+            if (desktopToggle) {
+                desktopToggle.addEventListener('click', function () {
+                    const collapsed = document.body.classList.toggle('sidebar-collapsed');
+                    try { localStorage.setItem(SB_KEY, collapsed ? '1' : '0'); } catch (e) {}
+                });
+                // Si l'utilisateur clique sur un accordéon alors que la sidebar est réduite,
+                // on l'étend d'abord (sinon le collapse Bootstrap n'a pas d'effet visible)
+                document.querySelectorAll('.sb-acc-toggle').forEach(function (btn) {
+                    btn.addEventListener('click', function (e) {
+                        if (document.body.classList.contains('sidebar-collapsed')) {
+                            document.body.classList.remove('sidebar-collapsed');
+                            try { localStorage.setItem(SB_KEY, '0'); } catch (e) {}
+                        }
+                    }, true); // capture pour tourner AVANT Bootstrap
                 });
             }
 

@@ -18,9 +18,6 @@
         <p class="text-muted mb-0">D&eacute;tail de l'&eacute;criture comptable.</p>
     </div>
     <div class="d-flex gap-2">
-        <a href="{{ route('finance.grand-livre.edit', $ecriture) }}" class="btn btn-outline-secondary">
-            <i class="fas fa-pen me-1"></i>Modifier
-        </a>
         <a href="{{ route('finance.grand-livre.index') }}" class="btn btn-outline-primary">
             <i class="fas fa-arrow-left me-1"></i>Retour
         </a>

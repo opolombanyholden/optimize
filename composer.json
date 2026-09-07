@@ -15,6 +15,8 @@
         "laravel/sanctum": "^4.3",
         "laravel/tinker": "^2.10.1",
         "laravel/ui": "^4.6",
+        "phpoffice/phpspreadsheet": "*",
+        "phpoffice/phpword": "*",
         "spatie/laravel-activitylog": "^4.12",
         "spatie/laravel-permission": "^6.24"
     },

@@ -23,10 +23,13 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
-# Deploy dist archives (générées à la volée)
+# Deploy dist archives (générées à la volée, backups migration)
 /deploy/dist/*.tar.gz
 /deploy/dist/*.tar.gz.sha256
 /deploy/dist/optimiz-latest.tar.gz
+/deploy/dist/migration/*.tar.gz
+/deploy/dist/migration/*.sql
+/deploy/dist/migration/*.dump
 
 # Fichiers dev locaux
 _test-routes.php

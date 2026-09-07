@@ -17,6 +17,16 @@ class LoginController extends Controller implements HasMiddleware
     protected $redirectTo = '/dashboard';
 
     /**
+     * Hook exécuté après une authentification réussie.
+     * Flash le drapeau qui déclenche l'affichage de la modale de choix d'espace
+     * sur la première page qui suit le login (le dashboard par défaut).
+     */
+    protected function authenticated(\Illuminate\Http\Request $request, $user)
+    {
+        $request->session()->flash('show_workspace_picker', true);
+    }
+
+    /**
      * Get the middleware that should be assigned to the controller.
      */
     public static function middleware(): array

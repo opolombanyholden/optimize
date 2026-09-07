@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Dysfonctionnement;
 use App\Models\Immobilisation;
 use App\Models\Intervention;
+use App\Models\NatureIntervention;
+use App\Models\TypeDysfonctionnement;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -135,6 +137,8 @@ class InterventionController extends Controller
             'immobilisations' => Immobilisation::orderBy('designation')->get(),
             'techniciens' => User::orderBy('name')->get(['id', 'name']),
             'types' => Intervention::TYPES,
+            'typesReferentiel' => TypeDysfonctionnement::with('famille')->orderBy('libelle')->get(),
+            'natures' => NatureIntervention::where('actif', true)->orderBy('libelle')->get(),
         ];
     }
 
@@ -147,9 +151,14 @@ class InterventionController extends Controller
             'thematique_id' => 'nullable|exists:mg_thematiques,id',
             'immobilisation_id' => 'nullable|exists:immobilisations,id',
             'technicien_id' => 'nullable|exists:users,id',
+            'type_id' => 'nullable|exists:typesdysfonctionnements,id',
+            'nature_id' => 'nullable|exists:natures_intervention,id',
             'type_intervention' => 'nullable|in:preventive,corrective,curative,ameliorative',
             'date_planifiee' => 'nullable|date',
             'cout' => 'nullable|numeric|min:0',
+            'statut_resolution' => 'nullable|in:resolu,partiel,non_resolu',
+            'resultat' => 'nullable|string|max:5000',
+            'preuve'   => 'nullable|string|max:5000',
             'pieces_jointes.*' => 'nullable|file|max:20480',
         ]);
     }

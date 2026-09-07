@@ -7,6 +7,10 @@ use App\Models\Dysfonctionnement;
 use App\Models\Immobilisation;
 use App\Models\Intervention;
 use App\Models\TypeDysfonctionnement;
+use App\Models\Organisation;
+use App\Models\User;
+use App\Models\Intranet\Groupe;
+use App\Models\Intranet\Service;
 use Illuminate\Http\Request;
 
 class DysfonctionnementController extends Controller
@@ -32,12 +36,10 @@ class DysfonctionnementController extends Controller
 
     public function create()
     {
-        return view('mg.dysfonctionnements.create', [
-            'dysfonctionnement' => new Dysfonctionnement(['priorite' => 'normale']),
-            'types' => TypeDysfonctionnement::all(),
-            'immobilisations' => Immobilisation::orderBy('designation')->get(),
-            'priorites' => Dysfonctionnement::PRIORITES,
-        ]);
+        return view('mg.dysfonctionnements.create', array_merge(
+            ['dysfonctionnement' => new Dysfonctionnement(['priorite' => 'normale'])],
+            $this->assignationOptions(),
+        ));
     }
 
     public function store(Request $request)
@@ -49,6 +51,7 @@ class DysfonctionnementController extends Controller
 
         $d = Dysfonctionnement::create($validated);
         if ($request->hasFile('pieces_jointes')) $d->attacherFichiers($request->file('pieces_jointes'), 'mg/dysfonctionnements');
+        $d->assignerA($this->parseCibles($request->input('assignees', [])), null, $request->user()->id);
 
         return redirect()->route('mg.dysfonctionnements.show', $d)->with('success', 'Dysfonctionnement signalé.');
     }
@@ -61,18 +64,18 @@ class DysfonctionnementController extends Controller
 
     public function edit(Dysfonctionnement $dysfonctionnement)
     {
-        return view('mg.dysfonctionnements.edit', [
-            'dysfonctionnement' => $dysfonctionnement,
-            'types' => TypeDysfonctionnement::all(),
-            'immobilisations' => Immobilisation::orderBy('designation')->get(),
-            'priorites' => Dysfonctionnement::PRIORITES,
-        ]);
+        $dysfonctionnement->load('assignationsActives');
+        return view('mg.dysfonctionnements.edit', array_merge(
+            ['dysfonctionnement' => $dysfonctionnement],
+            $this->assignationOptions(),
+        ));
     }
 
     public function update(Request $request, Dysfonctionnement $dysfonctionnement)
     {
         $dysfonctionnement->update($this->validateData($request));
         if ($request->hasFile('pieces_jointes')) $dysfonctionnement->attacherFichiers($request->file('pieces_jointes'), 'mg/dysfonctionnements');
+        $dysfonctionnement->synchroniserAssignations($this->parseCibles($request->input('assignees', [])), $request->user()->id);
         return redirect()->route('mg.dysfonctionnements.show', $dysfonctionnement)->with('success', 'Dysfonctionnement mis à jour.');
     }
 
@@ -126,6 +129,41 @@ class DysfonctionnementController extends Controller
     }
 
     /**
+     * L'émetteur (déclarant) valide la résolution proposée par le technicien.
+     * Seul le déclarant (ou un super-admin) peut valider.
+     */
+    public function validerResolution(Request $request, Dysfonctionnement $dysfonctionnement)
+    {
+        if (!$dysfonctionnement->attendValidationResolution()) {
+            return back()->with('error', 'Aucune résolution en attente de validation.');
+        }
+        $user = $request->user();
+        if (!$dysfonctionnement->emetteurEst($user->id) && !$user->hasRole('super-admin')) {
+            return back()->with('error', 'Seul l\'émetteur du ticket peut valider la résolution.');
+        }
+        $data = $request->validate(['commentaire_validation_resolution' => 'nullable|string|max:2000']);
+        $dysfonctionnement->validerResolutionParEmetteur($data['commentaire_validation_resolution'] ?? null, $user->id);
+        return back()->with('success', 'Résolution validée — ticket marqué résolu.');
+    }
+
+    /**
+     * L'émetteur rejette la résolution proposée : le ticket reste ouvert.
+     */
+    public function rejeterResolution(Request $request, Dysfonctionnement $dysfonctionnement)
+    {
+        if (!$dysfonctionnement->attendValidationResolution()) {
+            return back()->with('error', 'Aucune résolution en attente de validation.');
+        }
+        $user = $request->user();
+        if (!$dysfonctionnement->emetteurEst($user->id) && !$user->hasRole('super-admin')) {
+            return back()->with('error', 'Seul l\'émetteur du ticket peut rejeter la résolution.');
+        }
+        $data = $request->validate(['motif_rejet' => 'required|string|max:2000']);
+        $dysfonctionnement->rejeterResolutionParEmetteur($data['motif_rejet'], $user->id);
+        return back()->with('success', 'Résolution rejetée — le ticket reste ouvert.');
+    }
+
+    /**
      * Planifie une intervention à partir du dysfonctionnement (rattachement direct).
      */
     public function planifierIntervention(Request $request, Dysfonctionnement $dysfonctionnement)
@@ -155,6 +193,38 @@ class DysfonctionnementController extends Controller
             'localisation' => 'nullable|string|max:255',
             'priorite' => 'nullable|in:basse,normale,haute,critique',
             'pieces_jointes.*' => 'nullable|file|max:20480',
+            'assignees'   => 'nullable|array',
+            'assignees.*' => ['string', 'regex:/^(user|service|groupe|entite):\d+$/'],
         ]);
+    }
+
+    /**
+     * Options communes aux formulaires de création/édition pour le sélecteur d'assignés.
+     */
+    private function assignationOptions(): array
+    {
+        return [
+            'types'           => TypeDysfonctionnement::all(),
+            'immobilisations' => Immobilisation::orderBy('designation')->get(),
+            'priorites'       => Dysfonctionnement::PRIORITES,
+            'usersDispo'      => User::orderBy('name')->get(['id', 'name', 'prenoms']),
+            'servicesDispo'   => Service::orderBy('nom')->get(['id', 'nom']),
+            'groupesDispo'    => Groupe::orderBy('nom')->get(['id', 'nom']),
+            'entitesDispo'    => Organisation::orderBy('label')->get(['id', 'label']),
+        ];
+    }
+
+    /**
+     * Transforme les valeurs du <select multiple> ("user:12", "service:3", ...) en tableau exploitable
+     * par Dysfonctionnement::assignerA().
+     */
+    private function parseCibles(array $raw): array
+    {
+        $out = [];
+        foreach ($raw as $item) {
+            if (!is_string($item) || !preg_match('/^(user|service|groupe|entite):(\d+)$/', $item, $m)) continue;
+            $out[] = ['type' => $m[1], 'id' => (int) $m[2]];
+        }
+        return $out;
     }
 }

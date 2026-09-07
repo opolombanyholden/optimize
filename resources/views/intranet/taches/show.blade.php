@@ -9,7 +9,7 @@
     <li class="breadcrumb-item"><a href="{{ route('projet.wbs.show', [$tache->projet, $tache->phase]) }}">{{ Str::limit($tache->phase->nom, 20) }}</a></li>
     @endif
     @else
-    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Intranet</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('projet.dashboard') }}">Gestion Projet</a></li>
     <li class="breadcrumb-item"><a href="{{ route('intranet.taches.index') }}">Tâches</a></li>
     @endif
     <li class="breadcrumb-item active">{{ Str::limit($tache->titre, 35) }}</li>

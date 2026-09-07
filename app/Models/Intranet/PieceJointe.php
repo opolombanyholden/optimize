@@ -3,10 +3,14 @@
 namespace App\Models\Intranet;
 
 use App\Models\User;
+use App\Traits\Intranet\HasCommentaires;
+use App\Traits\Intranet\HasLikes;
 use Illuminate\Database\Eloquent\Model;
 
 class PieceJointe extends Model
 {
+    use HasLikes, HasCommentaires;
+
     protected $table = 'intranet_pieces_jointes';
 
     protected $fillable = [

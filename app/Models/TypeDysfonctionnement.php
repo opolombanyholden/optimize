@@ -12,12 +12,17 @@ class TypeDysfonctionnement extends Model
     protected $table = 'typesdysfonctionnements';
 
     protected $fillable = [
-        'libelle', 'description', 'extra_attributes',
+        'famille_id', 'libelle', 'description', 'extra_attributes',
     ];
 
     protected function casts(): array
     {
         return ['extra_attributes' => 'array'];
+    }
+
+    public function famille()
+    {
+        return $this->belongsTo(FamilleDysfonctionnement::class, 'famille_id');
     }
 
     public function dysfonctionnements()

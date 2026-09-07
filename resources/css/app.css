@@ -319,6 +319,14 @@ body {
     }
 }
 
+@media (max-width: 575.98px) {
+    .main-content {
+        padding: 0;
+        margin-left: 0;
+        margin-right: 0;
+    }
+}
+
 /* ===== SIDEBAR TOGGLE ANIMATION ===== */
 .sidebar-overlay {
     display: none;

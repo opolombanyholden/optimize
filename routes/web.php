@@ -76,6 +76,43 @@ Route::middleware(['auth'])->group(function () {
 
 // Routes protégées
 Route::middleware(['auth'])->group(function () {
+
+    // ═════════ GUIDE & DOCS — Manuels utilisateurs ═════════
+    Route::prefix('docs')->name('docs.')->group(function () {
+        $dc = \App\Http\Controllers\DocsController::class;
+        Route::get('/',              [$dc, 'index'])->name('index');
+        Route::get('/{slug}',        [$dc, 'show'])->name('show');
+        Route::get('/{slug}/pdf',    [$dc, 'pdf'])->name('pdf');
+    });
+
+    // ═════════ SOCIAL — Réseau social interne ═════════
+    Route::prefix('social')->name('social.')->group(function () {
+        $sc = \App\Http\Controllers\Social\SocialController::class;
+        Route::get('/',                    [$sc, 'dashboard'])->name('dashboard');
+        Route::get('/badges',              [$sc, 'badges'])->name('badges');
+        Route::post('/posts',              [$sc, 'store'])->name('posts.store');
+        Route::get('/posts/{post}',        [$sc, 'showPost'])->name('posts.show');
+        Route::put('/posts/{post}',        [$sc, 'update'])->name('posts.update');
+        Route::delete('/posts/{post}',     [$sc, 'destroy'])->name('posts.destroy');
+        Route::post('/posts/{post}/like',  [$sc, 'toggleLike'])->name('posts.like');
+        Route::post('/posts/{post}/comment', [$sc, 'comment'])->name('posts.comment');
+        Route::post('/media/{media}/like',    [$sc, 'toggleMediaLike'])->name('media.like');
+        Route::post('/media/{media}/comment', [$sc, 'commentMedia'])->name('media.comment');
+
+        // Groupes de discussion (chat)
+        $gc = \App\Http\Controllers\Social\GroupController::class;
+        Route::get('/groups',                   [$gc, 'index'])->name('groups.index');
+        Route::post('/groups',                  [$gc, 'store'])->name('groups.store');
+        Route::get('/groups/{group}',           [$gc, 'show'])->name('groups.show');
+        Route::post('/groups/{group}/messages', [$gc, 'postMessage'])->name('groups.postMessage');
+        Route::get('/groups/{group}/messages',  [$gc, 'fetchMessages'])->name('groups.fetchMessages');
+        Route::post('/groups/{group}/invite',   [$gc, 'invite'])->name('groups.invite');
+        Route::post('/groups/{group}/leave',    [$gc, 'leave'])->name('groups.leave');
+        Route::delete('/groups/{group}',        [$gc, 'destroy'])->name('groups.destroy');
+        Route::get('/shareable/search',         [$gc, 'searchShareable'])->name('shareable.search');
+        Route::get('/mention/autocomplete',     [$gc, 'mentionAutocomplete'])->name('mention.autocomplete');
+    });
+
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -86,49 +123,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/pointage/validation-n1', [PointageSelfController::class, 'validationN1Index'])->name('pointage.validation-n1');
     Route::post('/pointage/validation-n1/{pointage}', [PointageSelfController::class, 'validationN1Action'])->name('pointage.validation-n1.action');
 
-    // ===== FINANCE V2 — Aligné au CdC initial OPTIMIZE Finance =====
-    Route::prefix('finance/v2')->name('finance.v2.')->middleware('permission:read:exercice|read:budget')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Finance\V2\DashboardV2Controller::class, 'index'])->name('dashboard');
-
-        // Sources de financement
-        Route::get('sources', [\App\Http\Controllers\Finance\V2\SourceController::class, 'index'])->name('sources.index');
-        Route::get('sources/create', [\App\Http\Controllers\Finance\V2\SourceController::class, 'create'])->name('sources.create');
-        Route::post('sources', [\App\Http\Controllers\Finance\V2\SourceController::class, 'store'])->name('sources.store');
-        Route::get('sources/{source}/edit', [\App\Http\Controllers\Finance\V2\SourceController::class, 'edit'])->name('sources.edit');
-        Route::put('sources/{source}', [\App\Http\Controllers\Finance\V2\SourceController::class, 'update'])->name('sources.update');
-        Route::delete('sources/{source}', [\App\Http\Controllers\Finance\V2\SourceController::class, 'destroy'])->name('sources.destroy');
-
-        // Budgets & planification
-        Route::get('budgets', [\App\Http\Controllers\Finance\V2\BudgetController::class, 'index'])->name('budgets.index');
-        Route::get('budgets/planification/{exercice}', [\App\Http\Controllers\Finance\V2\BudgetController::class, 'planification'])->name('budgets.planification');
-        Route::post('budgets/planification/{exercice}', [\App\Http\Controllers\Finance\V2\BudgetController::class, 'planificationSave'])->name('budgets.planification.save');
-
-        // Transactions
-        Route::get('transactions', [\App\Http\Controllers\Finance\V2\TransactionController::class, 'index'])->name('transactions.index');
-        Route::get('transactions/create', [\App\Http\Controllers\Finance\V2\TransactionController::class, 'create'])->name('transactions.create');
-        Route::post('transactions', [\App\Http\Controllers\Finance\V2\TransactionController::class, 'store'])->name('transactions.store');
-        Route::get('transactions/{transaction}', [\App\Http\Controllers\Finance\V2\TransactionController::class, 'show'])->name('transactions.show');
-        Route::post('transactions/{transaction}/soumettre', [\App\Http\Controllers\Finance\V2\TransactionController::class, 'soumettre'])->name('transactions.soumettre');
-        Route::post('transactions/{transaction}/valider', [\App\Http\Controllers\Finance\V2\TransactionController::class, 'valider'])->name('transactions.valider');
-        Route::post('transactions/{transaction}/payer', [\App\Http\Controllers\Finance\V2\TransactionController::class, 'payer'])->name('transactions.payer');
-        Route::post('transactions/{transaction}/annuler', [\App\Http\Controllers\Finance\V2\TransactionController::class, 'annuler'])->name('transactions.annuler');
-
-        // Modifs
-        Route::get('modifs', [\App\Http\Controllers\Finance\V2\ModifController::class, 'index'])->name('modifs.index');
-        Route::get('modifs/create', [\App\Http\Controllers\Finance\V2\ModifController::class, 'create'])->name('modifs.create');
-        Route::post('modifs', [\App\Http\Controllers\Finance\V2\ModifController::class, 'store'])->name('modifs.store');
-        Route::get('modifs/{modif}', [\App\Http\Controllers\Finance\V2\ModifController::class, 'show'])->name('modifs.show');
-        Route::post('modifs/{modif}/soumettre', [\App\Http\Controllers\Finance\V2\ModifController::class, 'soumettre'])->name('modifs.soumettre');
-        Route::post('modifs/{modif}/approuver', [\App\Http\Controllers\Finance\V2\ModifController::class, 'approuver'])->name('modifs.approuver');
-        Route::post('modifs/{modif}/rejeter', [\App\Http\Controllers\Finance\V2\ModifController::class, 'rejeter'])->name('modifs.rejeter');
-        Route::post('modifs/{modif}/appliquer', [\App\Http\Controllers\Finance\V2\ModifController::class, 'appliquer'])->name('modifs.appliquer');
-        Route::post('modifs/{modif}/annuler', [\App\Http\Controllers\Finance\V2\ModifController::class, 'annuler'])->name('modifs.annuler');
-    });
+    // ===== FINANCE V2 — désactivé
+    //   Le dashboard Finance principal (/finance) est désormais l'entrée unique.
+    //   Ancienne bookmarks : redirection permanente vers /finance.
+    Route::redirect('/finance/v2', '/finance', 301);
+    Route::redirect('/finance/v2/{any}', '/finance', 301)->where('any', '.*');
 
     // ===== FINANCE (ancienne architecture — conservée) =====
     Route::prefix('finance')->name('finance.')->middleware('permission:read:exercice|read:budget|read:grandlivre|read:compte|read:client|read:facture|read:operation')->group(function () {
         // Dashboard Finance (KPIs, exécution budgétaire, alertes)
         Route::get('/', [\App\Http\Controllers\Finance\FinanceDashboardController::class, 'index'])->name('dashboard');
+
+        // Dashboard d'exécution budgétaire (par ligne : planif / modifs / consommation / solde)
+        Route::get('execution-budgetaire', [\App\Http\Controllers\Finance\BudgetExecutionController::class, 'index'])
+            ->middleware('permission:read:budget')->name('execution-budgetaire');
 
         // Exports PDF (spec CdC §2 « modèle d'impression personnalisable »)
         Route::get('exports/budget/{exercice}', [\App\Http\Controllers\Finance\FinanceExportController::class, 'budgetPdf'])
@@ -218,13 +226,13 @@ Route::middleware(['auth'])->group(function () {
             ->middleware('permission:validate:budget')->name('modifications-budgetaires.annuler');
 
         // Grand-livre : permissions par action (les écritures sont sensibles)
-        Route::get('grand-livre', [GrandLivreController::class, 'index'])->middleware('permission:read:grandlivre')->name('grand-livre.index');
-        Route::get('grand-livre/create', [GrandLivreController::class, 'create'])->middleware('permission:create:grandlivre')->name('grand-livre.create');
-        Route::post('grand-livre', [GrandLivreController::class, 'store'])->middleware('permission:create:grandlivre')->name('grand-livre.store');
-        Route::get('grand-livre/{grand_livre}', [GrandLivreController::class, 'show'])->middleware('permission:read:grandlivre')->name('grand-livre.show');
-        Route::get('grand-livre/{grand_livre}/edit', [GrandLivreController::class, 'edit'])->middleware('permission:update:grandlivre')->name('grand-livre.edit');
-        Route::put('grand-livre/{grand_livre}', [GrandLivreController::class, 'update'])->middleware('permission:update:grandlivre')->name('grand-livre.update');
-        Route::delete('grand-livre/{grand_livre}', [GrandLivreController::class, 'destroy'])->middleware('permission:delete:grandlivre')->name('grand-livre.destroy');
+        // Grand-livre : LECTURE SEULE (saisie unitaire) + EXPORT CSV + IMPORT CSV en bulk
+        Route::get('grand-livre',                       [GrandLivreController::class, 'index'])->middleware('permission:read:grandlivre')->name('grand-livre.index');
+        Route::get('grand-livre/export',                [GrandLivreController::class, 'export'])->middleware('permission:read:grandlivre|export:grandlivre')->name('grand-livre.export');
+        Route::get('grand-livre/import',                [GrandLivreController::class, 'importForm'])->middleware('permission:create:grandlivre')->name('grand-livre.import.form');
+        Route::post('grand-livre/import',               [GrandLivreController::class, 'importStore'])->middleware('permission:create:grandlivre')->name('grand-livre.import.store');
+        Route::get('grand-livre/import/template',       [GrandLivreController::class, 'importTemplate'])->middleware('permission:create:grandlivre')->name('grand-livre.import.template');
+        Route::get('grand-livre/{grand_livre}',         [GrandLivreController::class, 'show'])->middleware('permission:read:grandlivre')->name('grand-livre.show');
 
         // ───── CLIENTS → redirigés vers /intranet/organisations?type=client (fusion) ─────
         Route::get('clients', fn() => redirect()->route('intranet.organisations.index', ['type' => 'client']))->name('clients.index');
@@ -326,6 +334,12 @@ Route::middleware(['auth'])->group(function () {
             Route::put('rubriques/{rubrique}', [\App\Http\Controllers\Finance\RubriqueOperationController::class, 'update'])->middleware('permission:update:rubrique_operation')->name('rubriques.update');
             Route::delete('rubriques/{rubrique}', [\App\Http\Controllers\Finance\RubriqueOperationController::class, 'destroy'])->middleware('permission:delete:rubrique_operation')->name('rubriques.destroy');
 
+            // Sources de financement (référentiel)
+            Route::get('sources',                [\App\Http\Controllers\Finance\SourceController::class, 'index'])->middleware('permission:read:budget')->name('sources.index');
+            Route::post('sources',               [\App\Http\Controllers\Finance\SourceController::class, 'store'])->middleware('permission:create:budget')->name('sources.store');
+            Route::put('sources/{source}',       [\App\Http\Controllers\Finance\SourceController::class, 'update'])->middleware('permission:update:budget')->name('sources.update');
+            Route::delete('sources/{source}',    [\App\Http\Controllers\Finance\SourceController::class, 'destroy'])->middleware('permission:delete:budget')->name('sources.destroy');
+
             // ─── Ordres : administration des modèles (templates) ───
             $om = \App\Http\Controllers\Finance\OrdreModeleController::class;
             Route::prefix('ordres-modeles')->name('ordres-modeles.')->group(function () use ($om) {
@@ -380,6 +394,25 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('formations', FormationController::class)->middleware('permission:read:formation');
         Route::resource('missions', MissionController::class)->middleware('permission:read:mission');
         Route::resource('rubriques', RubriqueController::class)->middleware('permission:read:rubrique_operation');
+
+        // ── Grades (référentiel) + Avancements (historique) ──
+        $gc = \App\Http\Controllers\RH\GradeController::class;
+        Route::get   ('grades',                  [$gc, 'index'])->middleware('permission:read:employee')->name('grades.index');
+        Route::get   ('grades/{grade}',          [$gc, 'show'])->middleware('permission:read:employee')->name('grades.show');
+        Route::post  ('grades',                  [$gc, 'store'])->middleware('permission:update:employee')->name('grades.store');
+        Route::put   ('grades/{grade}',          [$gc, 'update'])->middleware('permission:update:employee')->name('grades.update');
+        Route::delete('grades/{grade}',          [$gc, 'destroy'])->middleware('permission:delete:employee')->name('grades.destroy');
+        Route::post  ('grades/{grade}/criteres', [$gc, 'storeCritere'])->middleware('permission:update:employee')->name('grades.criteres.store');
+        Route::put   ('grades/{grade}/criteres/{critere}', [$gc, 'updateCritere'])->middleware('permission:update:employee')->name('grades.criteres.update');
+        Route::delete('grades/{grade}/criteres/{critere}', [$gc, 'destroyCritere'])->middleware('permission:update:employee')->name('grades.criteres.destroy');
+
+        $ac = \App\Http\Controllers\RH\AvancementController::class;
+        Route::get   ('employees/{employee}/avancements',              [$ac, 'index'])->middleware('permission:read:employee')->name('employees.avancements.index');
+        Route::post  ('employees/{employee}/avancements',              [$ac, 'store'])->middleware('permission:update:employee')->name('employees.avancements.store');
+        Route::delete('employees/{employee}/avancements/{avancement}', [$ac, 'destroy'])->middleware('permission:delete:employee')->name('employees.avancements.destroy');
+        Route::post  ('avancements/detecter-auto',                     [$ac, 'detecterAutomatiques'])->middleware('permission:update:employee')->name('avancements.detecter-auto');
+        Route::post  ('avancements/{avancement}/valider',              [$ac, 'valider'])->middleware('permission:update:employee')->name('avancements.valider');
+        Route::post  ('avancements/{avancement}/refuser',              [$ac, 'refuser'])->middleware('permission:update:employee')->name('avancements.refuser');
         Route::resource('evenements-carriere', EvenementCarriereController::class)
             ->parameters(['evenements-carriere' => 'evenements_carriere'])
             ->middleware('permission:read:evenement_carriere');
@@ -512,6 +545,16 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ===== ACHATS / APPROVISIONNEMENTS =====
+    // Dashboard combiné Achats + Moyens Généraux — ouvert à tout utilisateur authentifié
+    Route::get('appro/dashboard', [\App\Http\Controllers\Appro\LogistiqueDashboardController::class, 'index'])
+        ->name('appro.dashboard');
+    Route::get('appro', fn() => redirect()->route('appro.dashboard'))->name('appro.index');
+
+    // Endpoint AJAX polling ruptures stock — restreint aux gestionnaires Achats/MG + admins
+    Route::get('appro/stock/rupture-check', [\App\Http\Controllers\Appro\LogistiqueDashboardController::class, 'stockRuptureCheck'])
+        ->middleware('permission:update:produit|update:commande|update:dysfonctionnement')
+        ->name('appro.stock.rupture-check');
+
     Route::prefix('appro')->name('appro.')->middleware('permission:read:fournisseur|read:produit|read:commande')->group(function () {
         // ── Fournisseurs → redirigés vers /intranet/organisations?type=fournisseur (fusion) ──
         Route::get('fournisseurs', fn() => redirect()->route('intranet.organisations.index', ['type' => 'fournisseur']))->name('fournisseurs.index');
@@ -544,6 +587,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('commandes/{commande}/annuler',         [$cmd, 'annuler'])->middleware('permission:update:commande')->name('commandes.annuler');
         Route::post('commandes/{commande}/generer-facture', [$cmd, 'genererFacture'])->middleware('permission:create:facture')->name('commandes.generer-facture');
 
+        // ── Contrats fournisseurs ─────────────────────────────
+        $ctr = \App\Http\Controllers\Appro\ContratFournisseurController::class;
+        Route::resource('contrats', $ctr)->parameters(['contrats' => 'contrat']);
+        Route::post('contrats/{contrat}/activer',   [$ctr, 'activer'])->name('contrats.activer');
+        Route::post('contrats/{contrat}/resilier',  [$ctr, 'resilier'])->name('contrats.resilier');
+        Route::post('contrats/{contrat}/renouveler',[$ctr, 'renouveler'])->name('contrats.renouveler');
+        Route::post('contrats/{contrat}/avenants',  [$ctr, 'addAvenant'])->name('contrats.avenants.store');
     });
 
     // ===== APPRO — accès élargi (commandes internes ouvertes à tout agent, évaluations aux référents) =====
@@ -633,6 +683,26 @@ Route::middleware(['auth'])->group(function () {
         Route::post('mg-thematiques/{thematique}/toggle', [\App\Http\Controllers\Referentiel\MgThematiqueController::class, 'toggle'])
             ->name('mg-thematiques.toggle');
 
+        // Familles de dysfonctionnement (parent des types)
+        Route::resource('familles-dysfonctionnement', \App\Http\Controllers\Referentiel\FamilleDysfonctionnementController::class)
+            ->only(['index', 'store', 'update', 'destroy'])->parameters(['familles-dysfonctionnement' => 'famille']);
+
+        // Types de dysfonctionnement
+        Route::resource('types-dysfonctionnement', \App\Http\Controllers\Referentiel\TypeDysfonctionnementController::class)
+            ->only(['index', 'store', 'update', 'destroy'])->parameters(['types-dysfonctionnement' => 'type']);
+
+        // Natures d'intervention
+        Route::resource('natures-intervention', \App\Http\Controllers\Referentiel\NatureInterventionController::class)
+            ->only(['index', 'store', 'update', 'destroy'])->parameters(['natures-intervention' => 'nature']);
+
+        // Types d'engagement fournisseur
+        Route::resource('types-engagement', \App\Http\Controllers\Referentiel\TypeEngagementController::class)
+            ->only(['index', 'store', 'update', 'destroy'])->parameters(['types-engagement' => 'type']);
+
+        // Fréquences de paiement
+        Route::resource('frequences-paiement', \App\Http\Controllers\Referentiel\FrequencePaiementController::class)
+            ->only(['index', 'store', 'update', 'destroy'])->parameters(['frequences-paiement' => 'frequence']);
+
         // Emplacements de stockage (hiérarchiques)
         Route::resource('emplacements', \App\Http\Controllers\Referentiel\EmplacementController::class)
             ->only(['index', 'show', 'store', 'update', 'destroy'])->parameters(['emplacements' => 'emplacement']);
@@ -649,6 +719,8 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('dysfonctionnements', DysfonctionnementController::class)->middleware('permission:read:dysfonctionnement');
         Route::post('dysfonctionnements/{dysfonctionnement}/prendre-en-charge', [DysfonctionnementController::class, 'prendreEnCharge'])->name('dysfonctionnements.prendre-en-charge')->middleware('permission:update:dysfonctionnement');
         Route::post('dysfonctionnements/{dysfonctionnement}/resoudre', [DysfonctionnementController::class, 'resoudre'])->name('dysfonctionnements.resoudre')->middleware('permission:update:dysfonctionnement');
+        Route::post('dysfonctionnements/{dysfonctionnement}/valider-resolution', [DysfonctionnementController::class, 'validerResolution'])->name('dysfonctionnements.valider-resolution');
+        Route::post('dysfonctionnements/{dysfonctionnement}/rejeter-resolution', [DysfonctionnementController::class, 'rejeterResolution'])->name('dysfonctionnements.rejeter-resolution');
         Route::post('dysfonctionnements/{dysfonctionnement}/fermer', [DysfonctionnementController::class, 'fermer'])->name('dysfonctionnements.fermer')->middleware('permission:update:dysfonctionnement');
         Route::post('dysfonctionnements/{dysfonctionnement}/planifier-intervention', [DysfonctionnementController::class, 'planifierIntervention'])->name('dysfonctionnements.planifier-intervention')->middleware('permission:create:intervention');
         Route::post('dysfonctionnements/{dysfonctionnement}/prioriser', [DysfonctionnementController::class, 'prioriser'])->name('dysfonctionnements.prioriser')->middleware('permission:validate:dysfonctionnement');
@@ -670,6 +742,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [\App\Http\Controllers\Projet\DashboardController::class, 'index'])->name('dashboard');
         // Dashboard d'un projet
         Route::get('{projet}/overview', [\App\Http\Controllers\Projet\DashboardController::class, 'show'])->name('overview');
+
+        // Endpoint AJAX polling — alertes tâches perso (retard + non démarrées)
+        Route::get('alertes/taches-check', [\App\Http\Controllers\Projet\DashboardController::class, 'tachesAlertesCheck'])
+            ->middleware('permission:read:tache_intranet')
+            ->name('alertes.taches-check');
 
         // Tâches du projet
         Route::get('{projet}/taches', [\App\Http\Controllers\Projet\TacheProjetController::class, 'index'])->name('taches.index');
@@ -773,6 +850,13 @@ Route::middleware(['auth'])->group(function () {
 
     // ===== INTRANET =====
     Route::prefix('intranet')->name('intranet.')->group(function () {
+        // Vœux d'anniversaire — accessible à tout utilisateur authentifié
+        Route::post('anniversaires/{employee}/wish', [\App\Http\Controllers\Intranet\BirthdayWishController::class, 'store'])
+            ->name('anniversaires.wish');
+        // Contenu du drawer réseau social (lazy-loaded)
+        Route::get('social/drawer', [\App\Http\Controllers\Intranet\SocialFeedController::class, 'drawer'])
+            ->name('social.drawer');
+
         Route::resource('annonces', AnnonceController::class)
             ->middlewareFor(['index', 'show'],   'permission:read:annonce')
             ->middlewareFor(['create', 'store'], 'permission:create:annonce')
@@ -1115,7 +1199,46 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ===== ADMINISTRATION / PARAMÉTRAGE =====
-    Route::prefix('admin')->name('admin.')->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware('role:super-admin|admin')->group(function () {
+
+        // ── Utilisateurs (CRUD + rôles + reset password + activation) ─────
+        $uc = \App\Http\Controllers\Admin\UserController::class;
+        Route::get   ('users',                 [$uc, 'index'])->name('users.index');
+        Route::post  ('users',                 [$uc, 'store'])->name('users.store');
+        Route::put   ('users/{user}',          [$uc, 'update'])->name('users.update');
+        Route::delete('users/{user}',          [$uc, 'destroy'])->name('users.destroy');
+        Route::post  ('users/{user}/toggle',   [$uc, 'toggleActif'])->name('users.toggle');
+        Route::post  ('users/{user}/reset',    [$uc, 'resetPassword'])->name('users.reset');
+
+        // ── Rôles + matrice de permissions ────────────────────────────────
+        $rc = \App\Http\Controllers\Admin\RoleController::class;
+        Route::get   ('roles',                       [$rc, 'index'])->name('roles.index');
+        Route::get   ('roles/{role}',                [$rc, 'show'])->name('roles.show');
+        Route::post  ('roles',                       [$rc, 'store'])->name('roles.store');
+        Route::put   ('roles/{role}',                [$rc, 'update'])->name('roles.update');
+        Route::delete('roles/{role}',                [$rc, 'destroy'])->name('roles.destroy');
+        Route::put   ('roles/{role}/permissions',    [$rc, 'syncPermissions'])->name('roles.permissions.sync');
+
+        // ── Permissions (lecture seule) ───────────────────────────────────
+        Route::get('permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'index'])->name('permissions.index');
+
+        // ── Configuration système (key/value) ─────────────────────────────
+        Route::get ('config',  [\App\Http\Controllers\Admin\ConfigController::class, 'index'])->name('config.index');
+        Route::put ('config',  [\App\Http\Controllers\Admin\ConfigController::class, 'update'])->name('config.update');
+
+        // ── Référentiels intranet (statuts, priorités) ────────────────────
+        $sc = \App\Http\Controllers\Admin\StatutController::class;
+        Route::get   ('statuts',           [$sc, 'index'])->name('statuts.index');
+        Route::post  ('statuts',           [$sc, 'store'])->name('statuts.store');
+        Route::put   ('statuts/{statut}',  [$sc, 'update'])->name('statuts.update');
+        Route::delete('statuts/{statut}',  [$sc, 'destroy'])->name('statuts.destroy');
+
+        $pc = \App\Http\Controllers\Admin\PrioriteController::class;
+        Route::get   ('priorites',              [$pc, 'index'])->name('priorites.index');
+        Route::post  ('priorites',              [$pc, 'store'])->name('priorites.store');
+        Route::put   ('priorites/{priorite}',   [$pc, 'update'])->name('priorites.update');
+        Route::delete('priorites/{priorite}',   [$pc, 'destroy'])->name('priorites.destroy');
+
         // Référentiels RH (types de contrat, postes, départements)
         // Endpoint JSON (plus spécifique, déclaré en premier)
         Route::get('referentiel-rh/{type}/options', [\App\Http\Controllers\Admin\ReferentielRhController::class, 'options'])

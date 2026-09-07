@@ -226,45 +226,39 @@ body {
     text-decoration: none;
 }
 
-/* Indicateur du projet courant dans la sidebar PMP */
-.sb-current-projet {
-    display: flex;
-    align-items: center;
-    gap: .55rem;
-    margin: .35rem .75rem .25rem;
-    padding: .5rem .7rem;
-    background: rgba(45,212,191,.08);
-    border: 1px solid rgba(45,212,191,.22);
-    border-radius: 9px;
-    color: #2DD4BF;
-    text-decoration: none;
-    font-size: .76rem;
-    font-weight: 600;
-    transition: all .18s ease;
+/* ─── Ligne combinée : lien principal + bouton "+ ajout rapide" ────
+   Pattern : deux items côte à côte, le lien prend la largeur restante,
+   le bouton "+" reste compact à droite. Utilisé pour les fonctionnalités
+   prioritaires (ex : Projets / Tâches dans le module Gestion de Projet). */
+.sb-link-row {
+    display: flex; align-items: stretch; gap: 2px;
+    margin: 1px .5rem; border-radius: 9px;
 }
-.sb-current-projet:hover {
-    background: rgba(45,212,191,.14);
-    color: #5EEAD4;
-    text-decoration: none;
+.sb-link-row > .sb-link {
+    flex: 1; margin: 0; border-radius: 9px 0 0 9px;
 }
-.sb-current-projet i {
-    font-size: .8rem;
-    flex-shrink: 0;
+.sb-link-row > .sb-quick-add {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 34px; flex-shrink: 0;
+    color: rgba(255,255,255,.55);
+    background: rgba(255,255,255,.04);
+    border: none; border-radius: 0 9px 9px 0;
+    text-decoration: none; transition: all .15s ease;
+    font-size: .78rem;
 }
-.sb-current-projet-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.sb-link-row > .sb-quick-add:hover {
+    background: rgba(255,255,255,.12);
+    color: #fff;
 }
-.sb-current-projet-empty {
-    background: rgba(148,163,184,.08);
-    border-color: rgba(148,163,184,.22);
-    color: #94A3B8;
-}
-.sb-current-projet-empty:hover {
-    color: #CBD5E1;
-    background: rgba(148,163,184,.14);
-}
+.sb-link-row.priority > .sb-link { font-weight: 600; }
+
+/* En mode sidebar réduite : bouton + caché, seul l'icône principale reste */
+body.sidebar-collapsed .sb-link-row > .sb-quick-add { display: none !important; }
+body.sidebar-collapsed .sb-link-row > .sb-link { border-radius: 9px; }
+
+/* Indicateur du projet courant : bloc CSS retiré — l'indicateur a été supprimé
+   de la sidebar. La logique PHP $currentProjet reste en amont pour alimenter
+   les liens contextualisés des accordéons via le helper $projetLink(). */
 
 /* Liens projet-dépendants quand aucun projet n'est sélectionné */
 .sb-link-needs-project {
@@ -564,6 +558,75 @@ body {
 .sb-accordion-rh .sb-acc-badge-dot {
     background: var(--sb-rh);
     box-shadow: 0 0 5px var(--sb-rh);
+}
+
+/* Accordion theming Finance (indigo) */
+.sb-accordion-finance .sb-acc-toggle:not(.collapsed) {
+    background: rgba(79,70,229,.08);
+}
+.sb-accordion-finance .sb-acc-icon {
+    color: var(--sb-finance);
+    background: var(--sb-finance-bg);
+}
+.sb-accordion-finance .sb-acc-toggle:not(.collapsed) .sb-acc-icon {
+    background: rgba(79,70,229,.2);
+    color: var(--sb-finance);
+}
+.sb-accordion-finance .sb-acc-toggle:not(.collapsed) .sb-acc-name {
+    color: var(--sb-finance);
+}
+.sb-accordion-finance .sb-acc-toggle:not(.collapsed) .sb-acc-chevron {
+    color: var(--sb-finance);
+}
+.sb-accordion-finance .sb-acc-badge-dot {
+    background: var(--sb-finance);
+    box-shadow: 0 0 5px var(--sb-finance);
+}
+
+/* Accordion theming Projet (teal) */
+.sb-accordion-projet .sb-acc-toggle:not(.collapsed) {
+    background: rgba(13,148,136,.08);
+}
+.sb-accordion-projet .sb-acc-icon {
+    color: var(--sb-projet);
+    background: var(--sb-projet-bg);
+}
+.sb-accordion-projet .sb-acc-toggle:not(.collapsed) .sb-acc-icon {
+    background: rgba(13,148,136,.2);
+    color: var(--sb-projet);
+}
+.sb-accordion-projet .sb-acc-toggle:not(.collapsed) .sb-acc-name {
+    color: var(--sb-projet);
+}
+.sb-accordion-projet .sb-acc-toggle:not(.collapsed) .sb-acc-chevron {
+    color: var(--sb-projet);
+}
+.sb-accordion-projet .sb-acc-badge-dot {
+    background: var(--sb-projet);
+    box-shadow: 0 0 5px var(--sb-projet);
+}
+
+/* Accordion theming Objectifs (rose vif) */
+.sb-accordion-objectifs .sb-acc-toggle:not(.collapsed) {
+    background: rgba(219,39,119,.08);
+}
+.sb-accordion-objectifs .sb-acc-icon {
+    color: var(--sb-objectifs);
+    background: var(--sb-objectifs-bg);
+}
+.sb-accordion-objectifs .sb-acc-toggle:not(.collapsed) .sb-acc-icon {
+    background: rgba(219,39,119,.2);
+    color: var(--sb-objectifs);
+}
+.sb-accordion-objectifs .sb-acc-toggle:not(.collapsed) .sb-acc-name {
+    color: var(--sb-objectifs);
+}
+.sb-accordion-objectifs .sb-acc-toggle:not(.collapsed) .sb-acc-chevron {
+    color: var(--sb-objectifs);
+}
+.sb-accordion-objectifs .sb-acc-badge-dot {
+    background: var(--sb-objectifs);
+    box-shadow: 0 0 5px var(--sb-objectifs);
 }
 
 /* Admin */
@@ -1595,6 +1658,74 @@ body {
     transition: margin-left 0.3s ease;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR — MODE RÉDUIT (icônes seules)
+   Toggle via body.sidebar-collapsed, persistance localStorage.
+═══════════════════════════════════════════════════════════════ */
+body.sidebar-collapsed .sidebar     { width: var(--sidebar-collapsed-width); }
+body.sidebar-collapsed .top-navbar  { left: var(--sidebar-collapsed-width); }
+body.sidebar-collapsed .main-content{ margin-left: var(--sidebar-collapsed-width); }
+
+/* Masquer tous les textes en mode réduit */
+body.sidebar-collapsed .sb-label,
+body.sidebar-collapsed .sb-brand-name,
+body.sidebar-collapsed .sb-brand-sub,
+body.sidebar-collapsed .sb-mod-brand-text,
+body.sidebar-collapsed .sb-mod-name,
+body.sidebar-collapsed .sb-back-portal,
+body.sidebar-collapsed .sb-acc-name,
+body.sidebar-collapsed .sb-acc-chevron,
+body.sidebar-collapsed .sb-acc-badge-dot,
+body.sidebar-collapsed .sb-section-header,
+body.sidebar-collapsed .sb-badge-alert,
+body.sidebar-collapsed .sb-badge-count,
+body.sidebar-collapsed .sb-section-name,
+body.sidebar-collapsed .sb-section-dot { display: none !important; }
+
+/* Recentrer les icônes des liens et boutons */
+body.sidebar-collapsed .sb-link,
+body.sidebar-collapsed .sb-acc-toggle {
+    justify-content: center;
+    padding-left: .5rem !important;
+    padding-right: .5rem !important;
+}
+body.sidebar-collapsed .sb-acc-left { justify-content: center; gap: 0; }
+
+/* Icônes agrandies pour meilleure cible en mode réduit */
+body.sidebar-collapsed .sb-icon,
+body.sidebar-collapsed .sb-acc-icon {
+    margin: 0 auto;
+}
+
+/* En mode réduit, les collapses Bootstrap ne peuvent pas être ouverts (accordéons cachés) */
+body.sidebar-collapsed .sb-accordion .collapse { display: none !important; }
+body.sidebar-collapsed .sb-accordion .collapse.show { display: none !important; }
+
+/* Cacher le sous-menu qui pourrait être ouvert avant de collapser */
+body.sidebar-collapsed .sb-acc-body { display: none !important; }
+
+/* Brand : centrer le logo */
+body.sidebar-collapsed .sb-brand,
+body.sidebar-collapsed .sb-module-brand {
+    padding: 0 !important;
+    justify-content: center;
+}
+body.sidebar-collapsed .sb-brand-logo,
+body.sidebar-collapsed .sb-mod-icon {
+    margin: 0 auto;
+}
+
+/* Bouton toggle desktop dans la navbar : rotation du chevron selon l'état */
+#sidebarDesktopToggle .fa-chevron-left { transition: transform .25s ease; }
+body.sidebar-collapsed #sidebarDesktopToggle .fa-chevron-left { transform: rotate(180deg); }
+
+/* Sur mobile, la sidebar collapsed reste en overlay classique — pas de rétrécissement */
+@media (max-width: 991.98px) {
+    body.sidebar-collapsed .sidebar { width: var(--sidebar-width); }
+    body.sidebar-collapsed .top-navbar,
+    body.sidebar-collapsed .main-content { margin-left: 0; left: 0; }
+}
+
 /* ===== STATS CARDS ===== */
 .stats-card {
     border: none;
@@ -1760,6 +1891,14 @@ body {
 
     .sb-user-footer {
         padding: .75rem .85rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .main-content {
+        padding: 0;
+        margin-left: 0;
+        margin-right: 0;
     }
 }
 
@@ -6862,4 +7001,54 @@ button.media-card-preview {
     .pmp-tab { padding: .4rem .55rem; font-size: .65rem; }
     .pmp-tab span { display: none; }
     .pmp-tab i { font-size: .8rem; }
+}
+
+/* ===== SMARTPHONE — Sections pleine largeur, coins droits ===== */
+@media (max-width: 575.98px) {
+    .main-content,
+    .main-content > * {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    .main-content { padding-top: 0 !important; }
+
+    .portal-wrapper,
+    .portal-hero,
+    .card,
+    .contact-detail-card,
+    .stats-card,
+    .empty-state,
+    .alert,
+    .erp-module-card {
+        border-radius: 0 !important;
+    }
+}
+
+/* ===== MODULES MÉTIER — Coins droits sur tous les cadres de section ===== */
+.stats-card,
+.data-card,
+.data-card .card-header,
+.contact-detail-card,
+.ic-card,
+.lg-card,
+.lg-kpi,
+.lg-hero,
+.card.data-card,
+.card.stats-card {
+    border-radius: 0 !important;
+}
+
+/* ===== Sidebar Logistique/Appro — icônes uniformisées à la charte ===== */
+/* Toutes les icônes des liens du module Achats & MG héritent de la couleur
+   appro (jaune-orangé) par défaut, pas seulement au hover/active. */
+.sb-module-appro .sb-link .sb-icon {
+    color: var(--sb-appro);
+    background: rgba(217, 119, 6, 0.12);
+}
+/* Icônes des accordéons Achats & MG */
+.sb-accordion-appro .sb-acc-icon {
+    color: var(--sb-appro);
+    background: rgba(217, 119, 6, 0.12);
 }

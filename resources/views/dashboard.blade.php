@@ -23,8 +23,8 @@
 
 /* ── HERO ─────────────────────────────────────────────────── */
 .portal-hero {
-    background:#fff; border-radius:20px; padding:2rem 2.5rem;
-    margin-bottom:1.75rem;
+    background:#fff; border-radius:20px; padding:1rem 1.25rem;
+    margin-bottom:1.25rem;
     box-shadow:0 1px 3px rgba(0,0,0,.05),0 4px 20px rgba(0,0,0,.04);
     position:relative; overflow:hidden;
 }
@@ -34,7 +34,7 @@
     background:radial-gradient(circle,rgba(124,58,237,.08) 0%,transparent 70%);
     border-radius:50%; pointer-events:none;
 }
-.portal-hero-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.75rem; flex-wrap:wrap; gap:1rem; }
+.portal-hero-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; flex-wrap:wrap; gap:1rem; }
 .portal-greeting { font-size:1.6rem; font-weight:700; color:#0F172A; margin:0 0 .3rem; line-height:1.2; }
 .portal-subtitle  { color:#64748B; font-size:.9rem; margin:0; }
 .portal-badge-erp {
@@ -49,13 +49,32 @@
 .portal-date-weekday{ font-size:.75rem; color:#94A3B8; text-transform:capitalize; }
 
 /* ── QUICK STATS BAR ───────────────────────────────────────── */
-.portal-quick-stats { display:flex; align-items:center; background:#F8FAFC; border-radius:14px; padding:.9rem 1.5rem; flex-wrap:wrap; }
+.portal-quick-stats { display:flex; align-items:center; background:#F8FAFC; border-radius:14px; padding:.9rem 1.5rem; flex-wrap:wrap; margin-top:1.25rem; }
 .portal-qs-item     { display:flex; align-items:center; gap:.65rem; flex:1; min-width:140px; }
 .portal-qs-icon     { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:.95rem; flex-shrink:0; }
 .portal-qs-val      { font-size:1.05rem; font-weight:700; color:#1E293B; display:block; line-height:1.1; }
 .portal-qs-lbl      { font-size:.7rem; color:#94A3B8; display:block; text-transform:uppercase; letter-spacing:.04em; font-weight:500; }
 .portal-qs-divider  { width:1px; height:36px; background:#E2E8F0; margin:0 1.25rem; flex-shrink:0; }
 @media(max-width:768px) { .portal-qs-divider{display:none;} .portal-qs-item{min-width:45%; padding:.4rem 0;} }
+
+/* ── Carousel actualités dans le hero ─────────────────────── */
+.portal-hero-carousel { border-radius:14px; overflow:hidden; background:#0F172A; }
+.portal-hero-slide { display:grid; grid-template-columns:minmax(0, 45%) 1fr; min-height:280px; align-items:stretch; }
+@media(max-width:768px) { .portal-hero-slide { grid-template-columns:1fr; } }
+.portal-hero-slide-img { min-height:220px; overflow:hidden; display:flex; }
+.portal-hero-slide-img > img { width:100%; height:100%; object-fit:cover; display:block; }
+.portal-hero-slide-fallback { display:flex; align-items:center; justify-content:center; color:#fff; opacity:.25; font-size:4rem; background:linear-gradient(135deg,#4F46E5,#7C3AED); }
+.portal-hero-slide-body { padding:1.5rem 1.75rem; color:#F1F5F9; display:flex; flex-direction:column; justify-content:center; }
+.portal-hero-slide-meta { font-size:.72rem; color:#94A3B8; text-transform:uppercase; letter-spacing:.05em; font-weight:600; margin-bottom:.5rem; }
+.portal-hero-slide-title { font-size:1.35rem; font-weight:800; color:#fff; margin:0 0 .6rem; line-height:1.25; }
+.portal-hero-slide-extrait { font-size:.88rem; color:#CBD5E1; margin:0 0 1rem; line-height:1.5; }
+.portal-hero-slide-cta { display:inline-flex; align-items:center; align-self:flex-start; padding:.5rem 1rem; background:rgba(255,255,255,.12); color:#fff; border-radius:8px; font-size:.78rem; font-weight:600; transition:background .15s; }
+.portal-hero-slide:hover .portal-hero-slide-cta { background:rgba(255,255,255,.22); }
+.portal-hero-carousel .carousel-indicators { margin-bottom:.75rem; }
+.portal-hero-carousel .carousel-indicators [data-bs-target] { width:24px; height:3px; border-radius:2px; background:rgba(255,255,255,.4); }
+.portal-hero-carousel .carousel-indicators .active { background:#fff; }
+.portal-hero-carousel .carousel-control-prev, .portal-hero-carousel .carousel-control-next { width:5%; opacity:.7; }
+.portal-hero-empty { padding:2.5rem 1rem; text-align:center; background:#F8FAFC; color:#94A3B8; }
 
 /* ── SECTION LABELS ────────────────────────────────────────── */
 .section-label { font-size:.68rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#94A3B8; margin-bottom:.3rem; }
@@ -103,47 +122,107 @@
 .statut-pill { font-size:.65rem; font-weight:600; padding:.2rem .6rem; border-radius:10px; }
 
 /* ERP modules band ─────────────────────────────────────────── */
-.erp-modules-band { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; }
-@media(max-width:991px) { .erp-modules-band { grid-template-columns:repeat(2,1fr); } }
-@media(max-width:575px) { .erp-modules-band { grid-template-columns:1fr; } }
+.erp-modules-band { display:grid; grid-template-columns:repeat(5,1fr); gap:.6rem; margin-bottom:2rem; }
+@media(max-width:991px) { .erp-modules-band { grid-template-columns:repeat(3,1fr); } }
+@media(max-width:575px) {
+    .erp-modules-band { grid-template-columns:repeat(2,1fr); gap:.35rem; }
+    .erp-modules-band > a:last-child { grid-column:span 2; }
+}
 
 .erp-module-card {
-    background:#fff; border-radius:16px; border:1.5px solid #F1F5F9;
-    padding:1.25rem; text-decoration:none; display:block; position:relative; overflow:hidden;
-    transition:transform .2s, box-shadow .2s, border-color .2s;
+    border-radius:8px; border:1px solid transparent;
+    padding:.55rem .75rem; text-decoration:none;
+    display:flex; align-items:center; gap:.55rem;
+    transition:filter .15s, box-shadow .15s;
 }
-.erp-module-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:16px 16px 0 0; }
-.erp-module-card:hover { transform:translateY(-3px); text-decoration:none; }
-.erp-mod-icon { width:40px; height:40px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:1rem; color:#fff; margin-bottom:.8rem; }
-.erp-mod-name { font-size:.88rem; font-weight:700; color:#1E293B; margin:0 0 .5rem; }
-.erp-mod-stats { display:flex; gap:.5rem; flex-wrap:wrap; }
-.erp-mod-stat  { font-size:.72rem; padding:.2rem .6rem; border-radius:8px; font-weight:600; }
-.erp-mod-arrow { position:absolute; top:1rem; right:1rem; font-size:.75rem; opacity:.3; transition:opacity .2s, transform .2s; }
-.erp-module-card:hover .erp-mod-arrow { opacity:1; transform:translateX(2px); }
+.erp-module-card:hover { text-decoration:none; filter:brightness(.97); box-shadow:0 1px 2px rgba(15,23,42,.06); }
+.erp-mod-icon { width:26px; height:26px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:.78rem; color:#fff; flex-shrink:0; }
+.erp-mod-name { font-size:.78rem; font-weight:600; margin:0; line-height:1.15; }
+.erp-mod-arrow { display:none; }
 
-.erp-module-card.mod-finance::before { background:var(--finance-grd); }
-.erp-module-card.mod-finance:hover { border-color:rgba(79,70,229,.25); box-shadow:0 8px 24px rgba(79,70,229,.12); }
-.erp-module-card.mod-finance .erp-mod-icon { background:var(--finance-grd); }
-.erp-module-card.mod-finance .erp-mod-stat { background:var(--finance-light); color:var(--finance-color); }
-.erp-module-card.mod-finance .erp-mod-arrow { color:var(--finance-color); }
+.erp-module-card.mod-finance   { background:var(--finance-light); border-color:rgba(79,70,229,.18); }
+.erp-module-card.mod-finance   .erp-mod-icon { background:var(--finance-color); }
+.erp-module-card.mod-finance   .erp-mod-name { color:var(--finance-color); }
 
-.erp-module-card.mod-rh::before { background:var(--rh-grd); }
-.erp-module-card.mod-rh:hover { border-color:rgba(5,150,105,.25); box-shadow:0 8px 24px rgba(5,150,105,.12); }
-.erp-module-card.mod-rh .erp-mod-icon { background:var(--rh-grd); }
-.erp-module-card.mod-rh .erp-mod-stat { background:var(--rh-light); color:var(--rh-color); }
-.erp-module-card.mod-rh .erp-mod-arrow { color:var(--rh-color); }
+.erp-module-card.mod-rh        { background:var(--rh-light); border-color:rgba(5,150,105,.18); }
+.erp-module-card.mod-rh        .erp-mod-icon { background:var(--rh-color); }
+.erp-module-card.mod-rh        .erp-mod-name { color:var(--rh-color); }
 
-.erp-module-card.mod-appro::before { background:var(--appro-grd); }
-.erp-module-card.mod-appro:hover { border-color:rgba(217,119,6,.25); box-shadow:0 8px 24px rgba(217,119,6,.12); }
-.erp-module-card.mod-appro .erp-mod-icon { background:var(--appro-grd); }
-.erp-module-card.mod-appro .erp-mod-stat { background:var(--appro-light); color:var(--appro-color); }
-.erp-module-card.mod-appro .erp-mod-arrow { color:var(--appro-color); }
+.erp-module-card.mod-appro     { background:var(--appro-light); border-color:rgba(217,119,6,.18); }
+.erp-module-card.mod-appro     .erp-mod-icon { background:var(--appro-color); }
+.erp-module-card.mod-appro     .erp-mod-name { color:var(--appro-color); }
 
-.erp-module-card.mod-mg::before { background:var(--mg-grd); }
-.erp-module-card.mod-mg:hover { border-color:rgba(8,145,178,.25); box-shadow:0 8px 24px rgba(8,145,178,.12); }
-.erp-module-card.mod-mg .erp-mod-icon { background:var(--mg-grd); }
-.erp-module-card.mod-mg .erp-mod-stat { background:var(--mg-light); color:var(--mg-color); }
-.erp-module-card.mod-mg .erp-mod-arrow { color:var(--mg-color); }
+.erp-module-card.mod-projet    { background:#F0FDFA; border-color:rgba(13,148,136,.18); }
+.erp-module-card.mod-projet    .erp-mod-icon { background:#0D9488; }
+.erp-module-card.mod-projet    .erp-mod-name { color:#0D9488; }
+
+.erp-module-card.mod-objectifs { background:#FDF2F8; border-color:rgba(219,39,119,.18); }
+.erp-module-card.mod-objectifs .erp-mod-icon { background:#DB2777; }
+.erp-module-card.mod-objectifs .erp-mod-name { color:#DB2777; }
+
+/* ── Section Achats & MG (design pro) ────────────────────── */
+.lg-subgroup { padding:.85rem 1.15rem; }
+.lg-subgroup-title { font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#94A3B8; margin-bottom:.65rem; display:flex; align-items:center; gap:.4rem; }
+.lg-subgroup-title i { font-size:.75rem; color:#D97706; }
+.lg-kpis { display:flex; flex-direction:column; gap:.4rem; }
+.lg-kpi {
+    display:flex; align-items:center; gap:.75rem;
+    padding:.55rem .75rem; border-radius:8px; border:1px solid #F1F5F9;
+    background:#FAFBFC; text-decoration:none; color:inherit;
+    transition:background .15s, border-color .15s, transform .15s;
+}
+.lg-kpi:hover { background:#F8FAFC; border-color:#E2E8F0; transform:translateX(2px); text-decoration:none; color:inherit; }
+.lg-kpi-icon { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:.9rem; color:#94A3B8; background:#F1F5F9; flex-shrink:0; }
+.lg-kpi-body { flex:1; min-width:0; display:flex; align-items:baseline; gap:.6rem; }
+.lg-kpi-val { font-size:1.35rem; font-weight:800; line-height:1; color:#334155; }
+.lg-kpi-lbl { font-size:.78rem; color:#64748B; font-weight:500; }
+.lg-kpi-arrow { font-size:.7rem; opacity:.3; transition:opacity .15s, transform .15s; color:#64748B; }
+.lg-kpi:hover .lg-kpi-arrow { opacity:.9; transform:translateX(2px); }
+
+.lg-kpi.is-alert { border-color:rgba(220,38,38,.25); background:#FEF2F2; }
+.lg-kpi.is-alert .lg-kpi-icon { background:#FEE2E2; color:#DC2626; }
+.lg-kpi.is-alert .lg-kpi-val  { color:#DC2626; }
+.lg-kpi.is-warn  { border-color:rgba(217,119,6,.25); background:#FFFBEB; }
+.lg-kpi.is-warn  .lg-kpi-icon { background:#FEF3C7; color:#D97706; }
+.lg-kpi.is-warn  .lg-kpi-val  { color:#D97706; }
+.lg-kpi.is-info  { border-color:rgba(79,70,229,.25); background:#EEF2FF; }
+.lg-kpi.is-info  .lg-kpi-icon { background:#E0E7FF; color:#4F46E5; }
+.lg-kpi.is-info  .lg-kpi-val  { color:#4F46E5; }
+.lg-kpi.is-cyan  { border-color:rgba(8,145,178,.25); background:#ECFEFF; }
+.lg-kpi.is-cyan  .lg-kpi-icon { background:#CFFAFE; color:#0891B2; }
+.lg-kpi.is-cyan  .lg-kpi-val  { color:#0891B2; }
+
+/* ── Anniversaires : avatar + bouton Souhaiter ──────────── */
+.bday-item { display:flex; align-items:center; gap:.65rem; }
+.bday-avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0; border:2px solid #FCE7F3; }
+.bday-avatar-fallback { display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#DB2777,#BE185D); color:#fff; font-size:.75rem; font-weight:700; letter-spacing:.02em; }
+.bday-wish-btn {
+    display:inline-flex; align-items:center; gap:.3rem;
+    background:#FCE7F3; color:#DB2777; border:1px solid rgba(219,39,119,.25);
+    padding:.3rem .65rem; border-radius:8px; font-size:.72rem; font-weight:600;
+    transition:background .15s, transform .15s; flex-shrink:0;
+}
+.bday-wish-btn:hover { background:#FBCFE8; transform:scale(1.03); }
+.bday-wish-btn span { line-height:1; }
+.bday-sent { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; background:#DCFCE7; color:#059669; font-size:.72rem; flex-shrink:0; }
+
+/* ── Grille médias en pied de dashboard ─────────────────── */
+.dash-media-grid { display:grid; grid-template-columns:repeat(6, 1fr); gap:.5rem; padding:1rem 1.25rem; }
+@media(max-width:1200px) { .dash-media-grid { grid-template-columns:repeat(4, 1fr); } }
+@media(max-width:768px)  { .dash-media-grid { grid-template-columns:repeat(3, 1fr); } }
+@media(max-width:480px)  { .dash-media-grid { grid-template-columns:repeat(2, 1fr); } }
+.dash-media-tile { position:relative; display:block; aspect-ratio:1/1; overflow:hidden; border-radius:8px; background:#F1F5F9; text-decoration:none; }
+.dash-media-tile img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .25s; }
+.dash-media-tile:hover img { transform:scale(1.06); }
+.dash-media-fb { display:flex; align-items:center; justify-content:center; height:100%; color:#94A3B8; font-size:1.5rem; }
+.dash-media-overlay { position:absolute; left:0; right:0; bottom:0; padding:.5rem .6rem; background:linear-gradient(to top, rgba(0,0,0,.75), rgba(0,0,0,0)); color:#fff; opacity:0; transition:opacity .2s; }
+.dash-media-tile:hover .dash-media-overlay { opacity:1; }
+.dash-media-title { font-size:.72rem; font-weight:700; line-height:1.15; }
+.dash-media-meta { font-size:.62rem; opacity:.85; margin-top:.15rem; }
+.dash-media-badge { position:absolute; top:.3rem; left:.3rem; font-size:.6rem; font-weight:700; padding:.15rem .4rem; border-radius:6px; }
+.dash-media-badge.mine { background:#7C3AED; color:#fff; }
+.dash-media-badge.pub  { background:rgba(255,255,255,.9); color:#059669; }
+.dash-media-video { position:absolute; top:.3rem; right:.3rem; width:22px; height:22px; border-radius:50%; background:rgba(0,0,0,.65); color:#fff; display:flex; align-items:center; justify-content:center; font-size:.55rem; }
 </style>
 @endpush
 
@@ -170,6 +249,57 @@
             <div class="portal-date-weekday">{{ now()->translatedFormat('l') }}</div>
         </div>
     </div>
+
+    {{-- Carousel Actualités --}}
+    @if($dernieresNews->count())
+    <div id="heroNewsCarousel" class="carousel slide portal-hero-carousel" data-bs-ride="carousel" data-bs-interval="6000">
+        <div class="carousel-indicators">
+            @foreach($dernieresNews as $i => $news)
+            <button type="button" data-bs-target="#heroNewsCarousel" data-bs-slide-to="{{ $i }}"
+                    class="{{ $i === 0 ? 'active' : '' }}" aria-label="Slide {{ $i + 1 }}"></button>
+            @endforeach
+        </div>
+        <div class="carousel-inner">
+            @foreach($dernieresNews as $i => $news)
+            <div class="carousel-item {{ $i === 0 ? 'active' : '' }}">
+                <a href="{{ route('intranet.news.show', $news) }}" class="portal-hero-slide" style="text-decoration:none; color:inherit;">
+                    @if($news->media_url && $news->media_principal_type === 'image' && preg_match('#^https?://[^\s"\'()<>]+$#', $news->media_url))
+                        <div class="portal-hero-slide-img">
+                            <img src="{{ $news->media_url }}" alt="" loading="lazy">
+                        </div>
+                    @else
+                        <div class="portal-hero-slide-img portal-hero-slide-fallback"><i class="fas fa-newspaper"></i></div>
+                    @endif
+                    <div class="portal-hero-slide-body">
+                        <div class="portal-hero-slide-meta">
+                            <i class="fas fa-clock me-1"></i>{{ $news->created_at?->diffForHumans() }}
+                            @if($news->auteur) · <i class="fas fa-user ms-1 me-1"></i>{{ $news->auteur->prenoms }} {{ $news->auteur->name }}@endif
+                        </div>
+                        <h2 class="portal-hero-slide-title">{{ $news->title }}</h2>
+                        @if($news->extrait)
+                        <p class="portal-hero-slide-extrait">{{ \Illuminate\Support\Str::limit(strip_tags($news->extrait), 180) }}</p>
+                        @endif
+                        <span class="portal-hero-slide-cta">Lire l'article <i class="fas fa-arrow-right ms-1"></i></span>
+                    </div>
+                </a>
+            </div>
+            @endforeach
+        </div>
+        @if($dernieresNews->count() > 1)
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroNewsCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroNewsCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+        @endif
+    </div>
+    @else
+    <div class="portal-hero-carousel portal-hero-empty">
+        <i class="fas fa-newspaper" style="font-size:2rem; opacity:.35;"></i>
+        <p style="margin:.75rem 0 0; color:#94A3B8; font-size:.9rem;">Aucune actualité à afficher</p>
+    </div>
+    @endif
 
     {{-- Quick stats intranet --}}
     <div class="portal-quick-stats">
@@ -214,6 +344,9 @@
         </div>
     </div>
 </div>
+
+{{-- Bande d'accès rapide ERP retirée — les modules restent accessibles via
+     le sélecteur d'espace (icône grille) et via la sidebar. --}}
 
 {{-- ════════════════════════════════════════════════════════════
      ROW 1 : Annonces + Agenda à venir
@@ -305,9 +438,9 @@
 ════════════════════════════════════════════════════════════ --}}
 <div class="row g-3 mb-4">
 
-    {{-- Projets en cours --}}
-    <div class="col-12 col-xl-7">
-        <div class="ic-card">
+    {{-- Projets & Tâches --}}
+    <div class="col-12 col-xl-4">
+        <div class="ic-card h-100">
             <div class="ic-card-header">
                 <h6>
                     <span class="ic-color-dot" style="background:#4F46E5; box-shadow:0 0 5px #4F46E5;"></span>
@@ -367,224 +500,315 @@
         </div>
     </div>
 
-    {{-- Actualités + Courriers --}}
-    <div class="col-12 col-xl-5">
-
-        {{-- Actualités --}}
-        <div class="ic-card mb-3">
+    {{-- Courrier --}}
+    <div class="col-12 col-xl-4">
+        <div class="ic-card h-100">
             <div class="ic-card-header">
                 <h6>
-                    <span class="ic-color-dot" style="background:#059669; box-shadow:0 0 5px #059669;"></span>
-                    Actualités
-                </h6>
-                <a href="{{ route('intranet.news.index') }}" class="ic-view-all" style="background:#ECFDF5; color:#059669;">Voir tout <i class="fas fa-arrow-right ms-1"></i></a>
-            </div>
-            @forelse($dernieresNews as $news)
-            <div class="annonce-item">
-                <span class="annonce-dot" style="background:#059669;"></span>
-                <div style="flex:1; min-width:0;">
-                    <div class="annonce-title">{{ $news->title }}</div>
-                    <div class="annonce-meta">
-                        <i class="fas fa-clock me-1"></i>{{ $news->created_at?->diffForHumans() }}
-                    </div>
-                </div>
-            </div>
-            @empty
-            <div style="padding:1.5rem; text-align:center; color:#94A3B8; font-size:.82rem;">
-                <i class="fas fa-newspaper d-block mb-2" style="font-size:1.5rem;"></i>
-                Aucune actualité
-            </div>
-            @endforelse
-        </div>
-
-        {{-- Courrier --}}
-        <div class="ic-card">
-            <div class="ic-card-header">
-                <h6>
-                    <span class="ic-color-dot" style="background:#D97706;"></span>
+                    <span class="ic-color-dot" style="background:#D97706; box-shadow:0 0 5px #D97706;"></span>
                     Courrier
                     @if($courriersEnAttente > 0)
-                    <span style="font-size:.65rem; background:#FEE2E2; color:#DC2626; padding:.15rem .5rem; border-radius:8px; font-weight:700;">
+                    <span style="font-size:.72rem; background:#FFFBEB; color:#D97706; padding:.2rem .6rem; border-radius:8px; font-weight:600;">
                         {{ $courriersEnAttente }} en attente
                     </span>
                     @endif
                 </h6>
-                <a href="{{ route('intranet.courriers.index') }}" class="ic-view-all" style="background:#FFFBEB; color:#D97706;">Voir tout <i class="fas fa-arrow-right ms-1"></i></a>
+                <a href="{{ route('intranet.courriers.index') }}" class="ic-view-all" style="background:#FFFBEB; color:#D97706;">Tout voir <i class="fas fa-arrow-right ms-1"></i></a>
             </div>
-            <div style="padding:1.1rem 1.25rem; display:flex; gap:1.25rem; justify-content:space-around;">
-                <div style="text-align:center;">
-                    <div style="font-size:1.3rem; font-weight:800; color:#4F46E5;">—</div>
-                    <div style="font-size:.7rem; color:#94A3B8; text-transform:uppercase; letter-spacing:.04em; font-weight:600;">Entrant</div>
+            @forelse($derniersCourriers as $courrier)
+            @php
+                $couleurStatut = match($courrier->statut) {
+                    'recu' => '#D97706',
+                    'en_traitement' => '#4F46E5',
+                    'traite' => '#059669',
+                    'archive' => '#94A3B8',
+                    default => '#64748B',
+                };
+                $libelleStatut = match($courrier->statut) {
+                    'recu' => 'Reçu',
+                    'en_traitement' => 'En traitement',
+                    'traite' => 'Traité',
+                    'archive' => 'Archivé',
+                    default => ucfirst($courrier->statut),
+                };
+            @endphp
+            <a href="{{ route('intranet.courriers.show', $courrier) }}" class="projet-item" style="display:block; text-decoration:none; color:inherit;">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <div class="projet-name">
+                        @if($courrier->urgent)<i class="fas fa-circle-exclamation me-1" style="color:#DC2626;"></i>@endif
+                        {{ \Illuminate\Support\Str::limit($courrier->objet, 42) }}
+                    </div>
+                    <span class="statut-pill" style="background:{{ $couleurStatut }}22; color:{{ $couleurStatut }};">
+                        {{ $libelleStatut }}
+                    </span>
                 </div>
-                <div style="text-align:center;">
-                    <div style="font-size:1.3rem; font-weight:800; color:#059669;">—</div>
-                    <div style="font-size:.7rem; color:#94A3B8; text-transform:uppercase; letter-spacing:.04em; font-weight:600;">Sortant</div>
+                <div class="projet-progress">
+                    <div class="projet-progress-bar" style="width:{{ $courrier->statut === 'traite' ? '100' : ($courrier->statut === 'en_traitement' ? '50' : '15') }}%; background:{{ $couleurStatut }};"></div>
                 </div>
-                <div style="text-align:center;">
-                    <div style="font-size:1.3rem; font-weight:800; color:#D97706; @if($courriersEnAttente > 0) color:#DC2626 !important; @endif">{{ $courriersEnAttente }}</div>
-                    <div style="font-size:.7rem; color:#94A3B8; text-transform:uppercase; letter-spacing:.04em; font-weight:600;">En attente</div>
+                <div class="projet-meta">
+                    <span>
+                        <i class="fas fa-user me-1"></i>{{ \Illuminate\Support\Str::limit($courrier->expediteur ?? '—', 22) }}
+                    </span>
+                    <span>
+                        @if($courrier->est_en_retard)
+                        <i class="fas fa-triangle-exclamation me-1" style="color:#DC2626;"></i><span style="color:#DC2626;">En retard</span>
+                        @elseif($courrier->date_reception)
+                        <i class="fas fa-calendar-day me-1"></i>{{ $courrier->date_reception->format('d/m/Y') }}
+                        @endif
+                    </span>
                 </div>
-                <div style="text-align:center;">
-                    <div style="font-size:1.3rem; font-weight:800; color:#94A3B8;">—</div>
-                    <div style="font-size:.7rem; color:#94A3B8; text-transform:uppercase; letter-spacing:.04em; font-weight:600;">Documents</div>
+            </a>
+            @empty
+            <div class="empty-state">
+                <i class="fas fa-envelope-open-text"></i>
+                <p>Aucun courrier en attente</p>
+            </div>
+            @endforelse
+        </div>
+    </div>
+
+    {{-- CRM — Opportunités --}}
+    <div class="col-12 col-xl-4">
+        <div class="ic-card h-100">
+            <div class="ic-card-header">
+                <h6>
+                    <span class="ic-color-dot" style="background:#0891B2; box-shadow:0 0 5px #0891B2;"></span>
+                    CRM — Opportunités
+                    <span style="font-size:.72rem; background:#ECFEFF; color:#0891B2; padding:.2rem .6rem; border-radius:8px; font-weight:600;">
+                        {{ $totalOpportunitesOuvertes }} ouverte(s)
+                    </span>
+                </h6>
+                <a href="{{ route('intranet.pipeline') }}" class="ic-view-all" style="background:#ECFEFF; color:#0891B2;">Pipeline <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+            @forelse($topOpportunites as $opp)
+            @php
+                $couleurEtape = $opp->etape?->couleur ?? '#0891B2';
+                $libelleEtape = $opp->etape?->libelle ?? $opp->etape?->nom ?? '—';
+                $orga = $opp->organisation?->raison_sociale ?? $opp->organisation?->nom ?? null;
+            @endphp
+            <a href="{{ route('intranet.opportunites.show', $opp) }}" class="projet-item" style="display:block; text-decoration:none; color:inherit;">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <div class="projet-name">{{ \Illuminate\Support\Str::limit($opp->titre, 42) }}</div>
+                    <span class="statut-pill" style="background:{{ $couleurEtape }}22; color:{{ $couleurEtape }};">
+                        {{ $libelleEtape }}
+                    </span>
                 </div>
+                <div class="projet-progress">
+                    <div class="projet-progress-bar" style="width:{{ (int) ($opp->probabilite ?? 0) }}%; background:{{ $couleurEtape }};"></div>
+                </div>
+                <div class="projet-meta">
+                    <span>
+                        @if($orga)<i class="fas fa-building me-1"></i>{{ \Illuminate\Support\Str::limit($orga, 22) }}@endif
+                    </span>
+                    <span style="font-weight:700; color:#0891B2;">
+                        {{ number_format($opp->valeur ?? 0, 0, ',', ' ') }} {{ $opp->devise ?? 'XAF' }}
+                    </span>
+                </div>
+            </a>
+            @empty
+            <div class="empty-state">
+                <i class="fas fa-handshake"></i>
+                <p>Aucune opportunité ouverte</p>
+            </div>
+            @endforelse
+
+            <div style="padding:.75rem 1.25rem; background:#F0FDFF; border-top:1px solid #F1F5F9; display:flex; gap:.75rem; align-items:center; flex-wrap:wrap;">
+                <span style="font-size:.75rem; color:#64748B; font-weight:600;"><i class="fas fa-chart-line me-1"></i>Pipeline :</span>
+                <span style="font-size:.72rem; background:#EEF2FF; color:#4F46E5; padding:.2rem .65rem; border-radius:8px; font-weight:600;">
+                    {{ number_format($valeurPipeline, 0, ',', ' ') }} XAF
+                </span>
+                @if($opportunitesGagneesMois > 0)
+                <span style="font-size:.72rem; background:#ECFDF5; color:#059669; padding:.2rem .65rem; border-radius:8px; font-weight:600;">
+                    <i class="fas fa-trophy me-1"></i>{{ $opportunitesGagneesMois }} gagnée(s) ce mois
+                </span>
+                @endif
             </div>
         </div>
     </div>
 </div>
 
 {{-- ════════════════════════════════════════════════════════════
-     ACCÈS RAPIDE ERP — Bande modules
+     ROW 3 : Achats & MG + Pilotage stratégique
 ════════════════════════════════════════════════════════════ --}}
-<div class="mb-2">
-    <div class="section-label">Modules ERP</div>
-    <div class="d-flex justify-content-between align-items-end mb-2">
-        <div class="section-title">Accès rapide</div>
-        <span style="font-size:.75rem; color:#94A3B8;">Cliquez pour accéder au module</span>
-    </div>
-</div>
-<div class="erp-modules-band">
+<div class="row g-3 mb-4">
+    <div class="col-12 col-xl-6">
+        {{-- Achats & Moyens Généraux --}}
+        <div class="ic-card mb-3 lg-card">
+            <div class="ic-card-header">
+                <h6>
+                    <span class="ic-color-dot" style="background:#D97706; box-shadow:0 0 5px #D97706;"></span>
+                    Achats & Moyens Généraux
+                </h6>
+                <a href="{{ route('appro.dashboard') }}" class="ic-view-all" style="background:#FFFBEB; color:#D97706;">Dashboard <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
 
-    @canany(['read:exercice','read:budget','read:grandlivre','read:compte'])
-    <a href="{{ route('finance.exercices.index') }}" class="erp-module-card mod-finance">
-        <i class="fas fa-chevron-right erp-mod-arrow"></i>
-        <div class="erp-mod-icon"><i class="fas fa-coins"></i></div>
-        <div class="erp-mod-name">Finance & Budget</div>
-        <div class="erp-mod-stats">
-            <span class="erp-mod-stat">{{ number_format($budgetGlobal, 0, ',', ' ') }} F</span>
-            <span class="erp-mod-stat">{{ $exerciceActif?->libelle ?? '—' }}</span>
-        </div>
-    </a>
-    @endcanany
-
-    @canany(['read:employee','read:absence','read:paie','read:recrutement'])
-    <a href="{{ route('rh.employees.index') }}" class="erp-module-card mod-rh">
-        <i class="fas fa-chevron-right erp-mod-arrow"></i>
-        <div class="erp-mod-icon"><i class="fas fa-users"></i></div>
-        <div class="erp-mod-name">RH & Paiement</div>
-        <div class="erp-mod-stats">
-            <span class="erp-mod-stat">{{ $totalEmployees }} employés</span>
-            @if($absencesEnCours > 0)
-            <span class="erp-mod-stat" style="background:#FEF3C7; color:#D97706;">{{ $absencesEnCours }} absences</span>
-            @endif
-        </div>
-    </a>
-    @endcanany
-
-    @canany(['read:fournisseur','read:produit','read:commande','read:immobilisation','read:dysfonctionnement','read:intervention'])
-    <a href="{{ route('appro.commandes.index') }}" class="erp-module-card mod-appro">
-        <i class="fas fa-chevron-right erp-mod-arrow"></i>
-        <div class="erp-mod-icon"><i class="fas fa-cart-flatbed"></i></div>
-        <div class="erp-mod-name">Achats & Moyens Généraux</div>
-        <div class="erp-mod-stats">
-            <span class="erp-mod-stat">{{ $commandesEnCours ?? 0 }} commandes</span>
-            @if(($dysfonctionnementsOuverts ?? 0) > 0)
-                <span class="erp-mod-stat" style="background:#FEE2E2; color:#DC2626;">{{ $dysfonctionnementsOuverts }} tickets</span>
-            @endif
-        </div>
-    </a>
-    @endcanany
-
-    {{-- Projets / PMP --}}
-    <a href="{{ route('projet.dashboard') }}" class="erp-module-card mod-projet" style="--mod-color:#0D9488;--mod-grd:linear-gradient(135deg,#0D9488,#0F766E);">
-        <i class="fas fa-chevron-right erp-mod-arrow"></i>
-        <div class="erp-mod-icon"><i class="fas fa-diagram-project"></i></div>
-        <div class="erp-mod-name">Projets / Tâches</div>
-        <div class="erp-mod-stats">
-            <span class="erp-mod-stat">{{ $totalProjets }} projets</span>
-            @if($projetsEnCours > 0)<span class="erp-mod-stat">{{ $projetsEnCours }} en cours</span>@endif
-        </div>
-    </a>
-
-    {{-- Objectifs & KPI --}}
-    <a href="{{ route('objectifs.dashboard') }}" class="erp-module-card mod-objectifs" style="--mod-color:#DB2777;--mod-grd:linear-gradient(135deg,#DB2777,#BE185D);">
-        <i class="fas fa-chevron-right erp-mod-arrow"></i>
-        <div class="erp-mod-icon"><i class="fas fa-bullseye"></i></div>
-        <div class="erp-mod-name">Objectifs & KPI</div>
-        <div class="erp-mod-stats">
-            <span class="erp-mod-stat">{{ $objectifsActifs }} actifs</span>
-            <span class="erp-mod-stat">{{ $kpiTotal }} KPI</span>
-        </div>
-    </a>
-
-</div>
-
-{{-- ════════════════════════════════════════════════════════════════
-     ANNUAIRE & OBJECTIFS — Section transverse
-═════════════════════════════════════════════════════════════════ --}}
-<div class="row g-3 mt-3">
-    {{-- Annuaire --}}
-    <div class="col-md-6">
-        <div class="contact-detail-card h-100">
-            <h4 class="contact-detail-card-title">
-                <i class="fas fa-address-book" style="color:#0891B2;"></i> Annuaire
-                <a href="{{ route('intranet.annuaire.collaborateurs.index') }}" class="ms-auto" style="font-size:.72rem;color:#0891B2;text-decoration:none;font-weight:600;">Voir tout →</a>
-            </h4>
-            <div class="row g-2">
-                <div class="col-4">
-                    <a href="{{ route('intranet.annuaire.collaborateurs.index') }}" style="text-decoration:none;color:inherit;">
-                        <div style="background:#ECFEFF;padding:.85rem;border-radius:8px;text-align:center;">
-                            <div style="font-size:1.6rem;font-weight:800;color:#0891B2;">{{ $totalCollaborateurs }}</div>
-                            <div style="font-size:.7rem;color:#64748B;"><i class="fas fa-users me-1"></i>Collaborateurs</div>
+            {{-- Sous-groupe : ACHATS --}}
+            <div class="lg-subgroup">
+                <div class="lg-subgroup-title"><i class="fas fa-cart-shopping"></i> Achats &amp; approvisionnement</div>
+                <div class="lg-kpis">
+                    <a href="{{ route('appro.commandes-internes.index') }}" class="lg-kpi {{ $demandesInternesEnAttente > 0 ? 'is-alert' : '' }}">
+                        <div class="lg-kpi-icon"><i class="fas fa-clipboard-list"></i></div>
+                        <div class="lg-kpi-body">
+                            <div class="lg-kpi-val">{{ $demandesInternesEnAttente }}</div>
+                            <div class="lg-kpi-lbl">Demandes en attente</div>
                         </div>
+                        <i class="fas fa-chevron-right lg-kpi-arrow"></i>
+                    </a>
+                    <a href="{{ route('appro.commandes.index') }}" class="lg-kpi {{ ($commandesEnCours ?? 0) > 0 ? 'is-warn' : '' }}">
+                        <div class="lg-kpi-icon"><i class="fas fa-cart-flatbed"></i></div>
+                        <div class="lg-kpi-body">
+                            <div class="lg-kpi-val">{{ $commandesEnCours ?? 0 }}</div>
+                            <div class="lg-kpi-lbl">Commandes en cours</div>
+                        </div>
+                        <i class="fas fa-chevron-right lg-kpi-arrow"></i>
                     </a>
                 </div>
-                <div class="col-4">
-                    <a href="{{ route('intranet.annuaire.services.index') }}" style="text-decoration:none;color:inherit;">
-                        <div style="background:#F0FDFA;padding:.85rem;border-radius:8px;text-align:center;">
-                            <div style="font-size:1.6rem;font-weight:800;color:#0D9488;">{{ $totalServices }}</div>
-                            <div style="font-size:.7rem;color:#64748B;"><i class="fas fa-building me-1"></i>Services</div>
+            </div>
+
+            {{-- Sous-groupe : MOYENS GÉNÉRAUX --}}
+            <div class="lg-subgroup" style="border-top:1px solid #F1F5F9;">
+                <div class="lg-subgroup-title"><i class="fas fa-wrench"></i> Moyens généraux</div>
+                <div class="lg-kpis">
+                    <a href="{{ route('mg.dysfonctionnements.index') }}" class="lg-kpi {{ $dysfonctionnementsSignales > 0 ? 'is-alert' : '' }}">
+                        <div class="lg-kpi-icon"><i class="fas fa-triangle-exclamation"></i></div>
+                        <div class="lg-kpi-body">
+                            <div class="lg-kpi-val">{{ $dysfonctionnementsSignales }}</div>
+                            <div class="lg-kpi-lbl">Tickets signalés</div>
                         </div>
+                        <i class="fas fa-chevron-right lg-kpi-arrow"></i>
                     </a>
-                </div>
-                <div class="col-4">
-                    <a href="{{ route('intranet.annuaire.equipes.index') }}" style="text-decoration:none;color:inherit;">
-                        <div style="background:#F5F3FF;padding:.85rem;border-radius:8px;text-align:center;">
-                            <div style="font-size:1.6rem;font-weight:800;color:#7C3AED;">{{ $totalEquipes }}</div>
-                            <div style="font-size:.7rem;color:#64748B;"><i class="fas fa-people-group me-1"></i>Équipes</div>
+                    <a href="{{ route('mg.dysfonctionnements.index') }}" class="lg-kpi {{ $dysfonctionnementsEnTraitement > 0 ? 'is-info' : '' }}">
+                        <div class="lg-kpi-icon"><i class="fas fa-hand-holding"></i></div>
+                        <div class="lg-kpi-body">
+                            <div class="lg-kpi-val">{{ $dysfonctionnementsEnTraitement }}</div>
+                            <div class="lg-kpi-lbl">En traitement</div>
                         </div>
+                        <i class="fas fa-chevron-right lg-kpi-arrow"></i>
+                    </a>
+                    <a href="{{ route('mg.interventions.index') }}" class="lg-kpi {{ $interventionsEnCours > 0 ? 'is-cyan' : '' }}">
+                        <div class="lg-kpi-icon"><i class="fas fa-tools"></i></div>
+                        <div class="lg-kpi-body">
+                            <div class="lg-kpi-val">{{ $interventionsEnCours }}</div>
+                            <div class="lg-kpi-lbl">Interventions en cours</div>
+                        </div>
+                        <i class="fas fa-chevron-right lg-kpi-arrow"></i>
                     </a>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- Objectifs & KPI --}}
-    <div class="col-md-6">
-        <div class="contact-detail-card h-100">
-            <h4 class="contact-detail-card-title">
-                <i class="fas fa-bullseye" style="color:#DB2777;"></i> Pilotage stratégique
-                <a href="{{ route('objectifs.dashboard') }}" class="ms-auto" style="font-size:.72rem;color:#DB2777;text-decoration:none;font-weight:600;">Tableau de bord →</a>
-            </h4>
+    <div class="col-12 col-xl-6">
+        {{-- Pilotage stratégique --}}
+        <div class="ic-card h-100">
+            <div class="ic-card-header">
+                <h6>
+                    <span class="ic-color-dot" style="background:#DB2777; box-shadow:0 0 5px #DB2777;"></span>
+                    Pilotage stratégique
+                </h6>
+                <a href="{{ route('objectifs.dashboard') }}" class="ic-view-all" style="background:#FCE7F3; color:#DB2777;">Tableau <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+            @forelse($topObjectifs as $obj)
+            <a href="{{ route('objectifs.objectifs.show', $obj) }}" class="projet-item" style="display:block; text-decoration:none; color:inherit;">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <div class="projet-name">
+                        <i class="fas {{ $obj->icone_affichage }} me-1" style="color:{{ $obj->couleur_affichage }};font-size:.72rem;"></i>
+                        {{ \Illuminate\Support\Str::limit($obj->titre, 42) }}
+                    </div>
+                    <span class="statut-pill" style="background:{{ $obj->couleur_affichage }}22; color:{{ $obj->couleur_affichage }};">
+                        {{ $obj->progression }}%
+                    </span>
+                </div>
+                <div class="projet-progress">
+                    <div class="projet-progress-bar" style="width:{{ $obj->progression }}%; background:{{ $obj->couleur_affichage }};"></div>
+                </div>
+                <div class="projet-meta">
+                    <span>
+                        @if($obj->responsable)<i class="fas fa-user me-1"></i>{{ $obj->responsable->prenoms }} {{ $obj->responsable->name }}@endif
+                    </span>
+                    <span>
+                        @if($obj->date_echeance ?? null)<i class="fas fa-calendar-xmark me-1"></i>{{ \Carbon\Carbon::parse($obj->date_echeance)->format('d/m/Y') }}@endif
+                    </span>
+                </div>
+            </a>
+            @empty
+            <div class="empty-state">
+                <i class="fas fa-bullseye"></i>
+                <p>Aucun objectif actif</p>
+            </div>
+            @endforelse
 
-            @if($topObjectifs->count())
-            <div class="d-flex flex-column gap-2 mb-2">
-                @foreach($topObjectifs as $obj)
-                <a href="{{ route('objectifs.objectifs.show', $obj) }}" style="text-decoration:none;color:inherit;">
-                    <div style="background:#F8FAFC;border-radius:8px;padding:.55rem .7rem;border-left:3px solid {{ $obj->couleur_affichage }};">
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <i class="fas {{ $obj->icone_affichage }}" style="color:{{ $obj->couleur_affichage }};font-size:.75rem;"></i>
-                            <strong style="font-size:.78rem;flex:1;">{{ Str::limit($obj->titre, 38) }}</strong>
-                            <span style="font-size:.7rem;font-weight:700;color:{{ $obj->couleur_affichage }};">{{ $obj->progression }}%</span>
-                        </div>
-                        <div class="tache-progress-bar" style="height:5px;">
-                            <div class="tache-progress-fill" style="width:{{ $obj->progression }}%;background:{{ $obj->couleur_affichage }};"></div>
+            @if($kpisCritiques->count())
+            <div style="padding:.75rem 1.25rem; background:#FEF2F2; border-top:1px solid #F1F5F9; display:flex; gap:.75rem; align-items:center; flex-wrap:wrap;">
+                <span style="font-size:.75rem; color:#DC2626; font-weight:600;"><i class="fas fa-bell me-1"></i>KPI en alerte :</span>
+                <a href="{{ route('objectifs.kpi.index') }}" style="font-size:.72rem; background:#FEE2E2; color:#DC2626; padding:.2rem .65rem; border-radius:8px; font-weight:600; text-decoration:none;">
+                    {{ $kpisCritiques->count() }} → voir
+                </a>
+            </div>
+            @endif
+        </div>
+    </div>
+</div>
+
+{{-- ════════════════════════════════════════════════════════════
+     ROW 4 : Médias récents (publics + de l'utilisateur)
+════════════════════════════════════════════════════════════ --}}
+<div class="row g-3 mb-4">
+    <div class="col-12">
+        <div class="ic-card">
+            <div class="ic-card-header">
+                <h6>
+                    <span class="ic-color-dot" style="background:#7C3AED; box-shadow:0 0 5px #7C3AED;"></span>
+                    Derniers médias
+                    <span style="font-size:.68rem; color:#94A3B8; font-weight:500; margin-left:.25rem;">publics + vos uploads</span>
+                </h6>
+                <a href="{{ route('intranet.mediatheque.index') }}" class="ic-view-all" style="background:#F5F3FF; color:#7C3AED;">Médiathèque <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+            @if($derniersMedias->count())
+            <div class="dash-media-grid">
+                @foreach($derniersMedias as $media)
+                @php
+                    $vignette = $media->thumbnail_url
+                        ?: $media->url_externe
+                        ?: ($media->est_image ? $media->fichier_url : ($media->apercu_url ?? null));
+                    $urlOk = $vignette && preg_match('#^https?://[^\s"\'()<>]+$#', $vignette);
+                    $isMine = $user && $media->created_by === $user->id;
+                @endphp
+                <a href="{{ route('intranet.mediatheque.show', $media) }}" class="dash-media-tile" title="{{ $media->titre }}@if($media->auteur) · par {{ $media->auteur->prenoms }} {{ $media->auteur->name }}@endif">
+                    @if($urlOk)
+                        <img src="{{ $vignette }}" alt="" loading="lazy">
+                    @else
+                        <div class="dash-media-fb"><i class="fas fa-{{ $media->est_video ? 'film' : 'image' }}"></i></div>
+                    @endif
+                    <div class="dash-media-overlay">
+                        <div class="dash-media-title">{{ \Illuminate\Support\Str::limit($media->titre, 30) }}</div>
+                        <div class="dash-media-meta">
+                            @if($media->auteur)<i class="fas fa-user me-1"></i>{{ $media->auteur->prenoms }} {{ $media->auteur->name }}@endif
                         </div>
                     </div>
+                    @if($isMine)
+                        <span class="dash-media-badge mine" title="Votre média">Vous</span>
+                    @elseif($media->is_public)
+                        <span class="dash-media-badge pub" title="Public"><i class="fas fa-globe"></i></span>
+                    @endif
+                    @if($media->est_video)
+                        <span class="dash-media-video"><i class="fas fa-play"></i></span>
+                    @endif
                 </a>
                 @endforeach
             </div>
-            @endif
-
-            @if($kpisCritiques->count())
-            <div style="font-size:.7rem;color:#DC2626;font-weight:600;margin-top:.5rem;">
-                <i class="fas fa-bell me-1"></i> {{ $kpisCritiques->count() }} KPI en alerte
-                <a href="{{ route('objectifs.kpi.index') }}" style="color:#DC2626;text-decoration:underline;">→ voir</a>
+            @else
+            <div class="empty-state">
+                <i class="fas fa-images"></i>
+                <p>Aucun média public ni personnel pour l'instant</p>
             </div>
             @endif
         </div>
     </div>
 </div>
 
+
 </div>
+
+
 @endsection

@@ -140,4 +140,62 @@ class DashboardController extends Controller
             'users', 'groupes', 'phasesEnAttente', 'jalonsEnAttente'
         ));
     }
+
+    /**
+     * Endpoint AJAX — vérification périodique des tâches personnelles :
+     *  - en dépassement (date_fin < today, non terminée/annulée)
+     *  - non démarrées (statut 'Non démarré' assigné à l'user)
+     * Renvoie JSON pour le pop-up polling toutes les 2 min.
+     */
+    public function tachesAlertesCheck()
+    {
+        $user = auth()->user();
+        if (!$user) return response()->json(['count' => 0, 'retard' => [], 'non_demarrees' => []]);
+
+        $today = now()->startOfDay();
+
+        // Toutes les tâches assignées à l'user (responsable OU assigné)
+        $mesTaches = Tache::with(['statut:id,libelle', 'projet:id,nom'])
+            ->assigneesA($user->id);
+
+        // En retard
+        $retard = (clone $mesTaches)
+            ->whereNotNull('date_fin')
+            ->whereDate('date_fin', '<', $today)
+            ->whereHas('statut', fn($s) => $s->whereNotIn('libelle', ['Terminé', 'Annulé']))
+            ->orderBy('date_fin')
+            ->take(15)
+            ->get()
+            ->map(fn($t) => [
+                'id'      => $t->id,
+                'label'   => $t->label,
+                'projet'  => $t->projet?->nom,
+                'statut'  => $t->statut?->libelle,
+                'date_fin'=> $t->date_fin?->format('d/m/Y'),
+                'jours'   => (int) $t->date_fin?->diffInDays(now(), false),
+                'url'     => route('intranet.taches.show', $t),
+            ]);
+
+        // Non démarrées
+        $nonDem = (clone $mesTaches)
+            ->whereHas('statut', fn($s) => $s->where('libelle', 'Non démarré'))
+            ->orderBy('date_debut')
+            ->take(15)
+            ->get()
+            ->map(fn($t) => [
+                'id'         => $t->id,
+                'label'      => $t->label,
+                'projet'     => $t->projet?->nom,
+                'date_debut' => $t->date_debut?->format('d/m/Y'),
+                'date_fin'   => $t->date_fin?->format('d/m/Y'),
+                'url'        => route('intranet.taches.show', $t),
+            ]);
+
+        return response()->json([
+            'count'          => $retard->count() + $nonDem->count(),
+            'retard'         => $retard,
+            'non_demarrees'  => $nonDem,
+            'checked_at'     => now()->toIso8601String(),
+        ]);
+    }
 }

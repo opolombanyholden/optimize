@@ -40,6 +40,8 @@ class Dysfonctionnement extends Model
         'pris_en_charge_par', 'pris_en_charge_at',
         'resolu_par', 'ferme_par', 'date_fermeture',
         'commentaire_resolution',
+        'resolution_proposee_at', 'resolution_proposee_par', 'commentaire_resolution_proposee',
+        'validation_resolution_at', 'validation_resolution_par', 'commentaire_validation_resolution',
         'fichiersjoin', 'statut', 'extra_attributes',
     ];
 
@@ -62,6 +64,8 @@ class Dysfonctionnement extends Model
             'date_fermeture' => 'datetime',
             'moment_intervention' => 'datetime',
             'priorise_at' => 'datetime',
+            'resolution_proposee_at' => 'datetime',
+            'validation_resolution_at' => 'datetime',
             'statut' => 'integer',
             'extra_attributes' => 'array',
         ];
@@ -89,6 +93,137 @@ class Dysfonctionnement extends Model
     public function interventions() { return $this->hasMany(Intervention::class, 'dysfonctionnement_id'); }
     public function priseurEnCharge() { return $this->belongsTo(User::class, 'pris_en_charge_par'); }
     public function resoluteur() { return $this->belongsTo(User::class, 'resolu_par'); }
+    public function proposeurResolution() { return $this->belongsTo(User::class, 'resolution_proposee_par'); }
+    public function validateurResolution() { return $this->belongsTo(User::class, 'validation_resolution_par'); }
+
+    /**
+     * Une résolution peut être proposée si le ticket est ouvert (signalé ou en cours de traitement)
+     * et qu'aucune proposition en attente n'existe déjà.
+     */
+    public function peutRecevoirPropositionResolution(): bool
+    {
+        return in_array($this->statut, [self::STATUT_SIGNALE, self::STATUT_PRIS_EN_CHARGE], true)
+            && $this->resolution_proposee_at === null;
+    }
+
+    /**
+     * Vrai si une résolution est proposée mais pas encore validée par l'émetteur.
+     */
+    public function attendValidationResolution(): bool
+    {
+        return $this->resolution_proposee_at !== null
+            && $this->validation_resolution_at === null
+            && $this->statut !== self::STATUT_RESOLU;
+    }
+
+    /**
+     * Le déclarant (émetteur) est-il l'utilisateur donné ?
+     */
+    public function emetteurEst(?int $userId): bool
+    {
+        return $userId !== null && (int) $this->declarant_id === (int) $userId;
+    }
+
+    /**
+     * Étape 1 : le technicien propose la résolution après avoir terminé son intervention.
+     * Ne change pas encore le statut à RESOLU — attend la validation de l'émetteur.
+     */
+    public function proposerResolution(?string $commentaire = null, ?int $userId = null): void
+    {
+        $this->update([
+            'resolution_proposee_at' => now(),
+            'resolution_proposee_par' => $userId ?? auth()->id(),
+            'commentaire_resolution_proposee' => $commentaire,
+        ]);
+    }
+
+    /**
+     * Étape 2 : l'émetteur valide la résolution proposée → passage à RESOLU.
+     */
+    public function validerResolutionParEmetteur(?string $commentaire = null, ?int $userId = null): void
+    {
+        $userId = $userId ?? auth()->id();
+        $this->update([
+            'validation_resolution_at' => now(),
+            'validation_resolution_par' => $userId,
+            'commentaire_validation_resolution' => $commentaire,
+            'statut' => self::STATUT_RESOLU,
+            'date_resolution' => now(),
+            'resolu_par' => $userId,
+            'commentaire_resolution' => $commentaire ?? $this->commentaire_resolution_proposee,
+        ]);
+    }
+
+    /**
+     * Rejet par l'émetteur : la proposition est annulée, le ticket reste en cours.
+     */
+    public function rejeterResolutionParEmetteur(?string $motif = null, ?int $userId = null): void
+    {
+        $this->update([
+            'resolution_proposee_at' => null,
+            'resolution_proposee_par' => null,
+            'commentaire_resolution_proposee' => null,
+            'commentaire_validation_resolution' => $motif,
+        ]);
+    }
+
+    /**
+     * Toutes les assignations (users, services, groupes) — actives + retirées.
+     */
+    public function assignations()
+    {
+        return $this->hasMany(DysfonctionnementAssignation::class, 'dysfonctionnement_id');
+    }
+
+    /**
+     * Assignations actives (non retirées).
+     */
+    public function assignationsActives()
+    {
+        return $this->assignations()->whereNull('retire_at')->with('assignable', 'assigneur');
+    }
+
+    /**
+     * Assigne le ticket à un ou plusieurs destinataires (User, Service ou Groupe).
+     * $cibles = [['type' => 'user'|'service'|'groupe', 'id' => 42], ...]
+     * Idempotent : une même paire (type,id) déjà présente n'est pas dupliquée.
+     */
+    public function assignerA(array $cibles, ?string $commentaire = null, ?int $userId = null): void
+    {
+        $userId = $userId ?? auth()->id();
+        $map = [
+            'user'    => User::class,
+            'service' => \App\Models\Intranet\Service::class,
+            'groupe'  => \App\Models\Intranet\Groupe::class,
+            'entite'  => \App\Models\Organisation::class,
+        ];
+        foreach ($cibles as $c) {
+            $type = $c['type'] ?? null;
+            $id   = (int) ($c['id'] ?? 0);
+            if (!isset($map[$type]) || $id <= 0) continue;
+            DysfonctionnementAssignation::firstOrCreate(
+                [
+                    'dysfonctionnement_id' => $this->id,
+                    'assignable_type'      => $map[$type],
+                    'assignable_id'        => $id,
+                ],
+                [
+                    'assigne_par'  => $userId,
+                    'commentaire'  => $commentaire,
+                    'assigne_at'   => now(),
+                ],
+            );
+        }
+    }
+
+    /**
+     * Retire toutes les assignations actives puis rejoue $cibles (sync).
+     */
+    public function synchroniserAssignations(array $cibles, ?int $userId = null): void
+    {
+        $this->assignations()->whereNull('retire_at')->update(['retire_at' => now()]);
+        $this->assignerA($cibles, null, $userId);
+    }
 
     public function getStatutLibelleAttribute(): string
     {
