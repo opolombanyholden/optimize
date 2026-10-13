@@ -92,6 +92,22 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{slug}/pdf',    [$dc, 'pdf'])->name('pdf');
     });
 
+    // ═════════ MON COMPTE — profil + comptes mail professionnels ═════════
+    Route::prefix('mon-compte')->name('mon-compte.')->group(function () {
+        $mcc = \App\Http\Controllers\MonCompteController::class;
+        Route::get('/',                         [$mcc, 'index'])->name('index');
+        Route::post('mails',                    [$mcc, 'storeMail'])->middleware('throttle:10,1')->name('mails.store');
+        Route::put('mails/{compte}',            [$mcc, 'updateMail'])->middleware('throttle:10,1')->name('mails.update');
+        Route::post('mails/{compte}/tester',    [$mcc, 'testerMail'])->middleware('throttle:10,1')->name('mails.tester');
+        Route::post('mails/{compte}/defaut',    [$mcc, 'defautMail'])->name('mails.defaut');
+        Route::delete('mails/{compte}',         [$mcc, 'destroyMail'])->name('mails.destroy');
+        Route::post('signatures',               [$mcc, 'storeSignature'])->name('signatures.store');
+        Route::put('signatures/{signature}',    [$mcc, 'updateSignature'])->name('signatures.update');
+        Route::post('signatures/{signature}/defaut', [$mcc, 'defautSignature'])->name('signatures.defaut');
+        Route::delete('signatures/{signature}', [$mcc, 'destroySignature'])->name('signatures.destroy');
+        Route::post('signatures/modeles/{modele}', [$mcc, 'ajouterModele'])->name('signatures.modele');
+    });
+
     // ═════════ SOCIAL — Réseau social interne ═════════
     Route::prefix('social')->name('social.')->group(function () {
         $sc = \App\Http\Controllers\Social\SocialController::class;
@@ -1122,6 +1138,40 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('wiki-categories/{categorie}', [\App\Http\Controllers\Intranet\WikiController::class, 'destroyCategorie'])
             ->middleware('permission:delete:wiki')->name('wiki.categories.destroy');
 
+        // ─── MESSAGERIE INSTANTANÉE (1-à-1) ───────────────
+        Route::prefix('messagerie')->name('messagerie.')->group(function () {
+            $mc = \App\Http\Controllers\Intranet\MessagerieController::class;
+            Route::get('/',                                  [$mc, 'index'])->name('index');
+            Route::get('utilisateurs',                       [$mc, 'utilisateurs'])->name('utilisateurs');
+            Route::get('non-lus',                            [$mc, 'nonLus'])->name('non-lus');
+            Route::post('avec/{user}',                       [$mc, 'demarrer'])->name('demarrer');
+            Route::get('conversations/{conversation}',       [$mc, 'show'])->name('show');
+            Route::get('conversations/{conversation}/messages',  [$mc, 'messages'])->name('messages');
+            Route::post('conversations/{conversation}/messages', [$mc, 'envoyer'])->middleware('throttle:60,1')->name('envoyer');
+        });
+
+        // ─── MAILS PROFESSIONNELS (webmail IMAP / SMTP) ────
+        Route::prefix('mails')->name('mails.')->group(function () {
+            $ml = \App\Http\Controllers\Intranet\MailController::class;
+            Route::get('/',                                   [$ml, 'index'])->name('index');
+            Route::get('non-lus',                             [$ml, 'nonLus'])->name('non-lus');
+            Route::get('nouveau',                             [$ml, 'create'])->name('create');
+            Route::post('/',                                  [$ml, 'store'])->middleware('throttle:20,1')->name('store');
+            Route::post('pieces',                             [$ml, 'storePiece'])->middleware('throttle:60,1')->name('pieces.store');
+            Route::delete('pieces/{id}',                      [$ml, 'destroyPiece'])->name('pieces.destroy');
+            Route::get('destinataires',                       [$ml, 'destinataires'])->name('destinataires');
+            Route::get('crm-correspondants',                  [$ml, 'crmCorrespondants'])->name('crm-correspondants');
+            Route::get('liens',                               [$ml, 'rechercherLiens'])->name('liens');
+            Route::get('a-traiter',                           [$ml, 'aTraiter'])->name('a-traiter');
+            Route::post('{compte}/{uid}/classer',             [$ml, 'classer'])->whereNumber('uid')->name('classer');
+            Route::post('{compte}/{uid}/crm',                 [$ml, 'journaliserCrm'])->whereNumber('uid')->name('crm');
+            Route::get('{compte}/{uid}',                      [$ml, 'show'])->whereNumber('uid')->name('show');
+            Route::get('{compte}/{uid}/corps',                [$ml, 'corps'])->whereNumber('uid')->name('corps');
+            Route::get('{compte}/{uid}/pieces/{partie}',      [$ml, 'piece'])->whereNumber('uid')->name('piece');
+            Route::post('{compte}/{uid}/marquer',             [$ml, 'marquer'])->whereNumber('uid')->name('marquer');
+            Route::delete('{compte}/{uid}',                   [$ml, 'destroy'])->whereNumber('uid')->name('destroy');
+        });
+
         // ─── ANNUAIRE ─────────────────────────────────────
         Route::prefix('annuaire')->name('annuaire.')->group(function () {
             // Collaborateurs (lecture seule)
@@ -1212,10 +1262,24 @@ Route::middleware(['auth'])->group(function () {
         $uc = \App\Http\Controllers\Admin\UserController::class;
         Route::get   ('users',                 [$uc, 'index'])->name('users.index');
         Route::post  ('users',                 [$uc, 'store'])->name('users.store');
+        Route::get   ('users/export',          [$uc, 'export'])->name('users.export');
+        Route::get   ('users/import/modele',   [$uc, 'importTemplate'])->name('users.import.template');
+        Route::post  ('users/import',          [$uc, 'import'])->name('users.import');
         Route::put   ('users/{user}',          [$uc, 'update'])->name('users.update');
         Route::delete('users/{user}',          [$uc, 'destroy'])->name('users.destroy');
         Route::post  ('users/{user}/toggle',   [$uc, 'toggleActif'])->name('users.toggle');
         Route::post  ('users/{user}/reset',    [$uc, 'resetPassword'])->name('users.reset');
+
+        // ── Modèles de signature mail (appliqués à tous les utilisateurs) ──
+        $msc = \App\Http\Controllers\Admin\ModeleSignatureController::class;
+        Route::get   ('signatures-modeles',                  [$msc, 'index'])->name('signatures-modeles.index');
+        Route::get   ('signatures-modeles/nouveau',          [$msc, 'create'])->name('signatures-modeles.create');
+        Route::post  ('signatures-modeles',                  [$msc, 'store'])->name('signatures-modeles.store');
+        Route::get   ('signatures-modeles/{modele}',         [$msc, 'edit'])->name('signatures-modeles.edit');
+        Route::put   ('signatures-modeles/{modele}',         [$msc, 'update'])->name('signatures-modeles.update');
+        Route::post  ('signatures-modeles/{modele}/appliquer', [$msc, 'appliquer'])->name('signatures-modeles.appliquer');
+        Route::post  ('signatures-modeles/{modele}/retirer', [$msc, 'retirer'])->name('signatures-modeles.retirer');
+        Route::delete('signatures-modeles/{modele}',         [$msc, 'destroy'])->name('signatures-modeles.destroy');
 
         // ── Rôles + matrice de permissions ────────────────────────────────
         $rc = \App\Http\Controllers\Admin\RoleController::class;
@@ -1246,22 +1310,30 @@ Route::middleware(['auth'])->group(function () {
         Route::put   ('priorites/{priorite}',   [$pc, 'update'])->name('priorites.update');
         Route::delete('priorites/{priorite}',   [$pc, 'destroy'])->name('priorites.destroy');
 
-        // Référentiels RH (types de contrat, postes, départements)
-        // Endpoint JSON (plus spécifique, déclaré en premier)
+        // Référentiels RH (types de contrat, postes, départements) + localisation administrative
+        $refTypes = 'types-contrat|postes|departements|types-evenement|niveaux-qualification|nationalites|groupes-rubriques|pays-loc|provinces|departements-admin|prefectures|sous-prefectures|communes|arrondissements|quartiers|cantons|regroupements-village|villages';
+        $rrc = \App\Http\Controllers\Admin\ReferentielRhController::class;
+        // Endpoints spécifiques (JSON, import/export) déclarés en premier
+        Route::get('referentiel-rh/{type}/export', [$rrc, 'export'])
+            ->where('type', $refTypes)->name('referentiel-rh.export');
+        Route::get('referentiel-rh/{type}/import/modele', [$rrc, 'importTemplate'])
+            ->where('type', $refTypes)->name('referentiel-rh.import.template');
+        Route::post('referentiel-rh/{type}/import', [$rrc, 'import'])
+            ->where('type', $refTypes)->name('referentiel-rh.import');
         Route::get('referentiel-rh/{type}/options', [\App\Http\Controllers\Admin\ReferentielRhController::class, 'options'])
-            ->where('type', 'types-contrat|postes|departements|types-evenement|niveaux-qualification|nationalites|groupes-rubriques|pays-loc|provinces|departements-admin|prefectures|sous-prefectures|communes|arrondissements|quartiers|cantons|regroupements-village|villages')
+            ->where('type', $refTypes)
             ->name('referentiel-rh.options');
         Route::get('referentiel-rh/{type}', [\App\Http\Controllers\Admin\ReferentielRhController::class, 'index'])
-            ->where('type', 'types-contrat|postes|departements|types-evenement|niveaux-qualification|nationalites|groupes-rubriques|pays-loc|provinces|departements-admin|prefectures|sous-prefectures|communes|arrondissements|quartiers|cantons|regroupements-village|villages')
+            ->where('type', $refTypes)
             ->name('referentiel-rh.index');
         Route::post('referentiel-rh/{type}', [\App\Http\Controllers\Admin\ReferentielRhController::class, 'store'])
-            ->where('type', 'types-contrat|postes|departements|types-evenement|niveaux-qualification|nationalites|groupes-rubriques|pays-loc|provinces|departements-admin|prefectures|sous-prefectures|communes|arrondissements|quartiers|cantons|regroupements-village|villages')
+            ->where('type', $refTypes)
             ->name('referentiel-rh.store');
         Route::put('referentiel-rh/{type}/{id}', [\App\Http\Controllers\Admin\ReferentielRhController::class, 'update'])
-            ->where('type', 'types-contrat|postes|departements|types-evenement|niveaux-qualification|nationalites|groupes-rubriques|pays-loc|provinces|departements-admin|prefectures|sous-prefectures|communes|arrondissements|quartiers|cantons|regroupements-village|villages')
+            ->where('type', $refTypes)
             ->name('referentiel-rh.update');
         Route::delete('referentiel-rh/{type}/{id}', [\App\Http\Controllers\Admin\ReferentielRhController::class, 'destroy'])
-            ->where('type', 'types-contrat|postes|departements|types-evenement|niveaux-qualification|nationalites|groupes-rubriques|pays-loc|provinces|departements-admin|prefectures|sous-prefectures|communes|arrondissements|quartiers|cantons|regroupements-village|villages')
+            ->where('type', $refTypes)
             ->name('referentiel-rh.destroy');
 
         // Rôles projet

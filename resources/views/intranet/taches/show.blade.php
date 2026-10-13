@@ -323,6 +323,8 @@
         </div>
     </footer>
 
+    @include('intranet._partials.mails-lies', ['entite' => $tache])
+
 </article>
 
 {{-- Modales de validation --}}

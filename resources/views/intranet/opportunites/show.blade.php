@@ -36,6 +36,9 @@
         </div>
 
         <div class="contact-detail-actions">
+            @if($opportunite->contact?->email)
+            <a href="{{ route('intranet.mails.create', ['a' => trim($opportunite->contact->prenoms.' '.$opportunite->contact->nom).' <'.$opportunite->contact->email.'>', 'opportunite' => $opportunite->id, 'contact' => $opportunite->contact_id]) }}" class="btn btn-light" title="Écrire au contact"><i class="fas fa-envelope"></i></a>
+            @endif
             @can('update:opportunite')
             <a href="{{ route('intranet.opportunites.edit', $opportunite) }}" class="btn btn-intranet">
                 <i class="fas fa-pen-to-square me-2"></i> Modifier
@@ -109,6 +112,14 @@
     @endif
 
     @include('intranet._partials.media-display', ['entity' => $opportunite])
+
+    @include('intranet._partials.crm-interactions', [
+        'interactions' => $opportunite->interactions,
+        'mailA'        => $opportunite->contact?->email ? trim($opportunite->contact->prenoms.' '.$opportunite->contact->nom).' <'.$opportunite->contact->email.'>' : null,
+        'crmParam'     => array_filter(['opportunite' => $opportunite->id, 'contact' => $opportunite->contact_id]),
+    ])
+
+    @include('intranet._partials.mails-lies', ['entite' => $opportunite])
 
 </article>
 

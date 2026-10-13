@@ -236,6 +236,8 @@
     </div>
     @endif
 
+    @include('intranet._partials.mails-lies', ['entite' => $courrier])
+
 </article>
 
 {{-- ════════════════════════════════════════════════════

@@ -53,8 +53,8 @@ else
     warn "PHP $PHP_VERSION (Laravel 12 recommande 8.3)"
 fi
 
-for ext in pdo_pgsql mbstring intl gd zip curl xml bcmath fileinfo openssl; do
-    if $PHP_BIN -m | grep -qi "^${ext}$"; then ok "ext: $ext"; else fail "ext manquante: $ext"; fi
+for ext in pdo_pgsql mbstring intl gd zip curl xml bcmath fileinfo openssl iconv dom; do
+    if [[ "$($PHP_BIN -r "echo extension_loaded('${ext}') ? 1 : 0;")" == "1" ]]; then ok "ext: $ext"; else fail "ext manquante: $ext"; fi
 done
 
 # ── 4) Composer + libs critiques ──────────────────────
@@ -67,6 +67,8 @@ $PHP_BIN -r "require 'vendor/autoload.php';
     check('PhpOffice\\PhpWord\\PhpWord', 'PhpWord (export DOCX)');
     check('Barryvdh\\DomPDF\\Facade\\Pdf', 'DomPDF (guide PDF)');
     check('Spatie\\Permission\\Models\\Role', 'Spatie Permission');
+    check('Webklex\\PHPIMAP\\ClientManager', 'webklex/php-imap (Mails pro)');
+    check('TijsVerkoyen\\CssToInlineStyles\\CssToInlineStyles', 'CssToInlineStyles (signatures)');
 " 2>&1
 
 # ── 5) Base de données ────────────────────────────────

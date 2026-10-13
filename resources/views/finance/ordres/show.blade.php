@@ -394,6 +394,8 @@
     </div>
 </div>
 
+    @include('intranet._partials.mails-lies', ['entite' => $ordre])
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {

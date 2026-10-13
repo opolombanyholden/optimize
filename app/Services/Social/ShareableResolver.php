@@ -81,10 +81,10 @@ class ShareableResolver
         Employee::class         => ['label' => 'Collaborateur',     'icon' => 'fa-id-badge',           'title' => 'noms',           'excerpt' => 'poste',        'route' => 'rh.employees.show'],
         Absence::class          => ['label' => 'Absence',           'icon' => 'fa-user-clock',         'title' => 'label',          'excerpt' => null,           'route' => 'rh.absences.show'],
         Formation::class        => ['label' => 'Formation',         'icon' => 'fa-graduation-cap',     'title' => 'label',          'excerpt' => null,           'route' => 'rh.formations.show'],
-        CommandeFournisseur::class => ['label' => 'Commande fournisseur', 'icon' => 'fa-cart-flatbed',   'title' => 'reference',   'excerpt' => 'objet',        'route' => 'appro.commandes.show'],
-        CommandeInterne::class     => ['label' => 'Demande interne',      'icon' => 'fa-clipboard-list', 'title' => 'reference',   'excerpt' => null,           'route' => 'appro.commandes-internes.show'],
-        DevisFournisseur::class    => ['label' => 'Devis fournisseur',    'icon' => 'fa-file-signature','title' => 'reference',    'excerpt' => null,           'route' => 'appro.devis-fournisseur.show'],
-        LivraisonFournisseur::class=> ['label' => 'Livraison fournisseur','icon' => 'fa-truck',         'title' => 'reference',    'excerpt' => null,           'route' => 'appro.livraisons-fournisseur.show'],
+        CommandeFournisseur::class => ['label' => 'Commande fournisseur', 'icon' => 'fa-cart-flatbed',   'title' => 'numero_commande',   'excerpt' => 'objet',        'route' => 'appro.commandes.show'],
+        CommandeInterne::class     => ['label' => 'Demande interne',      'icon' => 'fa-clipboard-list', 'title' => 'numero',   'excerpt' => null,           'route' => 'appro.commandes-internes.show'],
+        DevisFournisseur::class    => ['label' => 'Devis fournisseur',    'icon' => 'fa-file-signature','title' => 'numero',    'excerpt' => null,           'route' => 'appro.devis-fournisseur.show'],
+        LivraisonFournisseur::class=> ['label' => 'Livraison fournisseur','icon' => 'fa-truck',         'title' => 'numero',    'excerpt' => null,           'route' => 'appro.livraisons-fournisseur.show'],
         Dysfonctionnement::class   => ['label' => 'Ticket',               'icon' => 'fa-triangle-exclamation','title'=> 'label',   'excerpt' => 'description',  'route' => 'mg.dysfonctionnements.show'],
         Intervention::class        => ['label' => 'Intervention',         'icon' => 'fa-wrench',        'title' => 'label',        'excerpt' => 'description',  'route' => 'mg.interventions.show'],
         Immobilisation::class      => ['label' => 'Immobilisation',       'icon' => 'fa-warehouse',     'title' => 'designation',  'excerpt' => 'description',  'route' => 'mg.immobilisations.show'],
@@ -189,6 +189,9 @@ class ShareableResolver
         }
         // Employee : sa propre fiche
         if ($model instanceof Employee && (int) ($model->user_id ?? 0) === (int) $user->id) return true;
+        // Absence / Formation : rattachées à la fiche employé de l'utilisateur
+        if (($model instanceof Absence || $model instanceof Formation) && $model->employee_id
+            && Employee::whereKey($model->employee_id)->where('user_id', $user->id)->exists()) return true;
         // Immobilisation / Devis / Livraison / KPI : catalogue général, partageables (données non nominatives)
         if ($model instanceof Immobilisation) return true;
         if ($model instanceof DevisFournisseur) return true;
@@ -274,22 +277,23 @@ class ShareableResolver
                 ->where(function ($qq) use ($q) {
                     $qq->where('noms', 'ilike', "%{$q}%")->orWhere('prenoms', 'ilike', "%{$q}%")->orWhere('matricule', 'ilike', "%{$q}%");
                 })->take($limit)->get(),
+            // Absences / formations : celles de la fiche employé de l'utilisateur (pas de colonne created_by)
             'absence'   => fn() => Absence::where('label', 'ilike', "%{$q}%")
-                ->where('created_by', $user->id)->take($limit)->get(),
+                ->whereIn('employee_id', Employee::where('user_id', $user->id)->select('id'))->take($limit)->get(),
             'formation' => fn() => Formation::where('label', 'ilike', "%{$q}%")
-                ->where('created_by', $user->id)->take($limit)->get(),
+                ->whereIn('employee_id', Employee::where('user_id', $user->id)->select('id'))->take($limit)->get(),
 
             // Achats/MG : own uniquement (données comptables sensibles)
             'commande'  => fn() => CommandeFournisseur::where(function ($qq) use ($q) {
-                    $qq->where('reference', 'ilike', "%{$q}%")->orWhere('objet', 'ilike', "%{$q}%");
+                    $qq->where('numero_commande', 'ilike', "%{$q}%")->orWhere('objet', 'ilike', "%{$q}%");
                 })->where('created_by', $user->id)->take($limit)->get(),
-            'demande'   => fn() => CommandeInterne::where('reference', 'ilike', "%{$q}%")
+            'demande'   => fn() => CommandeInterne::where(fn($qq) => $qq->where('numero', 'ilike', "%{$q}%")->orWhere('objet', 'ilike', "%{$q}%"))
                 ->where(function ($qq) use ($user) {
                     $qq->where('demandeur_id', $user->id)->orWhere('superieur_id', $user->id);
                 })->take($limit)->get(),
-            'devis'     => fn() => DevisFournisseur::where('reference', 'ilike', "%{$q}%")
+            'devis'     => fn() => DevisFournisseur::where('numero', 'ilike', "%{$q}%")
                 ->take($limit)->get(),
-            'livraison' => fn() => LivraisonFournisseur::where('reference', 'ilike', "%{$q}%")
+            'livraison' => fn() => LivraisonFournisseur::where(fn($qq) => $qq->where('numero', 'ilike', "%{$q}%")->orWhere('bon_livraison_ref', 'ilike', "%{$q}%"))
                 ->take($limit)->get(),
             'dysfonc'   => fn() => Dysfonctionnement::where('label', 'ilike', "%{$q}%")
                 ->where(function ($qq) use ($user) {

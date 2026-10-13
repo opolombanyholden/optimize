@@ -242,6 +242,8 @@
         </div>
     </div>
 
+    @include('intranet._partials.mails-lies', ['entite' => $projet])
+
     <footer class="annonce-footer">
         <div class="annonce-footer-actions">
             <a href="{{ route('intranet.projets.index') }}" class="btn btn-light"><i class="fas fa-arrow-left me-2"></i> Retour</a>

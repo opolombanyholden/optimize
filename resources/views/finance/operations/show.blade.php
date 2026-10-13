@@ -125,6 +125,8 @@
     </div>
 </div>
 
+    @include('intranet._partials.mails-lies', ['entite' => $operation])
+
 @if($operation->est_rejetable)
     <div class="modal fade" id="mRejet" tabindex="-1">
         <div class="modal-dialog">

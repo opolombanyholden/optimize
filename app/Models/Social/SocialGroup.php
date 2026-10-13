@@ -21,6 +21,15 @@ class SocialGroup extends Model
     public function auteur()   { return $this->belongsTo(User::class, 'created_by'); }
     public function members()  { return $this->hasMany(SocialGroupMember::class, 'group_id'); }
     public function messages() { return $this->hasMany(SocialGroupMessage::class, 'group_id'); }
+    public function dernierMessage() { return $this->hasOne(SocialGroupMessage::class, 'group_id')->latestOfMany(); }
+
+    /** Teinte d'identité du groupe (déterministe, dérivée du nom) utilisée sur la pastille et le bandeau. */
+    public const TEINTES = ['#6D28D9', '#4F46E5', '#0891B2', '#0D9488', '#059669', '#D97706', '#DB2777', '#9333EA'];
+
+    public function getTeinteAttribute(): string
+    {
+        return self::TEINTES[crc32(mb_strtolower((string) $this->nom)) % count(self::TEINTES)];
+    }
 
     public function users()
     {

@@ -428,6 +428,16 @@ body.sidebar-collapsed .sb-link-row > .sb-link { border-radius: 9px; }
 
 /* Intranet */
 .sb-module-intranet .sb-link .sb-icon { color: var(--sb-intranet); background: rgba(124,58,237,.1); }
+.sb-module-intranet .sb-link.active {
+    background: var(--sb-intranet-bg);
+    color: #fff;
+    border-left: 3px solid var(--sb-intranet-border);
+    padding-left: 1.35rem;
+}
+.sb-module-intranet .sb-link.active .sb-icon { background: rgba(124,58,237,.25); color: var(--sb-intranet); }
+
+/* Libellé long autorisé sur deux lignes (ex. « Messagerie instantanée » + compteur) */
+.sb-label.sb-label-2l { white-space: normal; line-height: 1.15; }
 
 /* ─── ACCORDÉON INTRANET ──────────────────────────────── */
 .sb-accordion {
@@ -757,6 +767,32 @@ body.sidebar-collapsed .sb-link-row > .sb-link { border-radius: 9px; }
     letter-spacing: .09em;
     text-transform: uppercase;
 }
+.sb-section-header.intranet .sb-section-dot  { background: var(--sb-intranet); box-shadow: 0 0 5px var(--sb-intranet); }
+.sb-section-header.intranet .sb-section-name { color: var(--sb-intranet); }
+
+/* Lien « Mail pro » mis en évidence en tête du menu Intranet */
+.sb-link.sb-link-mail {
+    background: linear-gradient(135deg, #7C3AED, #4F46E5);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(79, 70, 229, .35);
+    margin-bottom: .35rem;
+}
+.sb-link.sb-link-mail .sb-icon { background: rgba(255, 255, 255, .18); color: #fff; }
+.sb-link.sb-link-mail:hover { background: linear-gradient(135deg, #6D28D9, #4338CA); color: #fff; }
+/* Actif : garde le dégradé (prioritaire sur le style « actif » générique du menu Intranet) */
+.sb-module-intranet .sb-link.sb-link-mail.active {
+    background: linear-gradient(135deg, #7C3AED, #4F46E5);
+    color: #fff;
+    border-left: 2.5px solid transparent;
+    border-radius: 9px;
+    padding-left: .85rem;
+    box-shadow: 0 0 0 2px rgba(196, 181, 253, .7), 0 4px 14px rgba(79, 70, 229, .35);
+}
+.sb-module-intranet .sb-link.sb-link-mail .sb-icon,
+.sb-module-intranet .sb-link.sb-link-mail.active .sb-icon { background: rgba(255, 255, 255, .18); color: #fff; }
+.sb-link.sb-link-mail .sb-badge-alert { background: #fff; color: #4338CA; font-weight: 700; }
+
 .sb-section-header.finance .sb-section-dot  { background: var(--sb-finance); box-shadow: 0 0 5px var(--sb-finance); }
 .sb-section-header.finance .sb-section-name { color: var(--sb-finance); }
 .sb-section-header.rh      .sb-section-dot  { background: var(--sb-rh);      box-shadow: 0 0 5px var(--sb-rh); }

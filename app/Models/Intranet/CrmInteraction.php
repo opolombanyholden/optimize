@@ -17,6 +17,8 @@ class CrmInteraction extends Model
         'type', 'objet', 'description',
         'date_interaction', 'duree_minutes',
         'est_terminee', 'realisee_par',
+        // Mail journalisé depuis le webmail
+        'mail_message_id', 'mail_compte_id', 'mail_uid', 'mail_dossier', 'mail_sens',
     ];
 
     protected $casts = [

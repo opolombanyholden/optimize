@@ -41,7 +41,8 @@ class ContactController extends Controller
     public function create(Request $request)
     {
         return view('intranet.contacts.create', [
-            'contact'       => new Contact(['langue' => 'fr']),
+            // Préremplissage possible depuis un mail (?nom=&prenoms=&email=&organisation_id=)
+            'contact'       => new Contact(['langue' => 'fr'] + array_filter($request->only(['nom', 'prenoms', 'email', 'organisation_id']), fn($v) => is_string($v) && $v !== '')),
             'organisations' => ContactOrganisation::orderBy('nom')->get(['id', 'nom']),
             'pays'          => Pays::orderBy('ordre')->orderBy('nom')->get(),
             'users'         => User::actif()->orderBy('name')->get(['id', 'name', 'prenoms', 'email', 'email_interne']),

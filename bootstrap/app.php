@@ -20,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         // Force le changement de mot de passe sur toutes les requêtes web authentifiées
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsurePasswordIsCurrent::class);
+        // Présence en ligne pour la messagerie instantanée
+        $middleware->appendToGroup('web', \App\Http\Middleware\TouchLastSeen::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

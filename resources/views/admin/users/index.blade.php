@@ -11,8 +11,65 @@
         <h1 class="h4 mb-1"><i class="fas fa-users-cog me-2" style="color:#475569;"></i>Utilisateurs</h1>
         <p class="text-muted mb-0" style="font-size:.85rem;">{{ $stats['total'] }} au total · {{ $stats['actifs'] }} actifs · {{ $stats['inactifs'] }} désactivés</p>
     </div>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal"><i class="fas fa-user-plus me-1"></i> Nouvel utilisateur</button>
+    <div class="d-flex gap-2">
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"><i class="fas fa-file-export me-1"></i> Exporter</button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{{ route('admin.users.export', array_merge(request()->only('q', 'role', 'statut'), ['format' => 'xlsx'])) }}"><i class="fas fa-file-excel me-2 text-success"></i>Excel (XLSX)</a></li>
+                <li><a class="dropdown-item" href="{{ route('admin.users.export', array_merge(request()->only('q', 'role', 'statut'), ['format' => 'csv'])) }}"><i class="fas fa-file-csv me-2 text-primary"></i>CSV</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><span class="dropdown-item-text text-muted" style="font-size:.72rem;">Les filtres actifs sont appliqués</span></li>
+            </ul>
+        </div>
+        <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importUserModal"><i class="fas fa-file-import me-1"></i> Importer</button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal"><i class="fas fa-user-plus me-1"></i> Nouvel utilisateur</button>
+    </div>
 </div>
+
+@if(session('import_erreurs'))
+<div class="alert alert-warning" style="font-size:.85rem;">
+    <strong><i class="fas fa-triangle-exclamation me-1"></i>Lignes en erreur dans le fichier importé</strong>
+    <ul class="mb-0 mt-2" style="font-size:.82rem;">
+        @foreach(session('import_erreurs') as $err)
+            <li>Ligne <strong>{{ $err['ligne'] }}</strong> : {{ implode(' · ', $err['motifs']) }}</li>
+        @endforeach
+    </ul>
+</div>
+@endif
+
+@if(session('import_identifiants'))
+<div class="card data-card mb-3 border-warning">
+    <div class="card-header d-flex justify-content-between align-items-center" style="background:#FFFBEB;">
+        <h6 class="mb-0" style="font-size:.9rem; font-weight:700;"><i class="fas fa-key me-2 text-warning"></i>Mots de passe temporaires générés ({{ count(session('import_identifiants')) }})</h6>
+        <button type="button" class="btn btn-sm btn-warning" id="btnDownloadIdentifiants"><i class="fas fa-download me-1"></i>Télécharger (CSV)</button>
+    </div>
+    <div class="card-body">
+        <p class="text-muted mb-2" style="font-size:.8rem;">Affichés <strong>une seule fois</strong> — téléchargez-les ou notez-les maintenant pour les communiquer aux collaborateurs.</p>
+        <div class="table-responsive" style="max-height:260px;">
+            <table class="table table-sm mb-0" style="font-size:.82rem;">
+                <thead><tr><th>Collaborateur</th><th>Email</th><th>Mot de passe</th></tr></thead>
+                <tbody>
+                    @foreach(session('import_identifiants') as $id)
+                    <tr><td>{{ $id['nom'] }}</td><td>{{ $id['email'] }}</td><td><code>{{ $id['mdp'] }}</code></td></tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+document.getElementById('btnDownloadIdentifiants').addEventListener('click', function () {
+    const rows = @json(session('import_identifiants'));
+    const esc = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+    const csv = '﻿' + ['nom;email;mot_de_passe', ...rows.map(r => [r.nom, r.email, r.mdp].map(esc).join(';'))].join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv;charset=utf-8'}));
+    a.download = 'identifiants-import.csv';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+</script>
+@endif
 
 <div class="card data-card mb-3">
     <div class="card-body">
@@ -100,6 +157,32 @@
         </div>
     </div>
     <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button><button class="btn btn-primary">Créer</button></div>
+</form></div></div>
+
+{{-- ══ Modale IMPORT ══ --}}
+<div class="modal fade" id="importUserModal" tabindex="-1"><div class="modal-dialog modal-lg"><form action="{{ route('admin.users.import') }}" method="POST" enctype="multipart/form-data" class="modal-content">@csrf
+    <div class="modal-header"><h5 class="modal-title"><i class="fas fa-file-import me-2"></i>Importer des utilisateurs</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body">
+        <div class="alert alert-info" style="font-size:.82rem;">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+                <div>
+                    Colonnes reconnues : <code>nom</code>*, <code>email</code>*, <code>prenoms</code>, <code>matricule</code>, <code>poste</code>, <code>contact</code>,
+                    <code>roles</code> (séparés par virgule), <code>statut</code> (actif / inactif), <code>mot_de_passe</code> (vide = généré).
+                    <div class="mt-1">Un fichier exporté depuis cette page peut être réimporté tel quel. Les cellules vides ne modifient pas les valeurs existantes.</div>
+                </div>
+                <a href="{{ route('admin.users.import.template') }}" class="btn btn-sm btn-outline-primary text-nowrap"><i class="fas fa-download me-1"></i>Modèle CSV</a>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Fichier <span class="text-danger">*</span></label>
+            <input type="file" name="fichier" class="form-control" required accept=".csv,.xlsx,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+            <div class="form-text"><strong>CSV</strong> (séparateur <code>;</code> ou <code>,</code>, UTF-8) ou <strong>Excel XLSX</strong> (1<sup>re</sup> feuille). Max 5 Mo.</div>
+        </div>
+        <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" name="mettre_a_jour" value="1" id="importMaj"><label class="form-check-label" for="importMaj">Mettre à jour les utilisateurs existants (identifiés par email)</label></div>
+        <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" name="ignore_erreurs" value="1" id="importIgnore"><label class="form-check-label" for="importIgnore">Ignorer les lignes en erreur (importer uniquement les lignes valides)</label></div>
+        <div class="form-check form-switch"><input type="hidden" name="must_change_password" value="0"><input class="form-check-input" type="checkbox" name="must_change_password" value="1" id="importMustChange" checked><label class="form-check-label" for="importMustChange">Forcer changement de mot de passe au 1<sup>er</sup> login (nouveaux comptes)</label></div>
+    </div>
+    <div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button><button class="btn btn-primary"><i class="fas fa-upload me-1"></i>Importer</button></div>
 </form></div></div>
 
 {{-- ══ Modales ÉDITION + RESET par utilisateur ══ --}}

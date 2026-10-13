@@ -16,17 +16,30 @@ class GroupController extends Controller
     {
         $user = $request->user();
         $mesGroupes = SocialGroup::whereHas('members', fn($q) => $q->where('user_id', $user->id))
-            ->with(['auteur'])
+            ->with(['auteur', 'users:id,name,prenoms,profile_photo_path', 'dernierMessage.sender:id,name,prenoms'])
             ->withCount(['members', 'messages'])
             ->latest('updated_at')
             ->get();
+
+        // Non-lus par groupe : messages des autres postés après ma dernière lecture
+        $nonLus = SocialGroupMessage::query()
+            ->join('social_group_members as gm', fn($j) => $j->on('gm.group_id', '=', 'social_group_messages.group_id')->where('gm.user_id', $user->id))
+            ->where('social_group_messages.sender_id', '!=', $user->id)
+            ->where(fn($q) => $q->whereNull('gm.last_read_at')->orWhereColumn('social_group_messages.created_at', '>', 'gm.last_read_at'))
+            ->groupBy('social_group_messages.group_id')
+            ->selectRaw('social_group_messages.group_id, count(*) as n')
+            ->pluck('n', 'group_id');
+
         $groupesPublics = SocialGroup::where('is_public', true)
             ->whereDoesntHave('members', fn($q) => $q->where('user_id', $user->id))
-            ->withCount('members')
+            ->with(['users:id,name,prenoms,profile_photo_path', 'dernierMessage'])
+            ->withCount(['members', 'messages'])
             ->latest()
-            ->take(10)
+            ->take(12)
             ->get();
-        return view('social.groups.index', compact('mesGroupes', 'groupesPublics'));
+        $collaborateurs = User::where('id', '!=', $user->id)->where('statut', 1)->orderBy('name')->get(['id', 'prenoms', 'name']);
+
+        return view('social.groups.index', compact('mesGroupes', 'groupesPublics', 'nonLus', 'collaborateurs'));
     }
 
     public function store(Request $request)
@@ -81,7 +94,8 @@ class GroupController extends Controller
             );
         }
 
-        $messages = $group->messages()->with('sender')->orderBy('created_at')->take(200)->get();
+        // Les 200 messages les plus récents, affichés du plus ancien au plus récent
+        $messages = $group->messages()->with('sender')->latest('id')->take(200)->get()->reverse()->values();
         $membres  = $group->users()->orderBy('name')->get();
 
         // Marque le dernier read pour cet utilisateur
@@ -190,6 +204,8 @@ class GroupController extends Controller
             'sender'    => trim(($msg->sender?->prenoms ?? '').' '.($msg->sender?->name ?? '')),
             'sender_id' => $msg->sender_id,
             'date'      => $msg->created_at->format('H:i'),
+            'jour'      => $msg->created_at->toDateString(),
+            'ts'        => $msg->created_at->timestamp,
             'pieces'    => $pjs,
             'shared'    => $shared,
         ];
@@ -245,6 +261,10 @@ class GroupController extends Controller
             ->take(50)
             ->get()
             ->map(fn($m) => $this->serializeMessage($m));
+        // Groupe ouvert à l'écran : les messages reçus sont considérés comme lus
+        if ($msgs->isNotEmpty()) {
+            SocialGroupMember::where(['group_id' => $group->id, 'user_id' => $request->user()->id])->update(['last_read_at' => now()]);
+        }
         return response()->json(['messages' => $msgs]);
     }
 

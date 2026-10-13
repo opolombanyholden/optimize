@@ -120,61 +120,33 @@
             </div>
         </div>
 
-        {{-- Messagerie --}}
+        {{-- Messagerie (mails pro + messagerie instantanée) — compteurs rafraîchis en JS --}}
         <div class="dropdown">
             <button class="navbar-icon-btn position-relative" data-bs-toggle="dropdown"
                     title="Messagerie" aria-label="Messagerie">
                 <i class="fas fa-envelope"></i>
-                @if(!empty($mailsNonLus) && $mailsNonLus > 0)
-                <span class="navbar-notif-dot" style="background:#F87171;"></span>
-                @endif
+                <span class="navbar-notif-dot d-none" style="background:#F87171;" id="navMsgDot"></span>
             </button>
             <div class="dropdown-menu dropdown-menu-end navbar-dropdown" style="width:300px;">
-                <div class="navbar-dropdown-header">
-                    <span>Messagerie</span>
-                    @if(!empty($mailsNonLus) && $mailsNonLus > 0)
-                    <span class="navbar-notif-count" style="background:#FEE2E2;color:#DC2626;">{{ $mailsNonLus }}</span>
-                    @endif
-                </div>
-                {{-- Onglets Mail / Chat --}}
-                <div class="navbar-msg-tabs">
-                    <button class="navbar-msg-tab active" data-tab="mail">
-                        <i class="fas fa-at"></i> Mail pro
-                        @if(!empty($mailsNonLus) && $mailsNonLus > 0)
-                        <span class="navbar-msg-count">{{ $mailsNonLus }}</span>
-                        @endif
-                    </button>
-                    <button class="navbar-msg-tab" data-tab="chat">
-                        <i class="fas fa-message"></i> Instantané
-                    </button>
-                </div>
-                {{-- Contenu Mail --}}
-                <div class="navbar-msg-panel" id="msgPanelMail">
-                    @if(!empty($mailsNonLus) && $mailsNonLus > 0)
-                    <a class="navbar-dropdown-item" href="#" style="opacity:.55;cursor:not-allowed;" title="Bientôt">
-                        <span class="navbar-dropdown-icon" style="background:#FEE2E2;color:#DC2626;"><i class="fas fa-envelope-open-text"></i></span>
-                        <div>
-                            <div class="navbar-dropdown-item-title">{{ $mailsNonLus }} mail(s) non lu(s)</div>
-                            <div class="navbar-dropdown-item-sub">Messagerie professionnelle</div>
-                        </div>
-                    </a>
-                    @else
-                    <div class="text-center py-3 text-muted" style="font-size:.82rem;">
-                        <i class="fas fa-inbox d-block mb-1" style="font-size:1.2rem;"></i>
-                        Aucun mail non lu
+                <div class="navbar-dropdown-header"><span>Messagerie</span></div>
+                <a class="navbar-dropdown-item" href="{{ route('intranet.mails.index') }}">
+                    <span class="navbar-dropdown-icon" style="background:#EEF2FF;color:#4F46E5;"><i class="fas fa-at"></i></span>
+                    <div class="flex-grow-1">
+                        <div class="navbar-dropdown-item-title">Mails pro</div>
+                        <div class="navbar-dropdown-item-sub" id="navMailSub">Boîte de réception</div>
                     </div>
-                    @endif
-                    <div class="navbar-dropdown-footer">
-                        <span style="opacity:.55;font-size:.7rem;">Module messagerie bientôt disponible</span>
+                    <span class="navbar-msg-count d-none" id="navMailCount">0</span>
+                </a>
+                <a class="navbar-dropdown-item" href="{{ route('intranet.messagerie.index') }}">
+                    <span class="navbar-dropdown-icon" style="background:#F5F3FF;color:#7C3AED;"><i class="fas fa-message"></i></span>
+                    <div class="flex-grow-1">
+                        <div class="navbar-dropdown-item-title">Messagerie instantanée</div>
+                        <div class="navbar-dropdown-item-sub" id="navChatSub">Conversations avec vos collègues</div>
                     </div>
-                </div>
-                {{-- Contenu Chat --}}
-                <div class="navbar-msg-panel d-none" id="msgPanelChat">
-                    <div class="text-center py-3 text-muted" style="font-size:.82rem;">
-                        <i class="fas fa-message d-block mb-1" style="font-size:1.2rem;"></i>
-                        Messagerie instantanée
-                        <div style="font-size:.75rem;margin-top:.25rem;">Bientôt disponible</div>
-                    </div>
+                    <span class="navbar-msg-count d-none" id="navChatCount">0</span>
+                </a>
+                <div class="navbar-dropdown-footer">
+                    <a href="{{ route('intranet.mails.create') }}" style="font-size:.75rem;"><i class="fas fa-pen me-1"></i>Nouveau mail</a>
                 </div>
             </div>
         </div>
@@ -249,9 +221,13 @@
             </button>
             <div class="dropdown-menu dropdown-menu-end navbar-dropdown" style="width:220px;">
                 <div class="navbar-dropdown-header">Mon compte</div>
-                <a class="navbar-dropdown-item" href="{{ route('intranet.annuaire.collaborateurs.show', auth()->user()) }}">
+                <a class="navbar-dropdown-item" href="{{ route('mon-compte.index') }}">
                     <span class="navbar-dropdown-icon" style="background:#F1F5F9; color:#475569;"><i class="fas fa-user"></i></span>
-                    <div><div class="navbar-dropdown-item-title">Mon profil</div></div>
+                    <div><div class="navbar-dropdown-item-title">Mon compte</div></div>
+                </a>
+                <a class="navbar-dropdown-item" href="{{ route('mon-compte.index') }}#comptes-mail">
+                    <span class="navbar-dropdown-icon" style="background:#F1F5F9; color:#475569;"><i class="fas fa-at"></i></span>
+                    <div><div class="navbar-dropdown-item-title">Mes comptes mail</div></div>
                 </a>
                 <a class="navbar-dropdown-item" href="#" style="opacity:.55;cursor:not-allowed;" title="Bientôt">
                     <span class="navbar-dropdown-icon" style="background:#F1F5F9; color:#475569;"><i class="fas fa-key"></i></span>

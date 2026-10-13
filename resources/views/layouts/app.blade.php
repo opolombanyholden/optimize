@@ -103,6 +103,8 @@
     {{-- ════════════════════════════════════════════════════
          MESSAGERIE INSTANTANÉE — BOUTON FLOTTANT
     ════════════════════════════════════════════════════ --}}
+    {{-- Masqué sur la page Messagerie (déjà plein écran, évite de recouvrir le champ de saisie) --}}
+    @unless(request()->routeIs('intranet.messagerie.*', 'social.groups.show'))
     <div id="chatWidget">
 
         {{-- Panneau principal --}}
@@ -167,12 +169,13 @@
         </button>
 
     </div>{{-- /chatWidget --}}
+    @endunless
 
     {{-- ════════════════════════════════════════════════════
          RÉSEAU SOCIAL — Bouton flottant vers le module Social
          (masqué quand on est déjà dans le module social)
     ════════════════════════════════════════════════════ --}}
-    @unless(request()->routeIs('social.*'))
+    @unless(request()->routeIs('social.*', 'intranet.messagerie.*'))
     <a href="{{ route('social.dashboard') }}" class="rs-fab" title="Réseau social">
         <i class="fas fa-users"></i>
         <span class="rs-fab-badge d-none" id="rsFabBadgeSocial">0</span>
@@ -181,7 +184,7 @@
 
     {{-- Bouton flottant : accès direct à la liste des Tâches
          (remplace l'ancien FAB Groupes de discussion) --}}
-    @unless(request()->routeIs('intranet.taches.*', 'projet.*'))
+    @unless(request()->routeIs('intranet.taches.*', 'projet.*', 'intranet.messagerie.*', 'social.groups.show'))
     <a href="{{ route('intranet.taches.index') }}" class="rs-fab rs-fab-taches" title="Mes tâches">
         <i class="fas fa-list-check"></i>
     </a>
@@ -313,18 +316,37 @@
                 });
             }
 
-            // ── Messagerie tabs ───────────────────────────────
-            document.querySelectorAll('.navbar-msg-tab').forEach(function (tab) {
-                tab.addEventListener('click', function () {
-                    document.querySelectorAll('.navbar-msg-tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.navbar-msg-panel').forEach(p => p.classList.add('d-none'));
-                    this.classList.add('active');
-                    const target = this.dataset.tab === 'mail' ? 'msgPanelMail' : 'msgPanelChat';
-                    document.getElementById(target)?.classList.remove('d-none');
-                });
+            // ── Compteurs messagerie (barre du haut + sidebar), toutes les 60 s ──
+            (function () {
+                function maj(cle, n) {
+                    const nav = document.getElementById(cle === 'mail' ? 'navMailCount' : 'navChatCount');
+                    [nav, ...document.querySelectorAll('[data-badge="' + cle + '"]')].forEach(function (el) {
+                        if (!el) return;
+                        el.textContent = n > 99 ? '99+' : n;
+                        el.classList.toggle('d-none', !n);
+                    });
+                    const sub = document.getElementById(cle === 'mail' ? 'navMailSub' : 'navChatSub');
+                    if (sub && n) sub.textContent = n + (cle === 'mail' ? ' mail(s) non lu(s)' : ' message(s) non lu(s)');
+                    totaux[cle] = n;
+                    document.getElementById('navMsgDot')?.classList.toggle('d-none', !(totaux.mail || totaux.chat));
+                }
+                const totaux = { mail: 0, chat: 0 };
+                const sources = { chat: @json(route('intranet.messagerie.non-lus')), mail: @json(route('intranet.mails.non-lus')) };
+                function rafraichir() {
+                    if (document.hidden) return;
+                    Object.entries(sources).forEach(function ([cle, url]) {
+                        fetch(url, { headers: { 'Accept': 'application/json' } })
+                            .then(r => r.ok ? r.json() : null)
+                            .then(d => { if (d) maj(cle, parseInt(d.total, 10) || 0); })
+                            .catch(function () {});
+                    });
+                }
+                rafraichir();
+                setInterval(rafraichir, 60000);
+            })();
             });
 
-            // ── Chat Widget ───────────────────────────────────
+            // ── Chat Widget (messagerie instantanée 1-à-1, polling) ──
             (function () {
                 const fab      = document.getElementById('chatFab');
                 const panel    = document.getElementById('chatPanel');
@@ -334,9 +356,19 @@
                 const allList    = document.getElementById('chatAllList');
                 const onlineCount = document.getElementById('chatOnlineCount');
                 const onlineDot   = document.getElementById('chatFabOnlineDot');
+                const fabBadge    = document.getElementById('chatFabBadge');
                 const windows  = document.getElementById('chatWindows');
+                const newBtn   = document.getElementById('chatToggleView');
 
                 if (!fab) return;
+
+                const URL_USERS   = @json(route('intranet.messagerie.utilisateurs'));
+                const URL_PAGE    = @json(route('intranet.messagerie.index'));
+                const URL_START   = @json(route('intranet.messagerie.demarrer', ['user' => '__ID__']));
+                const URL_MSGS    = @json(route('intranet.messagerie.messages', ['conversation' => '__ID__']));
+                const URL_SEND    = @json(route('intranet.messagerie.envoyer', ['conversation' => '__ID__']));
+                const CSRF = document.querySelector('meta[name="csrf-token"]')?.content;
+                const JSON_HEADERS = { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF };
 
                 // Couleurs avatar déterministes
                 const avatarColors = ['#7C3AED','#059669','#D97706','#DC2626','#0891B2','#0D9488','#4F46E5','#BE185D'];
@@ -346,170 +378,182 @@
                     return avatarColors[Math.abs(h) % avatarColors.length];
                 }
                 function initials(name) {
-                    return name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase();
+                    return name.split(' ').filter(Boolean).map(p => p[0]).join('').substring(0, 2).toUpperCase();
+                }
+                function esc(s) {
+                    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
                 }
 
-                // Données utilisateurs (simulées — à remplacer par un appel API)
-                const currentUserId = {{ auth()->id() }};
                 let users = [];
-                let openWindows = {};
-                let unreadTotal = 0;
+                const openWindows = {}; // userId → { conversationId, lastId }
 
-                // Charger la liste des utilisateurs via API simple
                 function loadUsers() {
-                    fetch('/api/chat/users', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    return fetch(URL_USERS, { headers: { 'Accept': 'application/json' } })
                         .then(r => r.ok ? r.json() : Promise.reject())
-                        .then(data => { users = data; renderUsers(users); })
-                        .catch(() => {
-                            // Fallback : données statiques
-                            users = [
-                                @foreach(\App\Models\User::where('id','!=',auth()->id())->where('statut',1)->take(15)->get() as $u)
-                                { id: {{ $u->id }}, name: "{{ addslashes($u->prenoms.' '.$u->name) }}", role: "{{ addslashes($u->getRoleNames()->first() ?? 'Utilisateur') }}", online: {{ rand(0,1) ? 'true' : 'false' }} },
-                                @endforeach
-                            ];
-                            renderUsers(users);
-                        });
+                        .then(data => { users = data; renderUsers(); })
+                        .catch(() => {});
                 }
 
-                function renderUsers(list) {
-                    const online = list.filter(u => u.online);
-                    const offline = list.filter(u => !u.online);
-                    const q = search ? search.value.toLowerCase() : '';
+                function renderUsers() {
+                    const q = search ? search.value.trim().toLowerCase() : '';
+                    const match = u => !q || u.name.toLowerCase().includes(q);
+                    // Conversations récentes d'abord, puis ordre alphabétique
+                    const tri = (a, b) => (b.last_message_at || '').localeCompare(a.last_message_at || '') || a.name.localeCompare(b.name);
+                    const online  = users.filter(u => u.online).sort(tri);
+                    const offline = users.filter(u => !u.online).sort(tri);
 
                     onlineCount.textContent = online.length;
                     onlineDot.style.display = online.length > 0 ? 'block' : 'none';
+                    onlineList.innerHTML = online.filter(match).map(itemHtml).join('') || '<li class="chat-empty">Aucun collaborateur en ligne</li>';
+                    allList.innerHTML    = offline.filter(match).map(itemHtml).join('') || '<li class="chat-empty">Aucun autre collaborateur</li>';
 
-                    onlineList.innerHTML = filterRender(online, q) || '<li class="chat-empty">Aucun collaborateur en ligne</li>';
-                    allList.innerHTML    = filterRender(offline, q) || '<li class="chat-empty">Aucun autre collaborateur</li>';
+                    const total = users.reduce((s, u) => s + (u.unread || 0), 0);
+                    fabBadge.textContent = total > 99 ? '99+' : total;
+                    fabBadge.classList.toggle('d-none', total === 0);
                 }
 
-                function filterRender(list, q) {
-                    return list.filter(u => !q || u.name.toLowerCase().includes(q))
-                        .map(u => `
-                        <li class="chat-user-item" data-id="${u.id}" data-name="${u.name}" data-role="${u.role}" data-online="${u.online}">
+                function itemHtml(u) {
+                    return `
+                        <li class="chat-user-item" data-id="${u.id}">
                             <div class="chat-user-avatar" style="background:${avatarColor(u.name)};">
-                                ${initials(u.name)}
+                                ${esc(initials(u.name))}
                                 <span class="chat-status-dot ${u.online ? 'online' : 'offline'}"></span>
                             </div>
                             <div class="chat-user-info">
-                                <div class="chat-user-name">${u.name}</div>
-                                <div class="chat-user-role">${u.role}</div>
+                                <div class="chat-user-name">${esc(u.name)}</div>
+                                <div class="chat-user-role">${esc(u.role)}</div>
                             </div>
-                            <div class="chat-user-unread d-none" id="unread-${u.id}">0</div>
-                        </li>`).join('');
+                            <div class="chat-user-unread ${u.unread ? '' : 'd-none'}">${u.unread || 0}</div>
+                        </li>`;
                 }
 
-                // Ouvrir/fermer panneau
-                fab.addEventListener('click', function () {
-                    const isOpen = panel.classList.toggle('open');
+                function togglePanel(force) {
+                    const isOpen = panel.classList.toggle('open', force);
                     fab.querySelector('.chat-fab-icon-open').classList.toggle('d-none', isOpen);
                     fab.querySelector('.chat-fab-icon-close').classList.toggle('d-none', !isOpen);
-                    if (isOpen && users.length === 0) loadUsers();
-                });
-                closeBtn.addEventListener('click', function () {
-                    panel.classList.remove('open');
-                    fab.querySelector('.chat-fab-icon-open').classList.remove('d-none');
-                    fab.querySelector('.chat-fab-icon-close').classList.add('d-none');
-                });
-
-                // Recherche
-                if (search) {
-                    search.addEventListener('input', function () { renderUsers(users); });
+                    if (isOpen) loadUsers();
                 }
+                fab.addEventListener('click', () => togglePanel());
+                closeBtn.addEventListener('click', () => togglePanel(false));
+                if (newBtn) newBtn.addEventListener('click', () => { window.location.href = URL_PAGE; });
+                if (search) search.addEventListener('input', renderUsers);
 
-                // Ouvrir fenêtre de conversation
                 document.addEventListener('click', function (e) {
                     const item = e.target.closest('.chat-user-item');
                     if (!item) return;
-                    const id   = item.dataset.id;
-                    const name = item.dataset.name;
-                    const role = item.dataset.role;
-                    const online = item.dataset.online === 'true';
-                    openChatWindow(id, name, role, online);
+                    const u = users.find(x => String(x.id) === item.dataset.id);
+                    if (u) openChatWindow(u);
                 });
 
-                function openChatWindow(id, name, role, online) {
-                    if (openWindows[id]) {
-                        document.getElementById('chatWin-' + id)?.classList.toggle('minimized');
+                function openChatWindow(u) {
+                    if (openWindows[u.id]) {
+                        document.getElementById('chatWin-' + u.id)?.classList.remove('minimized');
                         return;
                     }
-                    openWindows[id] = true;
-                    const color = avatarColor(name);
-                    const ini   = initials(name);
-                    const count = Object.keys(openWindows).length;
-                    const right = 80 + (count - 1) * 310;
+                    openWindows[u.id] = { conversationId: u.conversation_id, lastId: 0 };
+                    const color = avatarColor(u.name);
+                    const right = 80 + (Object.keys(openWindows).length - 1) * 310;
 
                     const win = document.createElement('div');
                     win.className = 'chat-window';
-                    win.id = 'chatWin-' + id;
+                    win.id = 'chatWin-' + u.id;
                     win.style.right = right + 'px';
                     win.innerHTML = `
                         <div class="chat-win-header" style="background:${color};">
                             <div class="chat-win-identity">
-                                <div class="chat-win-avatar">${ini}
-                                    <span class="chat-status-dot ${online ? 'online' : 'offline'}" style="border-color:${color};"></span>
+                                <div class="chat-win-avatar">${esc(initials(u.name))}
+                                    <span class="chat-status-dot ${u.online ? 'online' : 'offline'}" style="border-color:${color};"></span>
                                 </div>
                                 <div>
-                                    <div class="chat-win-name">${name}</div>
-                                    <div class="chat-win-status">${online ? '<span class="chat-online-label">En ligne</span>' : 'Hors ligne'}</div>
+                                    <div class="chat-win-name">${esc(u.name)}</div>
+                                    <div class="chat-win-status">${u.online ? '<span class="chat-online-label">En ligne</span>' : 'Hors ligne'}</div>
                                 </div>
                             </div>
                             <div class="chat-win-btns">
-                                <button class="chat-win-btn" onclick="this.closest('.chat-window').classList.toggle('minimized')" title="Réduire"><i class="fas fa-minus"></i></button>
-                                <button class="chat-win-btn" onclick="closeChatWindow('${id}')" title="Fermer"><i class="fas fa-xmark"></i></button>
+                                <button class="chat-win-btn" data-action="page" title="Ouvrir dans la messagerie"><i class="fas fa-up-right-from-square"></i></button>
+                                <button class="chat-win-btn" data-action="min" title="Réduire"><i class="fas fa-minus"></i></button>
+                                <button class="chat-win-btn" data-action="close" title="Fermer"><i class="fas fa-xmark"></i></button>
                             </div>
                         </div>
-                        <div class="chat-win-body" id="chatBody-${id}">
-                            <div class="chat-win-empty">
-                                <i class="fas fa-message"></i>
-                                <span>Démarrez la conversation</span>
-                            </div>
+                        <div class="chat-win-body">
+                            <div class="chat-win-empty"><i class="fas fa-message"></i><span>Démarrez la conversation</span></div>
                         </div>
                         <div class="chat-win-footer">
-                            <input type="text" class="chat-win-input" placeholder="Écrire un message…" id="chatInput-${id}">
-                            <button class="chat-win-send" onclick="sendChatMsg('${id}','${name}','${color}','${ini}')">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
+                            <input type="text" class="chat-win-input" maxlength="4000" placeholder="Écrire un message…">
+                            <button class="chat-win-send" title="Envoyer"><i class="fas fa-paper-plane"></i></button>
                         </div>`;
                     windows.appendChild(win);
 
-                    const input = document.getElementById('chatInput-' + id);
-                    if (input) {
-                        input.addEventListener('keydown', function (e) {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                                e.preventDefault();
-                                sendChatMsg(id, name, color, ini);
-                            }
-                        });
-                    }
+                    win.querySelector('[data-action="min"]').onclick = () => win.classList.toggle('minimized');
+                    win.querySelector('[data-action="close"]').onclick = () => { win.remove(); delete openWindows[u.id]; };
+                    win.querySelector('[data-action="page"]').onclick = () => ensureConversation(u).then(id => {
+                        window.location.href = URL_PAGE + '/conversations/' + id;
+                    });
+                    const input = win.querySelector('.chat-win-input');
+                    const send = () => sendChatMsg(u, input);
+                    win.querySelector('.chat-win-send').onclick = send;
+                    input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+                    input.focus();
+
+                    if (u.conversation_id) pollWindow(u.id);
                 }
 
-                window.closeChatWindow = function (id) {
-                    document.getElementById('chatWin-' + id)?.remove();
-                    delete openWindows[id];
-                };
+                function ensureConversation(u) {
+                    const state = openWindows[u.id];
+                    if (state && state.conversationId) return Promise.resolve(state.conversationId);
+                    return fetch(URL_START.replace('__ID__', u.id), { method: 'POST', headers: JSON_HEADERS })
+                        .then(r => r.ok ? r.json() : Promise.reject())
+                        .then(data => {
+                            u.conversation_id = data.conversation_id;
+                            if (openWindows[u.id]) openWindows[u.id].conversationId = data.conversation_id;
+                            return data.conversation_id;
+                        });
+                }
 
-                window.sendChatMsg = function (id, name, color, ini) {
-                    const input = document.getElementById('chatInput-' + id);
-                    const body  = document.getElementById('chatBody-' + id);
-                    if (!input || !body || !input.value.trim()) return;
-
-                    const msg = input.value.trim();
-                    input.value = '';
-
-                    // Effacer l'état vide
-                    const empty = body.querySelector('.chat-win-empty');
-                    if (empty) empty.remove();
-
+                function appendBubble(userId, m) {
+                    const state = openWindows[userId];
+                    const body = document.querySelector('#chatWin-' + userId + ' .chat-win-body');
+                    if (!state || !body || m.id <= state.lastId) return;
+                    body.querySelector('.chat-win-empty')?.remove();
                     const bubble = document.createElement('div');
-                    bubble.className = 'chat-bubble mine';
-                    bubble.innerHTML = `<div class="chat-bubble-text">${msg}</div>
-                        <div class="chat-bubble-time">${new Date().toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'})}</div>`;
+                    bubble.className = 'chat-bubble ' + (m.mine ? 'mine' : 'theirs');
+                    const txt = document.createElement('div'); txt.className = 'chat-bubble-text'; txt.textContent = m.contenu;
+                    const time = document.createElement('div'); time.className = 'chat-bubble-time'; time.textContent = m.heure;
+                    bubble.append(txt, time);
                     body.appendChild(bubble);
                     body.scrollTop = body.scrollHeight;
-                };
+                    state.lastId = m.id;
+                }
 
-                // Charger au démarrage
+                function pollWindow(userId) {
+                    const state = openWindows[userId];
+                    if (!state || !state.conversationId) return Promise.resolve();
+                    const url = URL_MSGS.replace('__ID__', state.conversationId) + (state.lastId ? '?apres=' + state.lastId : '');
+                    return fetch(url, { headers: { 'Accept': 'application/json' } })
+                        .then(r => r.ok ? r.json() : null)
+                        .then(data => {
+                            if (!data) return;
+                            data.messages.forEach(m => appendBubble(userId, m));
+                            const u = users.find(x => x.id === userId);
+                            if (u && u.unread) { u.unread = 0; renderUsers(); }
+                        }).catch(() => {});
+                }
+
+                function sendChatMsg(u, input) {
+                    const contenu = input.value.trim();
+                    if (!contenu) return;
+                    input.value = '';
+                    ensureConversation(u)
+                        .then(id => fetch(URL_SEND.replace('__ID__', id), { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify({ contenu }) }))
+                        .then(r => r.ok ? r.json() : Promise.reject())
+                        .then(data => appendBubble(u.id, data.message))
+                        .catch(() => { input.value = contenu; });
+                }
+
+                // Polling : fenêtres ouvertes toutes les 4 s, liste + badge toutes les 30 s
+                setInterval(() => { if (!document.hidden) Object.keys(openWindows).forEach(id => pollWindow(+id)); }, 4000);
+                setInterval(() => { if (!document.hidden) loadUsers(); }, 30000);
+
                 loadUsers();
             })();
         });

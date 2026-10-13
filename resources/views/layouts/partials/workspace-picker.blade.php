@@ -28,15 +28,7 @@
                     <div class="wp-card-icon"><i class="fas fa-globe"></i></div>
                     <div class="wp-card-body">
                         <h3>Intranet</h3>
-                        <p>Portail collaboratif : actualités, agenda, projets, courrier, annuaire.</p>
-                    </div>
-                    <i class="fas fa-arrow-right wp-card-arrow"></i>
-                </a>
-                <a href="{{ route('social.dashboard') }}" class="wp-card wp-card-hero wp-card-social" data-wp-choice="social">
-                    <div class="wp-card-icon"><i class="fas fa-users"></i></div>
-                    <div class="wp-card-body">
-                        <h3>Réseau Social</h3>
-                        <p>Fil de publications, groupes de discussion, échanges internes.</p>
+                        <p>Portail collaboratif : actualités, réseau social, agenda, courrier, annuaire.</p>
                     </div>
                     <i class="fas fa-arrow-right wp-card-arrow"></i>
                 </a>
@@ -165,7 +157,7 @@
     color:#666; margin-bottom:.85rem;
 }
 
-.wp-grid-top { display:grid; grid-template-columns:repeat(3, 1fr); gap:1rem; margin-bottom:1rem; }
+.wp-grid-top { display:grid; grid-template-columns:repeat(2, 1fr); gap:1rem; margin-bottom:1rem; }
 @media(max-width:900px) { .wp-grid-top { grid-template-columns:1fr 1fr; } }
 @media(max-width:600px) { .wp-grid-top { grid-template-columns:1fr; } }
 
@@ -198,7 +190,6 @@
 .wp-card-hero { padding:1.35rem 1.5rem; }
 .wp-card-hero .wp-card-icon { width:60px; height:60px; font-size:1.6rem; }
 .wp-card-intranet .wp-card-icon { background:#DBEAFE; color:#0A66C2; }
-.wp-card-social   .wp-card-icon { background:#FEF3C7; color:#B45309; }
 .wp-card-docs     .wp-card-icon { background:#E9D5FF; color:#7C3AED; }
 </style>
 

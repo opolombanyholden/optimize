@@ -39,6 +39,9 @@
         </div>
 
         <div class="contact-detail-actions">
+            @if($contact->email)
+            <a href="{{ route('intranet.mails.create', ['a' => trim($contact->prenoms.' '.$contact->nom).' <'.$contact->email.'>', 'contact' => $contact->id]) }}" class="btn btn-light" title="Envoyer un mail"><i class="fas fa-envelope"></i></a>
+            @endif
             @can('update:contact')
             <form action="{{ route('intranet.contacts.favori', $contact) }}" method="POST" class="d-inline">
                 @csrf
@@ -125,29 +128,11 @@
     </div>
     @endif
 
-    @if($contact->interactions->count())
-    <div class="contact-detail-card mt-3">
-        <h4 class="contact-detail-card-title"><i class="fas fa-clock-rotate-left"></i> Historique des interactions</h4>
-        <div class="interactions-timeline">
-            @foreach($contact->interactions as $i)
-            <div class="interaction-item">
-                <div class="interaction-icon" style="background:{{ $i->couleur }};"><i class="fas {{ $i->icone }}"></i></div>
-                <div class="interaction-body">
-                    <div class="interaction-header">
-                        <strong>{{ $i->objet }}</strong>
-                        <span class="text-muted small">{{ $i->date_interaction->diffForHumans() }}</span>
-                    </div>
-                    @if($i->description)<div class="interaction-desc">{{ $i->description }}</div>@endif
-                    <div class="interaction-meta">
-                        <span class="badge-soft">{{ ucfirst($i->type) }}</span>
-                        @if($i->realisateur) · par {{ $i->realisateur->name }}@endif
-                    </div>
-                </div>
-            </div>
-            @endforeach
-        </div>
-    </div>
-    @endif
+    @include('intranet._partials.crm-interactions', [
+        'interactions' => $contact->interactions,
+        'mailA'        => $contact->email ? trim($contact->prenoms.' '.$contact->nom).' <'.$contact->email.'>' : null,
+        'crmParam'     => ['contact' => $contact->id],
+    ])
 
 </article>
 

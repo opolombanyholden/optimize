@@ -6,8 +6,9 @@
 
 @php
     $mod = 'portal';
-    // Types de référentiel RH métier (hors géographiques) — restent dans la sidebar RH
-    $rhReferentielTypes = ['types-contrat','postes','departements','types-evenement','niveaux-qualification','nationalites','groupes-rubriques'];
+    // Référentiels RH (métier + localisation administrative) — affichés dans la sidebar RH
+    $locReferentielTypes = ['pays-loc','provinces','departements-admin','prefectures','sous-prefectures','communes','arrondissements','quartiers','cantons','regroupements-village','villages'];
+    $rhReferentielTypes = ['types-contrat','postes','departements','types-evenement','niveaux-qualification','nationalites','groupes-rubriques', ...$locReferentielTypes];
 
     if      (request()->routeIs('finance.*'))    $mod = 'finance';
     elseif  (request()->routeIs('rh.*'))         $mod = 'rh';
@@ -22,7 +23,6 @@
     elseif  (request()->routeIs('intranet.rapports.*')) $mod = 'projet';
     elseif  (request()->routeIs('admin.roles-projet.*')) $mod = 'projet';
     elseif  (request()->routeIs('objectifs.*'))  $mod = 'objectifs';
-    elseif  (request()->routeIs('social.*'))     $mod = 'social';
     elseif  (request()->routeIs('systeme.*'))    $mod = 'admin';
     elseif  (request()->routeIs('admin.*'))     $mod = 'admin';
 
@@ -55,26 +55,41 @@
 
     <nav class="sb-nav">
 
-        {{-- ── Accueil ──────────────────────────────────────── --}}
-        <ul class="sb-group mt-1">
+        {{-- ── Tableau de bord, puis messagerie (accès direct) : Mail pro mis en évidence ── --}}
+        <ul class="sb-group sb-module-intranet mt-1">
             <li>
-                <a href="{{ route('dashboard') }}" class="sb-link sb-link-home {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <a href="{{ route('dashboard') }}" class="sb-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <span class="sb-icon"><i class="fas fa-home"></i></span>
                     <span class="sb-label">Tableau de bord</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('intranet.mails.index') }}" class="sb-link sb-link-mail {{ request()->routeIs('intranet.mails.*') ? 'active' : '' }}">
+                    <span class="sb-icon"><i class="fas fa-at"></i></span>
+                    <span class="sb-label">Mail pro</span>
+                    <span class="sb-badge-alert {{ empty($mailsNonLus) ? 'd-none' : '' }}" data-badge="mail">{{ $mailsNonLus ?? 0 }}</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('intranet.messagerie.index') }}" class="sb-link {{ request()->routeIs('intranet.messagerie.*') ? 'active' : '' }}">
+                    <span class="sb-icon"><i class="fas fa-message"></i></span>
+                    <span class="sb-label sb-label-2l">Messagerie instantanée</span>
+                    <span class="sb-badge-alert {{ empty($messagesNonLus) ? 'd-none' : '' }}" data-badge="chat">{{ $messagesNonLus ?? 0 }}</span>
                 </a>
             </li>
         </ul>
 
         @php
         $accOpen = [
-            'communication' => request()->routeIs('intranet.annonces.*','intranet.news.*','intranet.messagerie.*'),
+            'communication' => request()->routeIs('intranet.annonces.*','intranet.news.*'),
             'agenda'        => request()->routeIs('intranet.calendrier','intranet.evenements.*'),
             'crm'           => request()->routeIs('intranet.contacts.*','intranet.organisations.*','intranet.opportunites.*','intranet.pipeline'),
             'documents'     => request()->routeIs('intranet.courriers.*','intranet.ressources.*','intranet.mediatheque.*','intranet.archives.*','intranet.templates.*'),
             'connaissances' => request()->routeIs('intranet.wiki.*'),
             'annuaire'      => request()->routeIs('intranet.annuaire.*'),
         ];
-        if (!array_filter($accOpen)) $accOpen['communication'] = true;
+        // Ouvre Communication par défaut, sauf sur les pages en accès direct (réseau social, messagerie, mails)
+        if (!array_filter($accOpen) && !request()->routeIs('social.*', 'intranet.messagerie.*', 'intranet.mails.*')) $accOpen['communication'] = true;
         @endphp
 
         <div class="sb-accordion" id="sbAccordionIntranet">
@@ -89,7 +104,7 @@
                         <span class="sb-acc-name">Communication</span>
                     </span>
                     <span class="sb-acc-right">
-                        @if(!empty($annoncesUrgentes) || !empty($mailsNonLus))
+                        @if(!empty($annoncesUrgentes))
                         <span class="sb-acc-badge-dot urgent"></span>
                         @endif
                         <i class="fas fa-chevron-down sb-acc-chevron"></i>
@@ -109,13 +124,6 @@
                             <a href="{{ route('intranet.news.index') }}" class="sb-link {{ request()->routeIs('intranet.news.*') ? 'active' : '' }}">
                                 <span class="sb-icon"><i class="fas fa-newspaper"></i></span>
                                 <span class="sb-label">Actualités</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="sb-link" style="opacity:.55;cursor:not-allowed;" title="Module en développement">
-                                <span class="sb-icon"><i class="fas fa-at"></i></span>
-                                <span class="sb-label">Messagerie pro</span>
-                                <span class="sb-badge-alert" style="background:rgba(148,163,184,.2);color:#94A3B8;font-size:.55rem;">Bientôt</span>
                             </a>
                         </li>
                     </ul>
@@ -200,6 +208,43 @@
                             <a href="{{ route('intranet.pipeline') }}" class="sb-link {{ request()->routeIs('intranet.pipeline') ? 'active' : '' }}">
                                 <span class="sb-icon"><i class="fas fa-chart-gantt"></i></span>
                                 <span class="sb-label">Pipeline</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            {{-- ══════ ANNUAIRE ════════════════════════════════ --}}
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpen['annuaire'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-annuaire"
+                        aria-expanded="{{ $accOpen['annuaire'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-address-book"></i></span>
+                        <span class="sb-acc-name">Annuaire</span>
+                    </span>
+                    <span class="sb-acc-right">
+                        <i class="fas fa-chevron-down sb-acc-chevron"></i>
+                    </span>
+                </button>
+                <div class="collapse {{ $accOpen['annuaire'] ? 'show' : '' }}" id="acc-annuaire" data-bs-parent="#sbAccordionIntranet">
+                    <ul class="sb-group sb-module-intranet sb-acc-body">
+                        <li>
+                            <a href="{{ route('intranet.annuaire.collaborateurs.index') }}" class="sb-link {{ request()->routeIs('intranet.annuaire.collaborateurs.*') ? 'active' : '' }}">
+                                <span class="sb-icon"><i class="fas fa-address-book"></i></span>
+                                <span class="sb-label">Collaborateurs</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('intranet.annuaire.services.index') }}" class="sb-link {{ request()->routeIs('intranet.annuaire.services.*') ? 'active' : '' }}">
+                                <span class="sb-icon"><i class="fas fa-sitemap"></i></span>
+                                <span class="sb-label">Entités</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('intranet.annuaire.equipes.index') }}" class="sb-link {{ request()->routeIs('intranet.annuaire.equipes.*') ? 'active' : '' }}">
+                                <span class="sb-icon"><i class="fas fa-people-group"></i></span>
+                                <span class="sb-label">Équipes</span>
                             </a>
                         </li>
                     </ul>
@@ -294,44 +339,33 @@
                 </div>
             </div>
 
-            {{-- ══════ ANNUAIRE ════════════════════════════════ --}}
-            <div class="sb-acc-item">
-                <button class="sb-acc-toggle {{ $accOpen['annuaire'] ? '' : 'collapsed' }}"
-                        data-bs-toggle="collapse" data-bs-target="#acc-annuaire"
-                        aria-expanded="{{ $accOpen['annuaire'] ? 'true' : 'false' }}">
-                    <span class="sb-acc-left">
-                        <span class="sb-acc-icon"><i class="fas fa-address-book"></i></span>
-                        <span class="sb-acc-name">Annuaire</span>
-                    </span>
-                    <span class="sb-acc-right">
-                        <i class="fas fa-chevron-down sb-acc-chevron"></i>
-                    </span>
-                </button>
-                <div class="collapse {{ $accOpen['annuaire'] ? 'show' : '' }}" id="acc-annuaire" data-bs-parent="#sbAccordionIntranet">
-                    <ul class="sb-group sb-module-intranet sb-acc-body">
-                        <li>
-                            <a href="{{ route('intranet.annuaire.collaborateurs.index') }}" class="sb-link {{ request()->routeIs('intranet.annuaire.collaborateurs.*') ? 'active' : '' }}">
-                                <span class="sb-icon"><i class="fas fa-address-book"></i></span>
-                                <span class="sb-label">Collaborateurs</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('intranet.annuaire.services.index') }}" class="sb-link {{ request()->routeIs('intranet.annuaire.services.*') ? 'active' : '' }}">
-                                <span class="sb-icon"><i class="fas fa-sitemap"></i></span>
-                                <span class="sb-label">Entités</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{{ route('intranet.annuaire.equipes.index') }}" class="sb-link {{ request()->routeIs('intranet.annuaire.equipes.*') ? 'active' : '' }}">
-                                <span class="sb-icon"><i class="fas fa-people-group"></i></span>
-                                <span class="sb-label">Équipes</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-
         </div>{{-- /sb-accordion --}}
+
+        {{-- ── Réseau social ─────────────────────────────── --}}
+        <div class="sb-section-header intranet">
+            <span class="sb-section-dot"></span>
+            <span class="sb-section-name">Réseau social</span>
+        </div>
+        <ul class="sb-group sb-module-intranet">
+            <li>
+                <a href="{{ route('social.dashboard') }}" class="sb-link {{ request()->routeIs('social.dashboard', 'social.posts.*') && request()->query('filter', 'feed') === 'feed' ? 'active' : '' }}">
+                    <span class="sb-icon"><i class="fas fa-house-signal"></i></span>
+                    <span class="sb-label">Fil d'actualité</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('social.dashboard', ['filter' => 'mine']) }}" class="sb-link {{ request()->routeIs('social.dashboard') && request()->query('filter') === 'mine' ? 'active' : '' }}">
+                    <span class="sb-icon"><i class="fas fa-user-pen"></i></span>
+                    <span class="sb-label">Mes publications</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ route('social.groups.index') }}" class="sb-link {{ request()->routeIs('social.groups.*') ? 'active' : '' }}">
+                    <span class="sb-icon"><i class="fas fa-people-group"></i></span>
+                    <span class="sb-label">Discussion de groupe</span>
+                </a>
+            </li>
+        </ul>
 
     </nav>
 
@@ -540,7 +574,8 @@
             'performance'    => request()->routeIs('rh.evaluations-performance.*','rh.sanctions.*','rh.departs.*'),
             'paie'           => request()->routeIs('rh.paie.*','rh.rubriques.*','rh.payements.*','rh.payements-globals.*','rh.campagnes-paie.*','rh.declarations-sociales.*','rh.echantillons-paie.*'),
             'recrutement'    => request()->routeIs('rh.recrutements.*','rh.postulants.*'),
-            'referentiels-rh'=> request()->routeIs('rh.grades.*') || (request()->routeIs('admin.referentiel-rh.*') && in_array(request()->route('type'), $rhReferentielTypes)),
+            'referentiels-rh'=> request()->routeIs('rh.grades.*') || (request()->routeIs('admin.referentiel-rh.*') && in_array(request()->route('type'), $rhReferentielTypes) && !in_array(request()->route('type'), $locReferentielTypes)),
+            'localisation'   => request()->routeIs('admin.referentiel-rh.*') && in_array(request()->route('type'), $locReferentielTypes),
         ];
         if (!array_filter($accOpen)) $accOpen['personnel'] = true;
         @endphp
@@ -828,6 +863,30 @@
                             <span class="sb-icon"><i class="fas fa-tags"></i></span><span class="sb-label">Rubriques de paie</span>
                         </a></li>
                         @endcan
+                    </ul>
+                </div>
+            </div>
+
+            {{-- ══════ LOCALISATION ADMINISTRATIVE ═════════════ --}}
+            <div class="sb-acc-item">
+                <button class="sb-acc-toggle {{ $accOpen['localisation'] ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#acc-rh-localisation"
+                        aria-expanded="{{ $accOpen['localisation'] ? 'true' : 'false' }}">
+                    <span class="sb-acc-left">
+                        <span class="sb-acc-icon"><i class="fas fa-map-location-dot"></i></span>
+                        <span class="sb-acc-name">Localisation administrative</span>
+                    </span>
+                    <span class="sb-acc-right">
+                        <i class="fas fa-chevron-down sb-acc-chevron"></i>
+                    </span>
+                </button>
+                <div class="collapse {{ $accOpen['localisation'] ? 'show' : '' }}" id="acc-rh-localisation" data-bs-parent="#sbAccordionRh">
+                    <ul class="sb-group sb-module-rh sb-acc-body">
+                        @foreach(['pays-loc' => ['Pays', 'fa-earth-africa'], 'provinces' => ['Provinces', 'fa-map'], 'departements-admin' => ['Départements', 'fa-map-pin'], 'prefectures' => ['Préfectures', 'fa-landmark'], 'sous-prefectures' => ['Sous-préfectures', 'fa-landmark-flag'], 'communes' => ['Communes', 'fa-city'], 'arrondissements' => ['Arrondissements', 'fa-square'], 'quartiers' => ['Quartiers', 'fa-house-chimney'], 'cantons' => ['Cantons', 'fa-tree'], 'regroupements-village' => ['Regr. de villages', 'fa-people-roof'], 'villages' => ['Villages', 'fa-house']] as $locType => [$locLabel, $locIcon])
+                        <li><a href="{{ route('admin.referentiel-rh.index', $locType) }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === $locType ? 'active' : '' }}">
+                            <span class="sb-icon"><i class="fas {{ $locIcon }}"></i></span><span class="sb-label">{{ $locLabel }}</span>
+                        </a></li>
+                        @endforeach
                     </ul>
                 </div>
             </div>
@@ -1528,90 +1587,6 @@
 
 
     {{-- ════════════════════════════════════════════════════
-         SOCIAL MODE
-    ════════════════════════════════════════════════════ --}}
-    @elseif($mod === 'social')
-
-    <div class="sb-module-brand" style="--mod-grd: #0A66C2; --mod-color: #F5B800;">
-        <div class="sb-mod-icon"><i class="fas fa-users"></i></div>
-        <div class="sb-mod-brand-text">
-            <span class="sb-mod-name">Réseau social</span>
-            <a href="{{ route('dashboard') }}" class="sb-back-portal">
-                <i class="fas fa-arrow-left"></i> Portail
-            </a>
-        </div>
-    </div>
-
-    <nav class="sb-nav">
-        <ul class="sb-group" style="margin-top:.75rem;">
-            <li>
-                <a href="{{ route('social.dashboard') }}" class="sb-link {{ request()->routeIs('social.dashboard') && (request()->query('filter','feed') === 'feed') ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-house"></i></span><span class="sb-label">Fil d'actualité</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('social.dashboard', ['filter' => 'mine']) }}" class="sb-link {{ request()->query('filter') === 'mine' ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-user-pen"></i></span><span class="sb-label">Mes publications</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('social.groups.index') }}" class="sb-link {{ request()->routeIs('social.groups.*') ? 'active' : '' }}">
-                    <span class="sb-icon"><i class="fas fa-comments"></i></span><span class="sb-label">Groupes de discussion</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('intranet.mediatheque.index') }}" class="sb-link">
-                    <span class="sb-icon"><i class="fas fa-images"></i></span><span class="sb-label">Médiathèque</span>
-                </a>
-            </li>
-        </ul>
-
-        {{-- ── Modules métier ────────────────────────────── --}}
-        <div class="sb-section-header" style="margin-top:1.25rem;">
-            <span class="sb-section-dot" style="background:#475569;"></span>
-            <span class="sb-section-name" style="color:#475569;">Modules</span>
-        </div>
-        <ul class="sb-group">
-            <li>
-                <a href="{{ route('dashboard') }}" class="sb-link">
-                    <span class="sb-icon"><i class="fas fa-globe"></i></span><span class="sb-label">Intranet</span>
-                </a>
-            </li>
-            @canany(['read:exercice','read:budget','read:grandlivre','read:compte'])
-            <li>
-                <a href="{{ route('finance.dashboard') }}" class="sb-link">
-                    <span class="sb-icon"><i class="fas fa-coins"></i></span><span class="sb-label">Finance & Budget</span>
-                </a>
-            </li>
-            @endcanany
-            @canany(['read:employee','read:absence','read:paie','read:recrutement'])
-            <li>
-                <a href="{{ route('rh.dashboard') }}" class="sb-link">
-                    <span class="sb-icon"><i class="fas fa-users"></i></span><span class="sb-label">RH & Paiement</span>
-                </a>
-            </li>
-            @endcanany
-            @canany(['read:fournisseur','read:produit','read:commande','read:immobilisation','read:dysfonctionnement','read:intervention'])
-            <li>
-                <a href="{{ route('appro.dashboard') }}" class="sb-link">
-                    <span class="sb-icon"><i class="fas fa-cart-flatbed"></i></span><span class="sb-label">Achats & MG</span>
-                </a>
-            </li>
-            @endcanany
-            <li>
-                <a href="{{ route('projet.dashboard') }}" class="sb-link">
-                    <span class="sb-icon"><i class="fas fa-diagram-project"></i></span><span class="sb-label">Projets / Tâches</span>
-                </a>
-            </li>
-            <li>
-                <a href="{{ route('objectifs.dashboard') }}" class="sb-link">
-                    <span class="sb-icon"><i class="fas fa-bullseye"></i></span><span class="sb-label">Objectifs & KPI</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-
-    {{-- ════════════════════════════════════════════════════
          ADMINISTRATION MODE
     ════════════════════════════════════════════════════ --}}
     @elseif($mod === 'admin')
@@ -1661,46 +1636,11 @@
 
         <div class="sb-section-header admin">
             <span class="sb-section-dot"></span>
-            <span class="sb-section-name">Référentiels RH</span>
-        </div>
-        <ul class="sb-group sb-module-admin">
-            <li><a href="{{ route('admin.referentiel-rh.index', 'types-contrat') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'types-contrat' ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-file-contract"></i></span><span class="sb-label">Types de contrat</span>
-            </a></li>
-            <li><a href="{{ route('admin.referentiel-rh.index', 'postes') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'postes' ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-briefcase"></i></span><span class="sb-label">Postes</span>
-            </a></li>
-            <li><a href="{{ route('admin.referentiel-rh.index', 'departements') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'departements' ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-sitemap"></i></span><span class="sb-label">Départements</span>
-            </a></li>
-            <li><a href="{{ route('admin.referentiel-rh.index', 'types-evenement') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'types-evenement' ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-arrow-trend-up"></i></span><span class="sb-label">Types évèn. carrière</span>
-            </a></li>
-            <li><a href="{{ route('admin.referentiel-rh.index', 'niveaux-qualification') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'niveaux-qualification' ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-graduation-cap"></i></span><span class="sb-label">Niveaux de qualification</span>
-            </a></li>
-            <li><a href="{{ route('admin.referentiel-rh.index', 'nationalites') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'nationalites' ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-flag"></i></span><span class="sb-label">Nationalités</span>
-            </a></li>
-            <li><a href="{{ route('admin.referentiel-rh.index', 'groupes-rubriques') }}" class="sb-link {{ request()->routeIs('admin.referentiel-rh.*') && request()->route('type') === 'groupes-rubriques' ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-layer-group"></i></span><span class="sb-label">Groupes rubriques paie</span>
-            </a></li>
-            @php
-                $locTypes = ['pays-loc','provinces','departements-admin','prefectures','sous-prefectures','communes','arrondissements','quartiers','cantons','regroupements-village','villages'];
-                $isLoc = request()->routeIs('admin.referentiel-rh.*') && in_array(request()->route('type'), $locTypes);
-            @endphp
-            <li><a href="{{ route('admin.referentiel-rh.index', 'pays-loc') }}" class="sb-link {{ $isLoc ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-map-location-dot"></i></span><span class="sb-label">Localisation administrative</span>
-            </a></li>
-        </ul>
-
-        <div class="sb-section-header admin">
-            <span class="sb-section-dot"></span>
             <span class="sb-section-name">Paramétrage</span>
         </div>
         <ul class="sb-group sb-module-admin">
-            <li><a href="{{ route('admin.roles-projet.index') }}" class="sb-link {{ request()->routeIs('admin.roles-projet.*') ? 'active' : '' }}">
-                <span class="sb-icon"><i class="fas fa-user-tag"></i></span><span class="sb-label">Rôles projet</span>
+            <li><a href="{{ route('admin.signatures-modeles.index') }}" class="sb-link {{ request()->routeIs('admin.signatures-modeles.*') ? 'active' : '' }}">
+                <span class="sb-icon"><i class="fas fa-signature"></i></span><span class="sb-label">Modèles de signature</span>
             </a></li>
             <li><a href="{{ route('admin.vitrine.index') }}" class="sb-link {{ request()->routeIs('admin.vitrine.*') ? 'active' : '' }}">
                 <span class="sb-icon"><i class="fas fa-globe"></i></span><span class="sb-label">Vitrine (site public)</span>

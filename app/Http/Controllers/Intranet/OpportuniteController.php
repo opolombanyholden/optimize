@@ -76,14 +76,15 @@ class OpportuniteController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
         return view('intranet.opportunites.create', [
+            // Préremplissage possible depuis un mail (?titre=&contact_id=&organisation_id=&description=)
             'opportunite'   => new Opportunite([
                 'devise'      => 'XAF',
                 'probabilite' => 25,
                 'statut'      => 'ouvert',
-            ]),
+            ] + array_filter($request->only(['titre', 'contact_id', 'organisation_id', 'description']), fn($v) => is_string($v) && $v !== '')),
             'etapes'        => CrmEtape::orderBy('ordre')->get(),
             'contacts'      => Contact::orderBy('nom')->get(['id', 'nom', 'prenoms', 'email']),
             'organisations' => ContactOrganisation::orderBy('nom')->get(['id', 'nom']),

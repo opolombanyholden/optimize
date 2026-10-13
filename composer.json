@@ -18,7 +18,8 @@
         "phpoffice/phpspreadsheet": "*",
         "phpoffice/phpword": "*",
         "spatie/laravel-activitylog": "^4.12",
-        "spatie/laravel-permission": "^6.24"
+        "spatie/laravel-permission": "^6.24",
+        "webklex/php-imap": "^6.2"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

@@ -54,6 +54,7 @@ class User extends Authenticatable
             'date_embauche'        => 'date',
             'must_change_password' => 'boolean',
             'password_changed_at'  => 'datetime',
+            'last_seen_at'         => 'datetime',
             'password_reset_at'    => 'datetime',
         ];
     }
@@ -127,5 +128,23 @@ class User extends Authenticatable
     public function getFullNameAttribute(): string
     {
         return "{$this->name} {$this->prenoms}";
+    }
+
+    // ── Messagerie ───────────────────────────────────────
+
+    /** En ligne = activité dans les 2 dernières minutes (cf. middleware TouchLastSeen). */
+    public function estEnLigne(): bool
+    {
+        return $this->last_seen_at !== null && $this->last_seen_at->gt(now()->subMinutes(2));
+    }
+
+    public function comptesMail()
+    {
+        return $this->hasMany(\App\Models\Intranet\MailCompte::class, 'user_id')->orderByDesc('is_default')->orderBy('email');
+    }
+
+    public function signaturesMail()
+    {
+        return $this->hasMany(\App\Models\Intranet\MailSignature::class, 'user_id')->orderByDesc('par_defaut')->orderBy('nom');
     }
 }

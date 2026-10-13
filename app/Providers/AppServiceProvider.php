@@ -51,8 +51,15 @@ class AppServiceProvider extends ServiceProvider
                     'totalWikiArticles'     => \App\Models\Intranet\WikiArticle::count(),
                     // ── Rapports
                     'rapportsBrouillon'     => \App\Models\Intranet\Rapport::where('statut', 'brouillon')->count(),
-                    // ── Mail
-                    'mailsNonLus'           => \App\Models\Intranet\Mail::where('lu', false)->where('dossier', 'reception')->count(),
+                    // ── Messagerie instantanée + mails pro (par utilisateur ; les mails viennent du cache
+                    //    alimenté par le webmail, jamais d'appel IMAP pendant le rendu)
+                    'messagesNonLus'        => \App\Models\Chat\Message::query()
+                        ->join('chat_conversations as c', 'c.id', '=', 'chat_messages.conversation_id')
+                        ->where(fn($w) => $w->where('c.user_un_id', auth()->id())->orWhere('c.user_deux_id', auth()->id()))
+                        ->where('chat_messages.sender_id', '!=', auth()->id())
+                        ->whereNull('chat_messages.lu_at')->count(),
+                    'mailsNonLus'           => \App\Models\Intranet\MailCompte::where('user_id', auth()->id())->pluck('id')
+                        ->sum(fn($id) => (int) \Illuminate\Support\Facades\Cache::get("mail_non_lus_{$id}", 0)),
                     // ── ERP — badges sidebar (statuts legacy en INTEGER : 1 = en attente / en cours / ouvert)
                     'absencesEnCours'       => \App\Models\Absence::where('statut', 1)->count(),
                     'commandesEnCours'      => \App\Models\CommandeFournisseur::where('statut', 1)->count(),

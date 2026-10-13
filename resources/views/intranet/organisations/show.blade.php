@@ -50,6 +50,9 @@
         </div>
 
         <div class="contact-detail-actions">
+            @if($organisation->email ?: $organisation->contact_principal_email)
+            <a href="{{ route('intranet.mails.create', ['a' => $organisation->email ?: $organisation->contact_principal_email, 'organisation' => $organisation->id]) }}" class="btn btn-light" title="Envoyer un mail"><i class="fas fa-envelope"></i></a>
+            @endif
             @can('update:organisation_crm')
             <a href="{{ route('intranet.organisations.edit', $organisation) }}" class="btn btn-intranet">
                 <i class="fas fa-pen-to-square me-2"></i> Modifier
@@ -163,6 +166,12 @@
     @endif
 
     @include('intranet._partials.media-display', ['entity' => $organisation])
+
+    @include('intranet._partials.crm-interactions', [
+        'interactions' => $organisation->interactions,
+        'mailA'        => $organisation->email ?: $organisation->contact_principal_email,
+        'crmParam'     => ['organisation' => $organisation->id],
+    ])
 
 </article>
 
