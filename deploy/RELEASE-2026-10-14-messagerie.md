@@ -1,7 +1,10 @@
 # Mise en production — version « Messagerie » (14/10/2026)
 
-Serveur : **anpiconnect.ga** — LWS cPanel, application à la racine `/home/rs2755624/public_html/`.
-Procédure générale : [`UPDATE-lws-cpanel.md`](UPDATE-lws-cpanel.md). Ce document liste ce qui est **propre à cette version**.
+Serveur : **anpiconnect.ga** — LWS cPanel, utilisateur `anpiconnect`, application à la racine de `~/public_html`.
+**Mode de déploiement : zip uploadé via cPanel + commandes dans le terminal cPanel** (pas de git sur le serveur).
+
+Archive : `deploy/dist/optimize-20261014-messagerie.zip` (construite localement, non versionnée) —
+contient le code + `vendor/` de production ; **ne contient pas** `.env`, les fichiers de `storage/`, `conception/`, `docs/`.
 
 Version précédente en production : commit `fa7745c` (point de retour arrière).
 
@@ -52,57 +55,70 @@ Le script `deploy/scripts/precheck-mails.sh` vérifie tout cela en lecture seule
 
 ## Déploiement pas à pas
 
-Toutes les commandes serveur se lancent en SSH depuis `~/public_html`.
+Toutes les commandes se lancent dans le **terminal cPanel**.
 
-### 1. Sauvegarde (obligatoire)
+### 1. Sauvegarde (obligatoire, avant toute chose)
 ```bash
 cd ~/public_html
-bash deploy/scripts/backup.sh          # dump PostgreSQL + fichiers uploadés dans ~/backups/
-ls -lh ~/backups | tail -3             # noter le nom du .dump créé
+mkdir -p ~/backups && STAMP=$(date +%Y%m%d-%H%M%S)
+env_val() { grep "^$1=" .env | cut -d= -f2- | tr -d '"'; }
+
+# Base de données (PostgreSQL ; si DB_CONNECTION=mysql, utiliser la variante mysqldump)
+echo "Base : $(env_val DB_CONNECTION) / $(env_val DB_DATABASE)"
+PGPASSWORD="$(env_val DB_PASSWORD)" pg_dump -h "$(env_val DB_HOST)" -p "$(env_val DB_PORT)" \
+  -U "$(env_val DB_USERNAME)" -d "$(env_val DB_DATABASE)" -F c -f ~/backups/optimize-db-$STAMP.dump
+# mysqldump -h "$(env_val DB_HOST)" -u "$(env_val DB_USERNAME)" -p"$(env_val DB_PASSWORD)" "$(env_val DB_DATABASE)" > ~/backups/optimize-db-$STAMP.sql
+
+# Code actuel complet (vendor, .env, fichiers déposés) pour pouvoir revenir en arrière
+tar czf ~/backups/optimize-site-$STAMP.tar.gz --exclude=./storage/logs --exclude=./storage/framework .
+ls -lh ~/backups/
 ```
 
-### 2. Récupérer le code puis pré-vérifier
-**Voie A — cPanel Git (recommandée)** : *Git Version Control* → dépôt `optimize` → *Pull or Deploy* →
-**Update from Remote**, puis lancer la pré-vérification **avant** de cliquer *Deploy HEAD Commit* :
+### 2. Upload du zip
+cPanel → **Gestionnaire de fichiers** → `public_html` → **Charger** `optimize-20261014-messagerie.zip`.
+Ne pas extraire depuis le gestionnaire : l'extraction se fait au terminal (étape 3).
+
+Contrôle d'intégrité (doit afficher la même empreinte que `optimize-20261014-messagerie.zip.sha256`) :
 ```bash
-cd ~/repositories/optimize 2>/dev/null || cd ~/public_html   # selon l'emplacement du clone cPanel
-bash deploy/scripts/precheck-mails.sh
+cd ~/public_html && sha256sum optimize-20261014-messagerie.zip
 ```
-Si tout est ✅ : cliquer **Deploy HEAD Commit**. Le `.cpanel.yml` enchaîne `composer install`,
-`migrate --force`, `storage:link` et la reconstruction des caches.
 
-**Voie B — SSH, mise à jour contrôlée**
+### 3. Mise à jour
 ```bash
 cd ~/public_html
-git fetch origin && git status          # aucune modification locale attendue
-git pull origin main
-bash deploy/scripts/precheck-mails.sh   # doit finir par « Serveur prêt »
-bash deploy/scripts/update.sh           # down → backup → composer → migrate → caches → up
-```
+php -v | head -1                          # doit indiquer PHP 8.3
+php artisan down --retry=60               # maintenance
 
-Équivalent manuel de `update.sh` si besoin :
-```bash
-php artisan down --retry=60
-COMPOSER_PROCESS_TIMEOUT=900 /opt/cpanel/composer/bin/composer install --no-dev --optimize-autoloader --no-interaction
-/usr/local/bin/ea-php83 artisan migrate --force
-/usr/local/bin/ea-php83 artisan storage:link 2>/dev/null || true
-/usr/local/bin/ea-php83 artisan optimize:clear
-/usr/local/bin/ea-php83 artisan config:cache && /usr/local/bin/ea-php83 artisan route:cache
-/usr/local/bin/ea-php83 artisan view:cache && /usr/local/bin/ea-php83 artisan event:cache
+unzip -oq optimize-20261014-messagerie.zip -d ~/public_html   # écrase le code, conserve .env et storage/
+rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/cache/config.php bootstrap/cache/routes-v7.php bootstrap/cache/events.php
+
+bash deploy/scripts/precheck-mails.sh     # extensions, upload, ports IMAP/SMTP — doit finir par « Serveur prêt »
+
+php artisan optimize:clear
+php artisan package:discover
+php artisan migrate:status | grep -i pending     # les 6 migrations 2026_10_1x
+php artisan migrate --force
+php artisan storage:link 2>/dev/null || true
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
 chmod -R 775 storage bootstrap/cache
-/usr/local/bin/ea-php83 artisan up
+
+php artisan up
+rm -f ~/public_html/optimize-20261014-messagerie.zip   # ne pas laisser l'archive sur le serveur
 ```
 
-### 3. Contrôles techniques
+### 4. Contrôles techniques
 ```bash
 cd ~/public_html
-/usr/local/bin/ea-php83 artisan migrate:status | tail -8     # les 6 migrations 2026_10_1x : Ran
-bash deploy/scripts/healthcheck.sh                           # inclut webklex/php-imap
-curl -sI https://anpiconnect.ga/login | head -1              # HTTP/2 200
-tail -50 storage/logs/laravel.log                            # aucune nouvelle erreur
+php artisan migrate:status | tail -8             # les 6 migrations 2026_10_1x : Ran
+bash deploy/scripts/healthcheck.sh               # inclut webklex/php-imap
+curl -sI https://anpiconnect.ga/login | head -1  # HTTP 200
+tail -50 storage/logs/laravel.log                # aucune nouvelle erreur
 ```
 
-### 4. Recette fonctionnelle (navigation privée)
+### 5. Recette fonctionnelle (navigation privée)
 - [ ] Menu Intranet : *Tableau de bord*, puis **Mail pro** mis en évidence, *Messagerie instantanée*, accordéons, section *Réseau social*
 - [ ] **Mon compte** → *Connecter un compte* (ex. Gmail avec mot de passe d'application) → « Compte connecté »
 - [ ] **Mail pro** : la boîte de réception s'affiche ; ouvrir un mail ; *Répondre* avec une pièce jointe (barre de progression + quota) ; le mail arrive
@@ -119,15 +135,19 @@ tail -50 storage/logs/laravel.log                            # aucune nouvelle e
 ```bash
 cd ~/public_html
 php artisan down
-/usr/local/bin/ea-php83 artisan migrate:rollback --step=6 --force    # annule les 6 migrations de cette version
-git checkout fa7745c                                                 # version précédente
-COMPOSER_PROCESS_TIMEOUT=900 /opt/cpanel/composer/bin/composer install --no-dev --optimize-autoloader --no-interaction
-/usr/local/bin/ea-php83 artisan optimize:clear
-/usr/local/bin/ea-php83 artisan config:cache && /usr/local/bin/ea-php83 artisan route:cache && /usr/local/bin/ea-php83 artisan view:cache
+php artisan migrate:rollback --step=6 --force          # annule les 6 migrations de cette version (avant de remettre l'ancien code)
+STAMP=XXXXXXXX-XXXXXX                                    # horodatage de la sauvegarde de l'étape 1
+tar xzf ~/backups/optimize-site-$STAMP.tar.gz -C ~/public_html
+php artisan optimize:clear
+php artisan config:cache && php artisan route:cache && php artisan view:cache
 php artisan up
 ```
-En cas de problème de données, restaurer la sauvegarde de l'étape 1 :
-`bash deploy/scripts/rollback.sh ~/backups/<fichier>.dump fa7745c`
+Si les données sont en cause, restaurer aussi la base :
+```bash
+env_val() { grep "^$1=" .env | cut -d= -f2- | tr -d '"'; }
+PGPASSWORD="$(env_val DB_PASSWORD)" pg_restore -h "$(env_val DB_HOST)" -p "$(env_val DB_PORT)" \
+  -U "$(env_val DB_USERNAME)" -d "$(env_val DB_DATABASE)" --clean --if-exists ~/backups/optimize-db-$STAMP.dump
+```
 
 ---
 

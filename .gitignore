@@ -34,3 +34,5 @@ Thumbs.db
 # Fichiers dev locaux
 _test-routes.php
 .claude/
+/deploy/dist/*.zip
+/deploy/dist/*.zip.sha256
