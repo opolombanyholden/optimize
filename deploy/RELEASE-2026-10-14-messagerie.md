@@ -1,12 +1,14 @@
 # Mise en production — version « Messagerie » (14/10/2026)
 
-Serveur : **anpiconnect.ga** — LWS cPanel, utilisateur `anpiconnect`, application à la racine de `~/public_html`.
-**Mode de déploiement : zip uploadé via cPanel + commandes dans le terminal cPanel** (pas de git sur le serveur).
+Serveur : **anpiconnect.ga** — LWS `web43.lws-hosting.com`, compte cPanel `anpiconnect`, application à la racine de `~/public_html`
+(PostgreSQL `anpiconnect_optimize`, PHP 8.3, composer 2.9 disponible).
+⚠️ Ne pas confondre avec `web39` (même nom de compte, autre application : `portail.anpiconnect.net`).
 
-Archive : `deploy/dist/optimize-20261014-messagerie.zip` (construite localement, non versionnée) —
-contient le code + `vendor/` de production ; **ne contient pas** `.env`, les fichiers de `storage/`, `conception/`, `docs/`.
+**Mode de déploiement : zip uploadé via cPanel + commandes dans le terminal cPanel.**
 
-Version précédente en production : commit `fa7745c` (point de retour arrière).
+Version en production avant cette mise à jour : `db991fe`–`fa7745c` (vérifié par empreintes, aucune modification locale), migrations jusqu'à `2026_09_07_100000_create_systeme_config`.
+
+Archive : `deploy/dist/optimize-20261014-maj.zip` (332 Ko, non versionnée) — **différentielle** : uniquement les 84 fichiers modifiés depuis `db991fe` (aucun fichier supprimé ni renommé). `vendor/` est reconstruit sur le serveur par `composer install`.
 
 ---
 
@@ -55,50 +57,38 @@ Le script `deploy/scripts/precheck-mails.sh` vérifie tout cela en lecture seule
 
 ## Déploiement pas à pas
 
-Toutes les commandes se lancent dans le **terminal cPanel**.
+Toutes les commandes se lancent dans le **terminal cPanel** de `web43`.
 
 ### 1. Sauvegarde (obligatoire, avant toute chose)
 ```bash
 cd ~/public_html
-mkdir -p ~/backups && STAMP=$(date +%Y%m%d-%H%M%S)
+mkdir -p ~/backups && STAMP=$(date +%Y%m%d-%H%M%S) && echo "Horodatage : $STAMP"
 env_val() { grep "^$1=" .env | cut -d= -f2- | tr -d '"'; }
-
-# Base de données (PostgreSQL ; si DB_CONNECTION=mysql, utiliser la variante mysqldump)
-echo "Base : $(env_val DB_CONNECTION) / $(env_val DB_DATABASE)"
 PGPASSWORD="$(env_val DB_PASSWORD)" pg_dump -h "$(env_val DB_HOST)" -p "$(env_val DB_PORT)" \
   -U "$(env_val DB_USERNAME)" -d "$(env_val DB_DATABASE)" -F c -f ~/backups/optimize-db-$STAMP.dump
-# mysqldump -h "$(env_val DB_HOST)" -u "$(env_val DB_USERNAME)" -p"$(env_val DB_PASSWORD)" "$(env_val DB_DATABASE)" > ~/backups/optimize-db-$STAMP.sql
-
-# Code actuel complet (vendor, .env, fichiers déposés) pour pouvoir revenir en arrière
-tar czf ~/backups/optimize-site-$STAMP.tar.gz --exclude=./storage/logs --exclude=./storage/framework .
+tar czf ~/backups/optimize-site-$STAMP.tar.gz --exclude=./.git --exclude=./storage/logs --exclude=./storage/framework .
 ls -lh ~/backups/
 ```
 
 ### 2. Upload du zip
-cPanel → **Gestionnaire de fichiers** → `public_html` → **Charger** `optimize-20261014-messagerie.zip`.
-Ne pas extraire depuis le gestionnaire : l'extraction se fait au terminal (étape 3).
-
-Contrôle d'intégrité (doit afficher la même empreinte que `optimize-20261014-messagerie.zip.sha256`) :
+cPanel → **Gestionnaire de fichiers** → `public_html` → **Charger** `optimize-20261014-maj.zip` (ne pas l'extraire depuis le gestionnaire).
 ```bash
-cd ~/public_html && sha256sum optimize-20261014-messagerie.zip
+cd ~/public_html && sha256sum optimize-20261014-maj.zip   # doit correspondre à optimize-20261014-maj.zip.sha256
 ```
 
 ### 3. Mise à jour
 ```bash
 cd ~/public_html
-php -v | head -1                          # doit indiquer PHP 8.3
-php artisan down --retry=60               # maintenance
+php artisan down --retry=60
 
-unzip -oq optimize-20261014-messagerie.zip -d ~/public_html   # écrase le code, conserve .env et storage/
-rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/cache/config.php bootstrap/cache/routes-v7.php bootstrap/cache/events.php
+unzip -o optimize-20261014-maj.zip -d ~/public_html
+composer install --no-dev --optimize-autoloader --no-interaction   # ajoute webklex/php-imap
 
-bash deploy/scripts/precheck-mails.sh     # extensions, upload, ports IMAP/SMTP — doit finir par « Serveur prêt »
+bash deploy/scripts/precheck-mails.sh          # doit finir par « Serveur prêt »
 
 php artisan optimize:clear
-php artisan package:discover
-php artisan migrate:status | grep -i pending     # les 6 migrations 2026_10_1x
+php artisan migrate:status | grep -i pending   # 6 migrations 2026_10_1x attendues
 php artisan migrate --force
-php artisan storage:link 2>/dev/null || true
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
@@ -106,7 +96,18 @@ php artisan event:cache
 chmod -R 775 storage bootstrap/cache
 
 php artisan up
-rm -f ~/public_html/optimize-20261014-messagerie.zip   # ne pas laisser l'archive sur le serveur
+rm -f ~/public_html/optimize-20261014-maj.zip
+```
+
+### 3 bis. Correction de configuration recommandée
+Le `.env` de production contient encore `APP_ENV=local` et `APP_URL=http://localhost`. Les liens absolus
+(fichiers stockés, liens dans les mails, notifications) pointent alors vers `localhost`.
+```bash
+cd ~/public_html
+cp .env ~/backups/env-$(date +%Y%m%d-%H%M%S)
+sed -i 's#^APP_ENV=.*#APP_ENV=production#; s#^APP_URL=.*#APP_URL=https://anpiconnect.ga#' .env
+grep -E '^(APP_ENV|APP_URL|APP_DEBUG)=' .env
+php artisan config:cache
 ```
 
 ### 4. Contrôles techniques
@@ -135,14 +136,14 @@ tail -50 storage/logs/laravel.log                # aucune nouvelle erreur
 ```bash
 cd ~/public_html
 php artisan down
-php artisan migrate:rollback --step=6 --force          # annule les 6 migrations de cette version (avant de remettre l'ancien code)
+php artisan migrate:rollback --step=6 --force          # AVANT de remettre l'ancien code (les fichiers de migration doivent exister)
 STAMP=XXXXXXXX-XXXXXX                                    # horodatage de la sauvegarde de l'étape 1
 tar xzf ~/backups/optimize-site-$STAMP.tar.gz -C ~/public_html
 php artisan optimize:clear
 php artisan config:cache && php artisan route:cache && php artisan view:cache
 php artisan up
 ```
-Si les données sont en cause, restaurer aussi la base :
+Restauration complète de la base si nécessaire :
 ```bash
 env_val() { grep "^$1=" .env | cut -d= -f2- | tr -d '"'; }
 PGPASSWORD="$(env_val DB_PASSWORD)" pg_restore -h "$(env_val DB_HOST)" -p "$(env_val DB_PORT)" \
@@ -154,5 +155,7 @@ PGPASSWORD="$(env_val DB_PASSWORD)" pg_restore -h "$(env_val DB_HOST)" -p "$(env
 ## À savoir
 - **Gmail / Microsoft 365** demandent un **mot de passe d'application** (et, pour Microsoft 365, l'accès IMAP/SMTP autorisé par l'administrateur). La page *Mon compte* l'indique.
 - Ports acceptés dans les comptes mail : IMAP 993/143, SMTP 465/587/25/2525 (protection contre le sondage du réseau interne).
+- Sur `web43`, le port sortant **143 est fermé** : les comptes IMAP doivent utiliser **993 (SSL)** — c'est le cas de Gmail, Microsoft 365, OVH, Zoho, Yahoo.
+- Aucun cron Laravel n'est configuré ; cette version n'en a pas besoin.
 - Les pièces jointes en cours de rédaction sont stockées dans `storage/app/private/mail-pieces/` et purgées après 24 h.
 - Les mails ne sont pas copiés en base : seuls le classement, les liens et l'historique CRM le sont.
